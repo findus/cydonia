@@ -1,0 +1,180 @@
+/**
+ * 
+ */
+package de.findus.cydonia.server;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import com.jme3.app.Application;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.BulletAppState.ThreadingType;
+import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.CharacterControl;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.jme3.network.ConnectionListener;
+import com.jme3.network.HostedConnection;
+import com.jme3.network.Message;
+import com.jme3.network.MessageListener;
+import com.jme3.network.Network;
+import com.jme3.network.Server;
+import com.jme3.network.serializing.Serializer;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
+import com.jme3.system.JmeContext;
+
+import de.findus.cydonia.level.Level;
+import de.findus.cydonia.level.Level1;
+
+/**
+ * @author Findus
+ *
+ */
+public class GameServer extends Application implements MessageListener<HostedConnection>, ConnectionListener {
+
+	
+	public static float MAX_STEP_HEIGHT = 0.2f;
+	public static float PLAYER_SPEED = 5f;
+	public static float PHYSICS_ACCURACY = (1f / 240);
+
+	public static void main(String[] args) {
+		GameServer gameServer = new GameServer();
+		gameServer.start(JmeContext.Type.Headless);
+	}
+	
+	private Server server;
+	
+	private Thread senderLoop;
+	
+	protected Node rootNode = new Node("Root Node");
+	
+	private RigidBodyControl landscape;
+    
+    private HashMap<Integer, Player> players;
+    
+    private BulletAppState bulletAppState;
+    
+    private boolean senderRunning;
+	
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        this.players = new HashMap<Integer, Player>();
+
+    	bulletAppState = new BulletAppState();
+    	bulletAppState.setEnabled(false);
+        bulletAppState.setThreadingType(ThreadingType.PARALLEL);
+        stateManager.attach(bulletAppState);
+        bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
+        bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
+        
+        
+        Box box1 = new Box( new Vector3f(0,3,0), 1,1,1);
+        Geometry blue = new Geometry("Box", box1);
+        Material mat1 = new Material(assetManager, 
+                "Common/MatDefs/Misc/Unshaded.j3md");
+        mat1.setColor("Color", ColorRGBA.Blue);
+        blue.setMaterial(mat1);
+        rootNode.attachChild(blue);
+        
+        Level level = new Level1();
+        Spatial scene = null;
+        //scene = assetManager.loadModel("Scenes/firstworld.j3o");
+        scene = level.getScene(assetManager);
+        
+        CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
+        landscape = new RigidBodyControl(sceneShape, 0);
+        scene.addControl(landscape);
+        
+//        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 1.7f, 1);
+//        player = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
+//        player.setJumpSpeed(10);
+//        player.setFallSpeed(30);
+//        player.setGravity(30);
+//        player.setPhysicsLocation(new Vector3f(0, 10, 0));
+        
+        rootNode.attachChild(scene);
+        bulletAppState.getPhysicsSpace().add(landscape);
+//        bulletAppState.getPhysicsSpace().add(player);
+        
+        
+        try {
+			server = Network.createServer(6173);
+			server.start();
+			Serializer.registerClass(WorldStateUpdate.class);
+			Serializer.registerClass(PlayerPhysic.class);
+			Serializer.registerClass(InputUpdate.class);
+			Serializer.registerClass(PlayerInputState.class);
+			
+			server.addMessageListener(this);
+			server.addConnectionListener(this);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		senderLoop = new Thread(new WorldStateSenderLoop());
+		senderRunning = true;
+		senderLoop.start();
+    }
+
+	@Override
+	public void messageReceived(HostedConnection source, Message m) {
+		if (m instanceof InputUpdate) {
+//			System.out.println("got input update");
+    		InputUpdate inputUpdate = (InputUpdate) m;
+    		Player p = players.get(source.getId());
+    		if(p != null) {
+    			p.setInputState(inputUpdate.getInputs());
+    		}
+    	}
+	}
+
+	@Override
+	public void connectionAdded(Server server, HostedConnection conn) {
+		Player p = new Player(conn.getId(), assetManager);
+		players.put(conn.getId(), p);
+		bulletAppState.getPhysicsSpace().add(p.getControl());
+	}
+
+	@Override
+	public void connectionRemoved(Server server, HostedConnection conn) {
+		Player p = players.get(conn.getId());
+		bulletAppState.getPhysicsSpace().remove(p.getControl());
+	}
+	
+	/**
+	 * This class is used to send the current state of the virtual world to all clients in constant intervals.
+	 * @author Findus
+	 *
+	 */
+	private class WorldStateSenderLoop implements Runnable {
+		@Override
+		public void run() {
+			while(senderRunning) {
+				WorldStateUpdate m = WorldStateUpdate.getUpdateForPlayers(players.values());
+				m.setReliable(false);
+				
+				for (HostedConnection conn : server.getConnections()) {
+					conn.send(m);
+				}
+				
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+
+}
