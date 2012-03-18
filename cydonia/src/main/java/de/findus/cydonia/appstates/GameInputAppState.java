@@ -3,7 +3,6 @@
  */
 package de.findus.cydonia.appstates;
 
-import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -74,8 +73,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
     	flyCam.setEnabled(false);
     }
 
-    @Override
-	public void onAction(String name, boolean isPressed, float tpf) {
+	@Override
+    public void onAction(String name, boolean isPressed, float tpf) {
 		if(name.equals("Left")) {
             if(isPressed) gameController.getPlayer().getInputState().setLeft(true); else gameController.getPlayer().getInputState().setLeft(false);
         }else if(name.equals("Right")) {

@@ -104,6 +104,8 @@ public class ServerConnector {
 			while(senderRunning) {
 				InputUpdate m = new InputUpdate();
 				m.setInputs(controller.getPlayer().getInputState());
+				m.setPlayerId(controller.getPlayer().getId());
+				m.setViewDir(controller.getPlayer().getControl().getViewDirection());
 				m.setReliable(false);
 				if(client.isConnected()) {
 					client.send(m);

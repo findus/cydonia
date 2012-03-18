@@ -6,8 +6,12 @@ package de.findus.cydonia.server;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Cylinder;
 
 import de.findus.cydonia.main.GameController;
 
@@ -20,6 +24,8 @@ public class Player {
 	private int id;
 
 	private PlayerInputState inputs;
+	
+	private Vector3f exactLoc = new Vector3f();
 	
 	private CharacterControl control;
 	
@@ -36,19 +42,22 @@ public class Player {
 		
 		inputs = new PlayerInputState();
 		
-		CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 1.7f, 1);
-        control = new CharacterControl(capsuleShape, GameController.MAX_STEP_HEIGHT);
-        control.setJumpSpeed(10);
-        control.setFallSpeed(30);
-        control.setGravity(30);
-        control.setPhysicsLocation(new Vector3f(0, 10, 0));
+		model = (Spatial) assetManager.loadAsset("Models/Ferrari/Car.scene");		
         
-        model = (Spatial) assetManager.loadAsset("Models/Ferrari/Car.scene");
 //        Geometry geo = new Geometry("Player_" + id, new Cylinder(5, 5, 1f, 1.7f));
 //        Material mat = new Material(assetManager, 
 //        "Common/MatDefs/Misc/Unshaded.j3md");
 //        mat.setColor("Color", ColorRGBA.Red);
 //        geo.setMaterial(mat);
+//        model = geo;
+        
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 1.7f, 1);
+        control = new CharacterControl(capsuleShape, GameController.MAX_STEP_HEIGHT);
+        control.setJumpSpeed(10);
+        control.setFallSpeed(30);
+        control.setGravity(30);
+        
+        model.addControl(control);
 	}
 	
 	/**
@@ -97,6 +106,14 @@ public class Player {
 	 */
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public Vector3f getExactLoc() {
+		return exactLoc;
+	}
+
+	public void setExactLoc(Vector3f smooth) {
+		this.exactLoc = smooth;
 	}
 	
 	

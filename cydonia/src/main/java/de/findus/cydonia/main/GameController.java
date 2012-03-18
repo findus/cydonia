@@ -1,26 +1,38 @@
 package de.findus.cydonia.main;
 
+import java.awt.geom.AffineTransform;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
+import com.bulletphysics.linearmath.VectorUtil;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsView;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.BulletAppState.ThreadingType;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.material.Material;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
 import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
 import com.jme3.niftygui.NiftyJmeDisplay;
+import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
@@ -43,12 +55,21 @@ import de.lessvoid.nifty.screen.ScreenController;
  * 
  * @author Findus
  */
-public class GameController extends Application implements ActionListener, ScreenController, MessageListener<Client>{
+public class GameController extends Application implements ActionListener, ScreenController, MessageListener<Client>, PhysicsCollisionListener{
 
 	public static final String TEXTURES_PATH = "de/findus/cydonia/textures/";
+	
+	/**
+	 * The time in seconds it should take to compensate a deviation from the accurate (=server defined) physical location of an object. 
+	 */
+	private static final float SMOOTHING = 0.2f;
+	
+	
 	public static float MAX_STEP_HEIGHT = 0.2f;
     public static float PLAYER_SPEED = 5f;
     public static float PHYSICS_ACCURACY = (1f / 240);
+    
+    public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
     
     protected boolean showSettings = true;
     
@@ -75,6 +96,8 @@ public class GameController extends Application implements ActionListener, Scree
     private Player player;
     private HashMap<Integer, Player> players;
     private ServerConnector connector;
+    
+    private LinkedList<WorldStateUpdate> updateQueue;
     
     @Override
     public void start() {
@@ -108,6 +131,7 @@ public class GameController extends Application implements ActionListener, Scree
     public void initialize() {
         super.initialize();
 
+        updateQueue = new LinkedList<WorldStateUpdate>();
         players = new HashMap<Integer, Player>();
         
         guiNode.setQueueBucket(Bucket.Gui);
@@ -162,6 +186,10 @@ public class GameController extends Application implements ActionListener, Scree
         
         bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
         bulletAppState.getPhysicsSpace().add(player.getControl());
+        player.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+//        worldController.attachObject(player.getModel());
+        
+        bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
         connector = new ServerConnector(this);
     }
@@ -174,6 +202,12 @@ public class GameController extends Application implements ActionListener, Scree
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	connector.connectToServer("localhost", 6173);
+    	try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	player.setId(connector.getConnectionId());
     	players.put(player.getId(), player);
     	connector.addMessageListener(this);
@@ -224,7 +258,8 @@ public class GameController extends Application implements ActionListener, Scree
         stateManager.update(tpf);
 
         // update game specific things
-        movePlayer(tpf);
+        updateWorldState();
+        movePlayers(tpf);
         
         // update world and gui
         worldController.updateLogicalState(tpf);
@@ -239,22 +274,35 @@ public class GameController extends Application implements ActionListener, Scree
         stateManager.postRender();
     }
     
-    @Override
+    private void updateWorldState() {
+    	while (!updateQueue.isEmpty()) {
+    		WorldStateUpdate worldState = updateQueue.poll();
+
+    		for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
+    			Player p = players.get(physic.getId());
+    			if(p == null) {
+    				p = new Player(physic.getId(), assetManager);
+    				p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
+    				players.put(p.getId(), p);
+    				bulletAppState.getPhysicsSpace().add(p.getControl());
+    				worldController.attachObject(p.getModel());
+    			}
+    			if(p != null) {
+    				p.setExactLoc(physic.getTranslation());
+//    				p.getControl().setPhysicsLocation(physic.getTranslation());
+    				p.getControl().setViewDirection(physic.getOrientation());
+    			}
+    		}
+    	}
+    }
+
+	@Override
 	public void messageReceived(Client source, Message m) {
     	if (m instanceof WorldStateUpdate) {
     		// do something with the message
     		WorldStateUpdate worldState = (WorldStateUpdate) m;
-    		for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
-				Player p = players.get(physic.getId());
-				if(p == null) {
-					p = new Player(physic.getId(), assetManager);
-					players.put(p.getId(), p);
-					bulletAppState.getPhysicsSpace().add(p.getControl());
-					worldController.attachObject(p.getModel());
-				}
-				p.getControl().setPhysicsLocation(physic.getTranslation());
-				p.getControl().setViewDirection(physic.getOrientation());
-			}
+    		updateQueue.offer(worldState);
+//    		System.out.println("messageReceived" + this.player.getId() + " " + this.connector.getConnectionId());
     	}
     }
 
@@ -262,19 +310,36 @@ public class GameController extends Application implements ActionListener, Scree
      * Moves the player according to user input state.
      * @param tpf time per frame
      */
-	private void movePlayer(float tpf) {
-        Vector3f camDir = cam.getDirection().clone().setY(0).normalizeLocal();
-        Vector3f camLeft = cam.getLeft().clone().setY(0).normalizeLocal();
-        walkDirection.set(0, 0, 0);
-        if(player.getInputState().isLeft()) walkDirection.addLocal(camLeft);
-        if(player.getInputState().isRight()) walkDirection.addLocal(camLeft.negate());
-        if(player.getInputState().isForward()) walkDirection.addLocal(camDir);
-        if(player.getInputState().isBack()) walkDirection.addLocal(camDir.negate());
+	private void movePlayers(float tpf) {
         
-        walkDirection.normalizeLocal().multLocal(PHYSICS_ACCURACY * PLAYER_SPEED);
-        
-        player.getControl().setWalkDirection(walkDirection);
-        cam.setLocation(player.getControl().getPhysicsLocation());
+		for (Player p : players.values()) {
+			if(p.getId() == connector.getConnectionId()) {
+				p.getControl().setViewDirection(cam.getDirection());
+			}
+			Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
+			Vector3f viewLeft = new Vector3f();
+			ROTATE90LEFT.transformVector(viewDir, viewLeft);
+
+			walkDirection.set(0, 0, 0);
+			if(p.getInputState().isLeft()) walkDirection.addLocal(viewLeft);
+			if(p.getInputState().isRight()) walkDirection.addLocal(viewLeft.negate());
+			if(p.getInputState().isForward()) walkDirection.addLocal(viewDir);
+			if(p.getInputState().isBack()) walkDirection.addLocal(viewDir.negate());
+
+			
+			walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
+			
+			Vector3f correction = p.getExactLoc().subtract(p.getControl().getPhysicsLocation()).divide(SMOOTHING);
+			walkDirection.addLocal(correction);
+
+			walkDirection.multLocal(PHYSICS_ACCURACY);
+			p.getControl().setWalkDirection(walkDirection);
+			
+			if(p.getId() == connector.getConnectionId()) {
+				cam.setLocation(p.getControl().getPhysicsLocation());
+			}
+		}
+		
     }
 
     public void simpleRender(RenderManager rm) {
@@ -293,7 +358,45 @@ public class GameController extends Application implements ActionListener, Scree
         }
 	}
 
-    /**
+    @Override
+	public void collision(PhysicsCollisionEvent e) {
+		Spatial bullet = null;
+		Spatial other = null;
+		Object obj;
+		
+		try {
+    	if(e.getNodeA() != null) {
+    		Boolean sticky = e.getNodeA().getUserData("Sticky");
+    		if (sticky != null && sticky.booleanValue() == true) {
+    			bullet = e.getNodeA();
+    			other = e.getNodeB();
+			}
+		}else if (e.getNodeB() != null) {
+			Boolean sticky = e.getNodeB().getUserData("Sticky");
+			if (sticky != null && sticky.booleanValue() == true) {
+				bullet = e.getNodeB();
+				other = e.getNodeA();
+			}
+		}
+    	
+    	if(bullet != null && other != null) {
+    		worldController.detachObject(bullet);
+    		bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
+    		bullet.removeControl(RigidBodyControl.class);
+    		if(other != null) {
+    			if (other instanceof Node) {
+					((Node) other).attachChild(bullet);
+				}else {
+					other.getParent().attachChild(bullet);
+				}
+    		}
+    	}
+		}catch ( Exception ex) {
+			System.out.println("");
+		}
+	}
+
+	/**
      * Creates a ball and throws it i view direction.
      */
 	public void attack() {
@@ -303,6 +406,7 @@ public class GameController extends Application implements ActionListener, Scree
     	
     	Sphere sphere = new Sphere(10, 10, 0.1f);
     	Geometry bullet = new Geometry("bullet", sphere);
+    	bullet.setUserData("Sticky", Boolean.TRUE);
     	bullet.setMaterial(mat_felsen);
     	worldController.attachObject(bullet);
     	/** Position the cannon ball  */
@@ -311,6 +415,7 @@ public class GameController extends Application implements ActionListener, Scree
     	RigidBodyControl phy_bullet = new RigidBodyControl(2f);
     	/** Add physical ball to physics space. */
     	bullet.addControl(phy_bullet);
+    	phy_bullet.setUserObject(bullet);
     	bulletAppState.getPhysicsSpace().add(phy_bullet);
     	/** Accelerate the physcial ball to shoot it. */
     	phy_bullet.setLinearVelocity(cam.getDirection().normalize().mult(25));

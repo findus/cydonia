@@ -23,6 +23,7 @@ public class WorldStateUpdate extends AbstractMessage {
 			physic.setId(p.getId());
 			physic.setTranslation(p.getControl().getPhysicsLocation());
 			physic.setOrientation(p.getControl().getViewDirection());
+//			System.out.println(p.getControl().getPhysicsLocation());
 			
 			array[i] = physic;
 			i++;
