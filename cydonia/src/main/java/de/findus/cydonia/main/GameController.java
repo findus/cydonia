@@ -1,11 +1,8 @@
 package de.findus.cydonia.main;
 
-import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 
-import com.bulletphysics.linearmath.VectorUtil;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsView;
@@ -17,7 +14,6 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.material.Material;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -27,21 +23,19 @@ import com.jme3.network.Client;
 import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
 import com.jme3.niftygui.NiftyJmeDisplay;
-import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
-import com.jme3.texture.Texture;
 
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.MenuAppState;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.server.Bullet;
+import de.findus.cydonia.server.BulletPhysic;
 import de.findus.cydonia.server.Player;
 import de.findus.cydonia.server.PlayerPhysic;
 import de.findus.cydonia.server.WorldStateUpdate;
@@ -95,6 +89,7 @@ public class GameController extends Application implements ActionListener, Scree
     private Nifty nifty;
     private Player player;
     private HashMap<Integer, Player> players;
+    private HashMap<Long, Bullet> bullets;
     private ServerConnector connector;
     
     private LinkedList<WorldStateUpdate> updateQueue;
@@ -133,6 +128,9 @@ public class GameController extends Application implements ActionListener, Scree
 
         updateQueue = new LinkedList<WorldStateUpdate>();
         players = new HashMap<Integer, Player>();
+        bullets = new HashMap<Long, Bullet>();
+        
+        Bullet.setAssetManager(assetManager);
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -289,8 +287,24 @@ public class GameController extends Application implements ActionListener, Scree
     			}
     			if(p != null) {
     				p.setExactLoc(physic.getTranslation());
-//    				p.getControl().setPhysicsLocation(physic.getTranslation());
     				p.getControl().setViewDirection(physic.getOrientation());
+    			}
+    		}
+    		
+    		for (BulletPhysic physic : worldState.getBulletPhysics()) {
+    			Bullet b = bullets.get(physic.getId());
+    			if(b == null) {
+    				b = new Bullet(physic.getId());
+    				b.getControl().setPhysicsLocation(physic.getTranslation());
+    				bullets.put(b.getId(), b);
+    				bulletAppState.getPhysicsSpace().add(b.getControl());
+    				b.getModel().setLocalTranslation(physic.getTranslation());
+    				worldController.attachObject(b.getModel());
+    			}
+    			if(b != null) {	
+    				b.setExactLoc(physic.getTranslation());
+    				b.getControl().setPhysicsLocation(physic.getTranslation());
+    				b.getControl().setLinearVelocity(physic.getVelocity());
     			}
     		}
     	}
@@ -299,7 +313,6 @@ public class GameController extends Application implements ActionListener, Scree
 	@Override
 	public void messageReceived(Client source, Message m) {
     	if (m instanceof WorldStateUpdate) {
-    		// do something with the message
     		WorldStateUpdate worldState = (WorldStateUpdate) m;
     		updateQueue.offer(worldState);
 //    		System.out.println("messageReceived" + this.player.getId() + " " + this.connector.getConnectionId());
@@ -362,7 +375,6 @@ public class GameController extends Application implements ActionListener, Scree
 	public void collision(PhysicsCollisionEvent e) {
 		Spatial bullet = null;
 		Spatial other = null;
-		Object obj;
 		
 		try {
     	if(e.getNodeA() != null) {
@@ -400,25 +412,8 @@ public class GameController extends Application implements ActionListener, Scree
      * Creates a ball and throws it i view direction.
      */
 	public void attack() {
-    	Material mat_felsen = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture tex2 = assetManager.loadTexture(TEXTURES_PATH + "felsen1.jpg");
-        mat_felsen.setTexture("ColorMap", tex2);
-    	
-    	Sphere sphere = new Sphere(10, 10, 0.1f);
-    	Geometry bullet = new Geometry("bullet", sphere);
-    	bullet.setUserData("Sticky", Boolean.TRUE);
-    	bullet.setMaterial(mat_felsen);
-    	worldController.attachObject(bullet);
-    	/** Position the cannon ball  */
-    	bullet.setLocalTranslation(cam.getLocation().add(cam.getDirection().normalize()));
-    	/** Make the ball physcial with a mass > 0.0f */
-    	RigidBodyControl phy_bullet = new RigidBodyControl(2f);
-    	/** Add physical ball to physics space. */
-    	bullet.addControl(phy_bullet);
-    	phy_bullet.setUserObject(bullet);
-    	bulletAppState.getPhysicsSpace().add(phy_bullet);
-    	/** Accelerate the physcial ball to shoot it. */
-    	phy_bullet.setLinearVelocity(cam.getDirection().normalize().mult(25));
+    	AttackMessage msg = new AttackMessage();
+    	this.connector.sendMessage(msg);
     }
 	
 	/**

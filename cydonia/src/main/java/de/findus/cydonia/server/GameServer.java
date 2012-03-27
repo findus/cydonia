@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.jme3.app.Application;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.BulletAppState.ThreadingType;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
@@ -35,12 +37,13 @@ import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
+import de.findus.cydonia.main.AttackMessage;
 
 /**
  * @author Findus
  *
  */
-public class GameServer extends Application implements MessageListener<HostedConnection>, ConnectionListener {
+public class GameServer extends Application implements MessageListener<HostedConnection>, ConnectionListener, PhysicsCollisionListener {
 
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
@@ -64,7 +67,9 @@ public class GameServer extends Application implements MessageListener<HostedCon
     
     private HashMap<Integer, Player> players;
     
-    private BulletAppState bulletAppState;
+    private HashMap<Long, Bullet> bullets;
+    
+	private BulletAppState bulletAppState;
     
     private boolean senderRunning;
     
@@ -81,13 +86,18 @@ public class GameServer extends Application implements MessageListener<HostedCon
         super.initialize();
 
         this.players = new HashMap<Integer, Player>();
+        this.bullets = new HashMap<Long, Bullet>();
         updateQueue = new ConcurrentLinkedQueue<InputUpdate>();
+        
+        Bullet.setAssetManager(assetManager);
 
     	bulletAppState = new BulletAppState();
         bulletAppState.setThreadingType(ThreadingType.PARALLEL);
         stateManager.attach(bulletAppState);
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
+        
+        bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
         
         Box box1 = new Box( new Vector3f(0,3,0), 1,1,1);
@@ -107,25 +117,18 @@ public class GameServer extends Application implements MessageListener<HostedCon
         landscape = new RigidBodyControl(sceneShape, 0);
         scene.addControl(landscape);
         
-//        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 1.7f, 1);
-//        player = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
-//        player.setJumpSpeed(10);
-//        player.setFallSpeed(30);
-//        player.setGravity(30);
-//        player.setPhysicsLocation(new Vector3f(0, 10, 0));
-        
         rootNode.attachChild(scene);
         bulletAppState.getPhysicsSpace().add(landscape);
-//        bulletAppState.getPhysicsSpace().add(player);
-        
         
         try {
 			server = Network.createServer(6173);
 			server.start();
 			Serializer.registerClass(WorldStateUpdate.class);
 			Serializer.registerClass(PlayerPhysic.class);
+			Serializer.registerClass(BulletPhysic.class);
 			Serializer.registerClass(InputUpdate.class);
 			Serializer.registerClass(PlayerInputState.class);
+			Serializer.registerClass(AttackMessage.class);
 			
 			server.addMessageListener(this);
 			server.addConnectionListener(this);
@@ -196,10 +199,60 @@ public class GameServer extends Application implements MessageListener<HostedCon
 	}
 
 	@Override
+	public void collision(PhysicsCollisionEvent e) {
+		Spatial bullet = null;
+		Spatial other = null;
+		
+		try {
+    	if(e.getNodeA() != null) {
+    		Boolean sticky = e.getNodeA().getUserData("Sticky");
+    		if (sticky != null && sticky.booleanValue() == true) {
+    			bullet = e.getNodeA();
+    			other = e.getNodeB();
+			}
+		}else if (e.getNodeB() != null) {
+			Boolean sticky = e.getNodeB().getUserData("Sticky");
+			if (sticky != null && sticky.booleanValue() == true) {
+				bullet = e.getNodeB();
+				other = e.getNodeA();
+			}
+		}
+    	
+    	if(bullet != null && other != null) {
+    		rootNode.detachChild(bullet);
+    		bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
+    		bullet.removeControl(RigidBodyControl.class);
+    		if(other != null) {
+    			if (other instanceof Node) {
+					((Node) other).attachChild(bullet);
+				}else {
+					other.getParent().attachChild(bullet);
+				}
+    		}
+    	}
+		}catch ( Exception ex) {
+			System.out.println("");
+		}
+	}
+
+	@Override
 	public void messageReceived(HostedConnection source, Message m) {
 		if (m instanceof InputUpdate) {
     		InputUpdate inputUpdate = (InputUpdate) m;
     		updateQueue.add(inputUpdate);
+    	}else if(m instanceof AttackMessage) {
+    		Player p = players.get(source.getId());
+    		Vector3f pos = p.getControl().getPhysicsLocation();
+    		Vector3f dir = p.getControl().getViewDirection();
+    		
+    		Bullet bul = Bullet.createBullet();
+    		bul.getModel().setLocalTranslation(pos.add(dir.normalize()));
+        	rootNode.attachChild(bul.getModel());
+        	bul.getControl().setPhysicsLocation(pos.add(dir.normalize()));
+        	bulletAppState.getPhysicsSpace().add(bul.getControl());
+        	bul.getControl().setLinearVelocity(dir.normalize().mult(25));
+        	
+        	bullets.put(bul.getId(), bul);
     	}
 	}
 
@@ -229,7 +282,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		@Override
 		public void run() {
 			while(senderRunning) {
-				WorldStateUpdate m = WorldStateUpdate.getUpdateForPlayers(players.values());
+				WorldStateUpdate m = WorldStateUpdate.getUpdate(players.values(), bullets.values());
 				m.setReliable(false);
 				
 				for (HostedConnection conn : server.getConnections()) {

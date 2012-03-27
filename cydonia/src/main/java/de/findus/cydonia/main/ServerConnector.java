@@ -6,10 +6,12 @@ package de.findus.cydonia.main;
 import java.io.IOException;
 
 import com.jme3.network.Client;
+import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
 import com.jme3.network.serializing.Serializer;
 
+import de.findus.cydonia.server.BulletPhysic;
 import de.findus.cydonia.server.InputUpdate;
 import de.findus.cydonia.server.PlayerInputState;
 import de.findus.cydonia.server.PlayerPhysic;
@@ -45,8 +47,11 @@ public class ServerConnector {
 			client = Network.connectToServer(address, port);
 			Serializer.registerClass(WorldStateUpdate.class);
 			Serializer.registerClass(PlayerPhysic.class);
+			Serializer.registerClass(BulletPhysic.class);
 			Serializer.registerClass(InputUpdate.class);
 			Serializer.registerClass(PlayerInputState.class);
+			Serializer.registerClass(AttackMessage.class);
+			
 			client.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -90,6 +95,14 @@ public class ServerConnector {
 	 */
 	public int getConnectionId() {
 		return client.getId();
+	}
+	
+	public boolean sendMessage(Message msg) {
+		if(client.isConnected()) {
+			client.send(msg);
+			return true;
+		}
+		return false;
 	}
 	
 	/**
