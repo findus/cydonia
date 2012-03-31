@@ -26,7 +26,6 @@ public class ServerConnector {
 	private Client client;
 	private GameController controller;
 	private Thread senderLoop;
-	private boolean senderRunning = false;
 	
 	/**
 	 * Constructor.
@@ -34,7 +33,6 @@ public class ServerConnector {
 	 */
 	public ServerConnector(GameController controller) {
 		this.controller = controller;
-		this.senderLoop = new Thread(new InputSenderLoop());
 	}
 	
 	/**
@@ -70,7 +68,7 @@ public class ServerConnector {
 	 * Starts the input sender loop.
 	 */
 	public void startInputSender() {
-		this.senderRunning = true;
+		this.senderLoop = new Thread(new InputSenderLoop());
 		this.senderLoop.start();
 	}
 	
@@ -78,7 +76,7 @@ public class ServerConnector {
 	 * Stops the input sender loop.
 	 */
 	public void stopInputSender() {
-		this.senderRunning = false;
+		this.senderLoop.interrupt();
 	}
 	
 	/**
@@ -114,7 +112,7 @@ public class ServerConnector {
 
 		@Override
 		public void run() {
-			while(senderRunning) {
+			while(!Thread.interrupted()) {
 				InputUpdate m = new InputUpdate();
 				m.setInputs(controller.getPlayer().getInputState());
 				m.setPlayerId(controller.getPlayer().getId());
@@ -127,8 +125,7 @@ public class ServerConnector {
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					break;
 				}
 			}
 		}

@@ -21,6 +21,11 @@ import com.jme3.scene.Spatial;
 public class WorldController {
 	
 	/**
+	 * The AssetManager.
+	 */
+	protected AssetManager assetManager;
+	
+	/**
 	 * Root Node of the virtual world.
 	 */
 	protected Node rootNode = new Node("Root Node");
@@ -41,7 +46,7 @@ public class WorldController {
 	 * Loads the world.
 	 * @param assetManager an instance of AssetManager
 	 */
-	public void loadWorld(AssetManager assetManager) {
+	public void loadWorld() {
 		Level level = new Level1();
         Spatial scene = null;
         scene = level.getScene(assetManager);
@@ -109,5 +114,9 @@ public class WorldController {
         al.setColor(ColorRGBA.White.mult(1.3f));
         rootNode.addLight(al);
     }
+
+	public void setAssetManager(AssetManager assetManager) {
+		this.assetManager = assetManager;
+	}
 
 }

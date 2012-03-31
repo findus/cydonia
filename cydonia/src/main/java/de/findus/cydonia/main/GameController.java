@@ -50,7 +50,7 @@ import de.lessvoid.nifty.screen.ScreenController;
  * @author Findus
  */
 public class GameController extends Application implements ActionListener, ScreenController, MessageListener<Client>, PhysicsCollisionListener{
-
+	
 	public static final String TEXTURES_PATH = "de/findus/cydonia/textures/";
 	
 	/**
@@ -67,6 +67,8 @@ public class GameController extends Application implements ActionListener, Scree
     
     protected boolean showSettings = true;
     
+    protected GameState gamestate;
+    
     protected WorldController worldController;
     
     protected Node guiNode = new Node("Gui Node");
@@ -81,7 +83,6 @@ public class GameController extends Application implements ActionListener, Scree
     private BulletAppState bulletAppState;
     private MenuAppState menuAppState;
     private GameInputAppState gameInputAppState;
-    
     
     private Vector3f walkDirection = new Vector3f();
     private boolean left=false, right=false, up=false, down=false;
@@ -117,14 +118,14 @@ public class GameController extends Application implements ActionListener, Scree
     
     @Override
     public void stop() {
-    	connector.stopInputSender();
-    	connector.disconnectFromServer();
     	super.stop();
     }
 
     @Override
     public void initialize() {
         super.initialize();
+        
+        this.gamestate = GameState.LOBBY;
 
         updateQueue = new LinkedList<WorldStateUpdate>();
         players = new HashMap<Integer, Player>();
@@ -137,7 +138,8 @@ public class GameController extends Application implements ActionListener, Scree
         loadFPSText();
         loadStatsView();
         worldController = new WorldController();
-        worldController.loadWorld(assetManager);
+        worldController.setAssetManager(assetManager);
+        worldController.loadWorld();
         viewPort.attachScene(worldController.getRootNode());
         guiViewPort.attachScene(guiNode);
         
@@ -148,7 +150,8 @@ public class GameController extends Application implements ActionListener, Scree
     	nifty = niftyDisplay.getNifty();
     	guiViewPort.addProcessor(niftyDisplay);
 
-    	menuAppState = new MenuAppState(this);
+    	menuAppState = new MenuAppState();
+    	menuAppState.initialize(stateManager, this);
     	stateManager.attach(menuAppState);
     	
     	gameInputAppState = new GameInputAppState(this);
@@ -197,6 +200,7 @@ public class GameController extends Application implements ActionListener, Scree
      */
     public void startGame() {
     	stateManager.detach(menuAppState);
+    	gamestate = GameState.RUNNING;
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	connector.connectToServer("localhost", 6173);
@@ -217,6 +221,7 @@ public class GameController extends Application implements ActionListener, Scree
      */
     public void resumeGame() {
     	stateManager.detach(menuAppState);
+    	gamestate = GameState.RUNNING;
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	connector.startInputSender();
@@ -228,8 +233,15 @@ public class GameController extends Application implements ActionListener, Scree
     public void pauseGame() {
     	bulletAppState.setEnabled(false);
     	stateManager.detach(gameInputAppState);
+    	gamestate = GameState.PAUSED;
     	stateManager.attach(menuAppState);
     	connector.stopInputSender();
+    }
+    
+    public void stopGame() {
+    	connector.stopInputSender();
+    	connector.disconnectFromServer();
+    	stop();
     }
     
     @Override
@@ -472,6 +484,10 @@ public class GameController extends Application implements ActionListener, Scree
 		// TODO Auto-generated method stub
 	}
 	
+	public GameState getGamestate() {
+		return gamestate;
+	}
+
 	public Player getPlayer() {
 		return this.player;
 	}

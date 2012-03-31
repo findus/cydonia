@@ -23,31 +23,34 @@ public class MenuAppState extends AbstractAppState {
 	public static final String MENU_PATH = "de/findus/cydonia/gui/menu/";
 	
 	private GameController gameController;
-
-
-	/**
-	 * Constructor.
-	 * @param app the game controller
-	 */
-	public MenuAppState(GameController app) {
-		this.gameController = app;
-	}
 	
 	@Override
 	public void initialize(AppStateManager stateManager, Application app) {
 		super.initialize(stateManager, app);
-		/** init the screen */    
+		this.gameController = (GameController) app;
+		gameController.getNifty().registerScreenController(gameController);
+		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
 	}
 
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
-		gameController.getNifty().fromXml(MENU_PATH + "menu.xml", "menu", gameController);
+		switch (gameController.getGamestate()) {
+		case LOBBY:
+			gameController.getNifty().gotoScreen("lobbymenu");
+			break;
+
+		case PAUSED:
+			gameController.getNifty().gotoScreen("pausemenu");
+			
+		default:
+			break;
+		}
 		gameController.getInputManager().setCursorVisible(true);
 	}
 
 	@Override
 	public void stateDetached(AppStateManager stateManager) {
-		gameController.getNifty().removeScreen("menu");
+		gameController.getNifty().gotoScreen("none");
 	}
 
 }
