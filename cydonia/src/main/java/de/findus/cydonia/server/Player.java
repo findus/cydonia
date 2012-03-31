@@ -11,6 +11,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.plugins.blender.BlenderLoader;
+import com.jme3.scene.plugins.blender.BlenderModelLoader;
 import com.jme3.scene.shape.Cylinder;
 
 import de.findus.cydonia.main.GameController;
@@ -42,7 +44,8 @@ public class Player {
 		
 		inputs = new PlayerInputState();
 		
-		model = (Spatial) assetManager.loadAsset("Models/Ferrari/Car.scene");		
+//		model = (Spatial) assetManager.loadAsset("Models/Ferrari/Car.scene");
+		model = (Spatial) assetManager.loadAsset("Models/Sinbad/Sinbad.j3o");
         
 //        Geometry geo = new Geometry("Player_" + id, new Cylinder(5, 5, 1f, 1.7f));
 //        Material mat = new Material(assetManager, 
@@ -51,7 +54,7 @@ public class Player {
 //        geo.setMaterial(mat);
 //        model = geo;
         
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 1.7f, 1);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 1.6f, 1);
         control = new CharacterControl(capsuleShape, GameController.MAX_STEP_HEIGHT);
         control.setJumpSpeed(10);
         control.setFallSpeed(30);
