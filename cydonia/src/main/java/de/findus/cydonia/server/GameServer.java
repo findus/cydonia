@@ -210,7 +210,8 @@ public class GameServer extends Application implements MessageListener<HostedCon
     			bullet = e.getNodeA();
     			other = e.getNodeB();
 			}
-		}else if (e.getNodeB() != null) {
+		}
+    	if (e.getNodeB() != null) {
 			Boolean sticky = e.getNodeB().getUserData("Sticky");
 			if (sticky != null && sticky.booleanValue() == true) {
 				bullet = e.getNodeB();
@@ -246,9 +247,9 @@ public class GameServer extends Application implements MessageListener<HostedCon
     		Vector3f dir = p.getControl().getViewDirection();
     		
     		Bullet bul = Bullet.createBullet();
-    		bul.getModel().setLocalTranslation(pos.add(dir.normalize()));
+    		bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
         	rootNode.attachChild(bul.getModel());
-        	bul.getControl().setPhysicsLocation(pos.add(dir.normalize()));
+        	bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
         	bulletAppState.getPhysicsSpace().add(bul.getControl());
         	bul.getControl().setLinearVelocity(dir.normalize().mult(25));
         	

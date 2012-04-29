@@ -12,6 +12,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
+import de.findus.cydonia.server.Player;
+
 /**
  * This is the central controller for the games virtual world.
  * It loads the scene and administrates the root node.

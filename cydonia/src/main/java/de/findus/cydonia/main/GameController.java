@@ -160,11 +160,12 @@ public class GameController extends Application implements ActionListener, Scree
     	bulletAppState = new BulletAppState();
     	bulletAppState.setEnabled(false);
         bulletAppState.setThreadingType(ThreadingType.PARALLEL);
+        bulletAppState.setThreadingType(ThreadingType.SEQUENTIAL);
         stateManager.attach(bulletAppState);
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         
-//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         
@@ -188,9 +189,14 @@ public class GameController extends Application implements ActionListener, Scree
         bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
         bulletAppState.getPhysicsSpace().add(player.getControl());
         player.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-//        worldController.attachObject(player.getModel());
+        
+        Player p2 = new Player(-1, assetManager);
+        bulletAppState.getPhysicsSpace().add(p2.getControl());
+        p2.getControl().setPhysicsLocation(new Vector3f(5, 10, 0));
+        worldController.attachObject(p2.getModel());
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
+        bulletAppState.getPhysicsSpace().addCollisionObject(p2.getControl());
         
         connector = new ServerConnector(this);
     }
@@ -388,6 +394,13 @@ public class GameController extends Application implements ActionListener, Scree
 		Spatial bullet = null;
 		Spatial other = null;
 		
+//		if(e.getNodeA() != null) {
+//			System.out.println("Node A: " + e.getNodeA().getName());
+//		}
+//		if(e.getNodeB() != null) {
+//			System.out.println("Node B: " + e.getNodeB().getName());
+//		}
+		
 		try {
     	if(e.getNodeA() != null) {
     		Boolean sticky = e.getNodeA().getUserData("Sticky");
@@ -395,13 +408,18 @@ public class GameController extends Application implements ActionListener, Scree
     			bullet = e.getNodeA();
     			other = e.getNodeB();
 			}
-		}else if (e.getNodeB() != null) {
+		}
+    	if (e.getNodeB() != null) {
 			Boolean sticky = e.getNodeB().getUserData("Sticky");
 			if (sticky != null && sticky.booleanValue() == true) {
 				bullet = e.getNodeB();
 				other = e.getNodeA();
 			}
 		}
+    	
+    	if(bullet != null) {
+    		System.out.println();
+    	}
     	
     	if(bullet != null && other != null) {
     		worldController.detachObject(bullet);
