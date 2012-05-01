@@ -37,7 +37,10 @@ import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
-import de.findus.cydonia.main.AttackMessage;
+import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.HitMessage;
+import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.WorldStateMessage;
 
 /**
  * @author Findus
@@ -73,7 +76,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
     
     private boolean senderRunning;
     
-    private ConcurrentLinkedQueue<InputUpdate> updateQueue;
+    private ConcurrentLinkedQueue<PlayerInputMessage> updateQueue;
     
     /**
      * Used for moving players.
@@ -87,7 +90,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 
         this.players = new HashMap<Integer, Player>();
         this.bullets = new HashMap<Long, Bullet>();
-        updateQueue = new ConcurrentLinkedQueue<InputUpdate>();
+        updateQueue = new ConcurrentLinkedQueue<PlayerInputMessage>();
         
         Bullet.setAssetManager(assetManager);
 
@@ -123,12 +126,13 @@ public class GameServer extends Application implements MessageListener<HostedCon
         try {
 			server = Network.createServer(6173);
 			server.start();
-			Serializer.registerClass(WorldStateUpdate.class);
+			Serializer.registerClass(WorldStateMessage.class);
 			Serializer.registerClass(PlayerPhysic.class);
 			Serializer.registerClass(BulletPhysic.class);
-			Serializer.registerClass(InputUpdate.class);
+			Serializer.registerClass(PlayerInputMessage.class);
 			Serializer.registerClass(PlayerInputState.class);
 			Serializer.registerClass(AttackMessage.class);
+			Serializer.registerClass(HitMessage.class);
 			
 			server.addMessageListener(this);
 			server.addConnectionListener(this);
@@ -170,7 +174,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 
 	private void updateInputs() {
 		while (!updateQueue.isEmpty()) {
-			InputUpdate inputUpdate = updateQueue.poll();
+			PlayerInputMessage inputUpdate = updateQueue.poll();
 			Player p = players.get(inputUpdate.getPlayerId());
 			if(p != null) {
 				p.setInputState(inputUpdate.getInputs());
@@ -202,51 +206,79 @@ public class GameServer extends Application implements MessageListener<HostedCon
 	public void collision(PhysicsCollisionEvent e) {
 		Spatial bullet = null;
 		Spatial other = null;
-		
-		try {
-    	if(e.getNodeA() != null) {
-    		Boolean sticky = e.getNodeA().getUserData("Sticky");
-    		if (sticky != null && sticky.booleanValue() == true) {
-    			bullet = e.getNodeA();
-    			other = e.getNodeB();
+
+		if(e.getNodeA() != null) {
+			Boolean sticky = e.getNodeA().getUserData("Sticky");
+			if (sticky != null && sticky.booleanValue() == true) {
+				bullet = e.getNodeA();
+				other = e.getNodeB();
 			}
 		}
-    	if (e.getNodeB() != null) {
+		if (e.getNodeB() != null) {
 			Boolean sticky = e.getNodeB().getUserData("Sticky");
 			if (sticky != null && sticky.booleanValue() == true) {
 				bullet = e.getNodeB();
 				other = e.getNodeA();
 			}
 		}
-    	
-    	if(bullet != null && other != null) {
-    		rootNode.detachChild(bullet);
-    		bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
-    		bullet.removeControl(RigidBodyControl.class);
-    		if(other != null) {
-    			if (other instanceof Node) {
-					((Node) other).attachChild(bullet);
-				}else {
-					other.getParent().attachChild(bullet);
+
+		if(bullet != null && other != null) {
+			if(other.getName().startsWith("player")) {
+				int playerid = Integer.parseInt(other.getName().substring(6));
+				this.hitPlayer(playerid);
+			}else {
+				rootNode.detachChild(bullet);
+				bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
+				bullet.removeControl(RigidBodyControl.class);
+				if(other != null) {
+					if (other instanceof Node) {
+						((Node) other).attachChild(bullet);
+					}else {
+						other.getParent().attachChild(bullet);
+					}
 				}
-    		}
-    	}
-		}catch ( Exception ex) {
-			System.out.println("");
+			}
 		}
+	}
+	
+	private void hitPlayer(int id) {
+		Player p = players.get(id);
+		if(p == null) {
+			return;
+		}
+		double hp = p.getHealthpoints();
+		hp -= 20;
+		if(hp <= 0) {
+			hp = 0;
+			this.killPlayer(id);
+		}
+		p.setHealthpoints(hp);
+		
+		HitMessage hit = new HitMessage();
+		hit.setPlayerid(id);
+		hit.setHitpoints(20);
+		
+		for(HostedConnection con : server.getConnections()) {
+			con.send(hit);
+		}
+	}
+	
+	private void killPlayer(int id) {
+		
 	}
 
 	@Override
 	public void messageReceived(HostedConnection source, Message m) {
-		if (m instanceof InputUpdate) {
-    		InputUpdate inputUpdate = (InputUpdate) m;
+		if (m instanceof PlayerInputMessage) {
+    		PlayerInputMessage inputUpdate = (PlayerInputMessage) m;
     		updateQueue.add(inputUpdate);
     	}else if(m instanceof AttackMessage) {
-    		Player p = players.get(source.getId());
+    		AttackMessage attack = (AttackMessage) m;
+    		Player p = players.get(attack.getPlayerid());
     		Vector3f pos = p.getControl().getPhysicsLocation();
     		Vector3f dir = p.getControl().getViewDirection();
     		
-    		Bullet bul = Bullet.createBullet();
+    		Bullet bul = Bullet.createBullet(p.getId());
     		bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
         	rootNode.attachChild(bul.getModel());
         	bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
@@ -254,6 +286,15 @@ public class GameServer extends Application implements MessageListener<HostedCon
         	bul.getControl().setLinearVelocity(dir.normalize().mult(25));
         	
         	bullets.put(bul.getId(), bul);
+        	
+        	BulletPhysic physic = new BulletPhysic();
+        	physic.setId(bul.getId());
+        	physic.setTranslation(bul.getControl().getPhysicsLocation());
+        	physic.setVelocity(bul.getControl().getLinearVelocity());
+        	attack.setPhysic(physic);
+        	for(HostedConnection con : server.getConnections()) {
+        		con.send(attack);
+        	}
     	}
 	}
 
@@ -283,7 +324,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		@Override
 		public void run() {
 			while(senderRunning) {
-				WorldStateUpdate m = WorldStateUpdate.getUpdate(players.values(), bullets.values());
+				WorldStateMessage m = WorldStateMessage.getUpdate(players.values(), bullets.values());
 				m.setReliable(false);
 				
 				for (HostedConnection conn : server.getConnections()) {

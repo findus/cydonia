@@ -9,6 +9,6 @@ package de.findus.cydonia.main;
  */
 public enum GameState {
 	
-	LOADING, LOBBY, RUNNING, PAUSED
+	LOADING, LOBBY, RUNNING, PAUSED, SPECTATE
 	
 }

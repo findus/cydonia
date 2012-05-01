@@ -17,7 +17,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 
 import de.findus.cydonia.main.GameController;
-import de.findus.cydonia.server.InputUpdate;
+import de.findus.cydonia.messages.PlayerInputMessage;
 
 /**
  * This Appstate controls user inputs and maps them to commands.
@@ -90,7 +90,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         }else if (name.equals(SimpleApplication.INPUT_MAPPING_EXIT)) {
             gameController.pauseGame();
         }
-		InputUpdate m = new InputUpdate();
+		PlayerInputMessage m = new PlayerInputMessage();
 		m.setInputs(gameController.getPlayer().getInputState());
 	}
 	

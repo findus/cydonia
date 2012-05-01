@@ -34,11 +34,13 @@ import com.jme3.system.JmeSystem;
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.MenuAppState;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.HitMessage;
+import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.server.Bullet;
 import de.findus.cydonia.server.BulletPhysic;
 import de.findus.cydonia.server.Player;
 import de.findus.cydonia.server.PlayerPhysic;
-import de.findus.cydonia.server.WorldStateUpdate;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
@@ -93,7 +95,7 @@ public class GameController extends Application implements ActionListener, Scree
     private HashMap<Long, Bullet> bullets;
     private ServerConnector connector;
     
-    private LinkedList<WorldStateUpdate> updateQueue;
+    private LinkedList<Message> updateQueue;
     
     @Override
     public void start() {
@@ -127,7 +129,7 @@ public class GameController extends Application implements ActionListener, Scree
         
         this.gamestate = GameState.LOBBY;
 
-        updateQueue = new LinkedList<WorldStateUpdate>();
+        updateQueue = new LinkedList<Message>();
         players = new HashMap<Integer, Player>();
         bullets = new HashMap<Long, Bullet>();
         
@@ -182,7 +184,6 @@ public class GameController extends Application implements ActionListener, Scree
 //        BasicShadowRenderer bsr = new BasicShadowRenderer(assetManager, 256);
 //        bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
 //        viewPort.addProcessor(bsr);
-        
         
         player = new Player(-1, assetManager);
         
@@ -292,49 +293,53 @@ public class GameController extends Application implements ActionListener, Scree
     
     private void updateWorldState() {
     	while (!updateQueue.isEmpty()) {
-    		WorldStateUpdate worldState = updateQueue.poll();
+    		Message msg = updateQueue.poll();
+    		if(msg instanceof WorldStateMessage) {
+    			WorldStateMessage worldState = (WorldStateMessage) msg;
 
-    		for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
-    			Player p = players.get(physic.getId());
-    			if(p == null) {
-    				p = new Player(physic.getId(), assetManager);
-    				p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
-    				players.put(p.getId(), p);
-    				bulletAppState.getPhysicsSpace().add(p.getControl());
-    				worldController.attachObject(p.getModel());
+    			for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
+    				Player p = players.get(physic.getId());
+    				if(p == null) {
+    					p = new Player(physic.getId(), assetManager);
+    					p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
+    					players.put(p.getId(), p);
+    					bulletAppState.getPhysicsSpace().add(p.getControl());
+    					worldController.attachObject(p.getModel());
+    				}
+    				if(p != null) {
+    					p.setExactLoc(physic.getTranslation());
+    					p.getControl().setViewDirection(physic.getOrientation());
+    				}
     			}
-    			if(p != null) {
-    				p.setExactLoc(physic.getTranslation());
-    				p.getControl().setViewDirection(physic.getOrientation());
+
+    			for (BulletPhysic physic : worldState.getBulletPhysics()) {
+    				Bullet b = bullets.get(physic.getId());
+    				if(b != null) {	
+    					b.setExactLoc(physic.getTranslation());
+    					b.getControl().setPhysicsLocation(physic.getTranslation());
+    					b.getControl().setLinearVelocity(physic.getVelocity());
+    				}
     			}
-    		}
-    		
-    		for (BulletPhysic physic : worldState.getBulletPhysics()) {
-    			Bullet b = bullets.get(physic.getId());
-    			if(b == null) {
-    				b = new Bullet(physic.getId());
-    				b.getControl().setPhysicsLocation(physic.getTranslation());
-    				bullets.put(b.getId(), b);
-    				bulletAppState.getPhysicsSpace().add(b.getControl());
-    				b.getModel().setLocalTranslation(physic.getTranslation());
-    				worldController.attachObject(b.getModel());
-    			}
-    			if(b != null) {	
-    				b.setExactLoc(physic.getTranslation());
-    				b.getControl().setPhysicsLocation(physic.getTranslation());
-    				b.getControl().setLinearVelocity(physic.getVelocity());
-    			}
+    		}else if(msg instanceof AttackMessage) {
+    			AttackMessage attack = (AttackMessage) msg;
+    			int playerid = attack.getPlayerid();
+    			BulletPhysic physic = attack.getPhysic();
+    			Bullet b = new Bullet(physic.getId(), playerid);
+    			b.getControl().setPhysicsLocation(physic.getTranslation());
+    			bullets.put(b.getId(), b);
+    			bulletAppState.getPhysicsSpace().add(b.getControl());
+    			b.getModel().setLocalTranslation(physic.getTranslation());
+    			worldController.attachObject(b.getModel());
+    		}else if(msg instanceof HitMessage) {
+    			HitMessage hit = (HitMessage) msg;
+    			hitPlayer(hit.getPlayerid());
     		}
     	}
     }
 
 	@Override
 	public void messageReceived(Client source, Message m) {
-    	if (m instanceof WorldStateUpdate) {
-    		WorldStateUpdate worldState = (WorldStateUpdate) m;
-    		updateQueue.offer(worldState);
-//    		System.out.println("messageReceived" + this.player.getId() + " " + this.connector.getConnectionId());
-    	}
+    		updateQueue.offer(m);
     }
 
     /**
@@ -391,52 +396,41 @@ public class GameController extends Application implements ActionListener, Scree
 
     @Override
 	public void collision(PhysicsCollisionEvent e) {
-		Spatial bullet = null;
-		Spatial other = null;
-		
-//		if(e.getNodeA() != null) {
-//			System.out.println("Node A: " + e.getNodeA().getName());
-//		}
-//		if(e.getNodeB() != null) {
-//			System.out.println("Node B: " + e.getNodeB().getName());
-//		}
-		
-		try {
+    	Spatial bullet = null;
+    	Spatial other = null;
+
     	if(e.getNodeA() != null) {
     		Boolean sticky = e.getNodeA().getUserData("Sticky");
     		if (sticky != null && sticky.booleanValue() == true) {
     			bullet = e.getNodeA();
     			other = e.getNodeB();
-			}
-		}
-    	if (e.getNodeB() != null) {
-			Boolean sticky = e.getNodeB().getUserData("Sticky");
-			if (sticky != null && sticky.booleanValue() == true) {
-				bullet = e.getNodeB();
-				other = e.getNodeA();
-			}
-		}
-    	
-    	if(bullet != null) {
-    		System.out.println();
-    	}
-    	
-    	if(bullet != null && other != null) {
-    		worldController.detachObject(bullet);
-    		bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
-    		bullet.removeControl(RigidBodyControl.class);
-    		if(other != null) {
-    			if (other instanceof Node) {
-					((Node) other).attachChild(bullet);
-				}else {
-					other.getParent().attachChild(bullet);
-				}
     		}
     	}
-		}catch ( Exception ex) {
-			System.out.println("");
-		}
-	}
+    	if (e.getNodeB() != null) {
+    		Boolean sticky = e.getNodeB().getUserData("Sticky");
+    		if (sticky != null && sticky.booleanValue() == true) {
+    			bullet = e.getNodeB();
+    			other = e.getNodeA();
+    		}
+    	}
+
+    	if(bullet != null && other != null) {
+    		if(other.getName().startsWith("player")) {
+    			// Hit Player not here. only when message from server.
+    		}else {
+    			worldController.detachObject(bullet);
+    			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
+    			bullet.removeControl(RigidBodyControl.class);
+    			if(other != null) {
+    				if (other instanceof Node) {
+    					((Node) other).attachChild(bullet);
+    				}else {
+    					other.getParent().attachChild(bullet);
+    				}
+    			}
+    		}
+    	}
+    }
 
 	/**
      * Creates a ball and throws it i view direction.
@@ -445,6 +439,27 @@ public class GameController extends Application implements ActionListener, Scree
     	AttackMessage msg = new AttackMessage();
     	this.connector.sendMessage(msg);
     }
+	
+	private void hitPlayer(int id) {
+		Player p = players.get(id);
+		if(p == null) {
+			return;
+		}
+		double hp = p.getHealthpoints();
+		hp -= 20;
+		if(hp <= 0) {
+			hp = 0;
+			this.killPlayer(id);
+		}
+		p.setHealthpoints(hp);
+	}
+	
+	private void killPlayer(int id) {
+		if(id == player.getId()) {
+			pauseGame();
+			
+		}
+	}
 	
 	/**
 	 * Attaches FPS statistics to guiNode and displays it on the screen.

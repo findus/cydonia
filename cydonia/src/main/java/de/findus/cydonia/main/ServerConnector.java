@@ -11,11 +11,13 @@ import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
 import com.jme3.network.serializing.Serializer;
 
+import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.HitMessage;
+import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.server.BulletPhysic;
-import de.findus.cydonia.server.InputUpdate;
 import de.findus.cydonia.server.PlayerInputState;
 import de.findus.cydonia.server.PlayerPhysic;
-import de.findus.cydonia.server.WorldStateUpdate;
 
 /**
  * The central connection controller.
@@ -43,12 +45,13 @@ public class ServerConnector {
 	public void connectToServer(String address, int port) {
 		try {
 			client = Network.connectToServer(address, port);
-			Serializer.registerClass(WorldStateUpdate.class);
+			Serializer.registerClass(WorldStateMessage.class);
 			Serializer.registerClass(PlayerPhysic.class);
 			Serializer.registerClass(BulletPhysic.class);
-			Serializer.registerClass(InputUpdate.class);
+			Serializer.registerClass(PlayerInputMessage.class);
 			Serializer.registerClass(PlayerInputState.class);
 			Serializer.registerClass(AttackMessage.class);
+			Serializer.registerClass(HitMessage.class);
 			
 			client.start();
 		} catch (IOException e) {
@@ -113,7 +116,7 @@ public class ServerConnector {
 		@Override
 		public void run() {
 			while(!Thread.interrupted()) {
-				InputUpdate m = new InputUpdate();
+				PlayerInputMessage m = new PlayerInputMessage();
 				m.setInputs(controller.getPlayer().getInputState());
 				m.setPlayerId(controller.getPlayer().getId());
 				m.setViewDir(controller.getPlayer().getControl().getViewDirection());

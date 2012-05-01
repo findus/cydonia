@@ -29,12 +29,14 @@ public class Bullet {
 	}
 
 
-	public static Bullet createBullet() {
-		return new Bullet(++counter);
+	public static Bullet createBullet(int playerid) {
+		return new Bullet(++counter, playerid);
 	}
 	
 	
 	private long id;
+	
+	private int playerid;
 	
 	private Vector3f exactLoc = new Vector3f();
 	
@@ -45,8 +47,9 @@ public class Bullet {
 	/**
 	 * Constructs a new Player and inits its physics and model.
 	 */
-	public Bullet(long id) {
+	public Bullet(long id, int playerid) {
 		this.id = id;	
+		this.playerid = playerid;
         
 		Material mat_felsen = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture tex2 = assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
@@ -100,6 +103,16 @@ public class Bullet {
 
 	public void setExactLoc(Vector3f loc) {
 		this.exactLoc = loc;
+	}
+
+
+	public int getPlayerid() {
+		return playerid;
+	}
+
+
+	public void setPlayerid(int playerid) {
+		this.playerid = playerid;
 	}
 
 }

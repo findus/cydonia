@@ -6,16 +6,8 @@ package de.findus.cydonia.server;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
-import com.jme3.bullet.control.GhostControl;
-import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.plugins.blender.BlenderLoader;
-import com.jme3.scene.plugins.blender.BlenderModelLoader;
-import com.jme3.scene.shape.Cylinder;
 
 import de.findus.cydonia.main.GameController;
 
@@ -32,9 +24,10 @@ public class Player {
 	private Vector3f exactLoc = new Vector3f();
 	
 	private CharacterControl control;
-	private GhostControl ghost;
 	
 	private Spatial model;
+	
+	private double healthpoints = 100;
 	
 	
 	/**
@@ -114,7 +107,13 @@ public class Player {
 	public void setExactLoc(Vector3f smooth) {
 		this.exactLoc = smooth;
 	}
-	
-	
+
+	public double getHealthpoints() {
+		return healthpoints;
+	}
+
+	public void setHealthpoints(double healthpoints) {
+		this.healthpoints = healthpoints;
+	}
 
 }
