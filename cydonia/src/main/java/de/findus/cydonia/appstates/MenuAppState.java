@@ -37,15 +37,22 @@ public class MenuAppState extends AbstractAppState {
 		switch (gameController.getGamestate()) {
 		case LOBBY:
 			gameController.getNifty().gotoScreen("lobbymenu");
+			gameController.getInputManager().setCursorVisible(true);
 			break;
 
 		case PAUSED:
 			gameController.getNifty().gotoScreen("pausemenu");
+			gameController.getInputManager().setCursorVisible(true);
+			break;
+			
+		case DEAD:
+			gameController.getNifty().gotoScreen("deadscreen");
+			gameController.getInputManager().setCursorVisible(false);
+			break;
 			
 		default:
 			break;
 		}
-		gameController.getInputManager().setCursorVisible(true);
 	}
 
 	@Override

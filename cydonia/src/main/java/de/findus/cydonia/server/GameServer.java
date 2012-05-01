@@ -40,6 +40,7 @@ import de.findus.cydonia.level.Level1;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 
 /**
@@ -133,6 +134,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			Serializer.registerClass(PlayerInputState.class);
 			Serializer.registerClass(AttackMessage.class);
 			Serializer.registerClass(HitMessage.class);
+			Serializer.registerClass(RespawnMessage.class);
 			
 			server.addMessageListener(this);
 			server.addConnectionListener(this);
@@ -223,13 +225,14 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		}
 
 		if(bullet != null && other != null) {
+			rootNode.detachChild(bullet);
+			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
+			bullet.removeControl(RigidBodyControl.class);
 			if(other.getName().startsWith("player")) {
 				int playerid = Integer.parseInt(other.getName().substring(6));
+				System.out.println("detected hit at player: " + playerid);
 				this.hitPlayer(playerid);
 			}else {
-				rootNode.detachChild(bullet);
-				bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
-				bullet.removeControl(RigidBodyControl.class);
 				if(other != null) {
 					if (other instanceof Node) {
 						((Node) other).attachChild(bullet);
@@ -264,6 +267,9 @@ public class GameServer extends Application implements MessageListener<HostedCon
 	}
 	
 	private void killPlayer(int id) {
+		Player p = players.get(id);
+		bulletAppState.getPhysicsSpace().remove(p.getControl());
+		rootNode.detachChild(p.getModel());
 		
 	}
 
@@ -295,6 +301,18 @@ public class GameServer extends Application implements MessageListener<HostedCon
         	for(HostedConnection con : server.getConnections()) {
         		con.send(attack);
         	}
+    	}else if(m instanceof RespawnMessage) {
+    		RespawnMessage respawn = (RespawnMessage) m;
+    		int playerid = respawn.getPlayerid();
+    		Player p = players.get(playerid);
+    		p.setHealthpoints(100);
+    		bulletAppState.getPhysicsSpace().add(p.getControl());
+    		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+    		rootNode.attachChild(p.getModel());
+    		
+    		for (HostedConnection con : server.getConnections()) {
+				con.send(respawn);
+			}
     	}
 	}
 

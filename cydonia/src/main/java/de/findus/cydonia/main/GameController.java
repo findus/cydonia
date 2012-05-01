@@ -36,6 +36,7 @@ import de.findus.cydonia.appstates.MenuAppState;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.HitMessage;
+import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.server.Bullet;
 import de.findus.cydonia.server.BulletPhysic;
@@ -251,6 +252,20 @@ public class GameController extends Application implements ActionListener, Scree
     	stop();
     }
     
+    public void gameOver() {
+//    	stateManager.detach(gameInputAppState);
+    	gamestate = GameState.DEAD;
+    	stateManager.attach(menuAppState);
+    	connector.stopInputSender();
+    }
+    
+    public void respawn() {
+    	RespawnMessage respawn = new RespawnMessage();
+    	respawn.setPlayerid(player.getId());
+    	connector.sendMessage(respawn);
+    	
+    }
+    
     @Override
     public void update() {
         super.update(); // makes sure to execute AppTasks
@@ -301,6 +316,7 @@ public class GameController extends Application implements ActionListener, Scree
     				Player p = players.get(physic.getId());
     				if(p == null) {
     					p = new Player(physic.getId(), assetManager);
+    					System.out.println("generated playermodel client: " + p.getId());
     					p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
     					players.put(p.getId(), p);
     					bulletAppState.getPhysicsSpace().add(p.getControl());
@@ -332,14 +348,25 @@ public class GameController extends Application implements ActionListener, Scree
     			worldController.attachObject(b.getModel());
     		}else if(msg instanceof HitMessage) {
     			HitMessage hit = (HitMessage) msg;
-    			hitPlayer(hit.getPlayerid());
+    			hitPlayer(hit.getPlayerid(), hit.getHitpoints());
+    		}else if(msg instanceof RespawnMessage) {
+    			RespawnMessage respawn = (RespawnMessage) msg;
+        		int playerid = respawn.getPlayerid();
+        		Player p = players.get(playerid);
+        		p.setHealthpoints(100);
+        		bulletAppState.getPhysicsSpace().add(p.getControl());
+        		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+        		worldController.attachObject(p.getModel());
+        		if(p.getId() == player.getId()) {
+        			resumeGame();
+        		}
     		}
     	}
     }
 
 	@Override
-	public void messageReceived(Client source, Message m) {
-    		updateQueue.offer(m);
+	public void messageReceived(Client source, Message m) {	
+		updateQueue.offer(m);
     }
 
     /**
@@ -415,12 +442,12 @@ public class GameController extends Application implements ActionListener, Scree
     	}
 
     	if(bullet != null && other != null) {
+    		worldController.detachObject(bullet);
+			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
+			bullet.removeControl(RigidBodyControl.class);
     		if(other.getName().startsWith("player")) {
     			// Hit Player not here. only when message from server.
     		}else {
-    			worldController.detachObject(bullet);
-    			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
-    			bullet.removeControl(RigidBodyControl.class);
     			if(other != null) {
     				if (other instanceof Node) {
     					((Node) other).attachChild(bullet);
@@ -435,18 +462,28 @@ public class GameController extends Application implements ActionListener, Scree
 	/**
      * Creates a ball and throws it i view direction.
      */
-	public void attack() {
-    	AttackMessage msg = new AttackMessage();
-    	this.connector.sendMessage(msg);
+    public void attack() {
+    	switch(getGamestate()) {
+    	case RUNNING:
+    		AttackMessage msg = new AttackMessage();
+    		msg.setPlayerid(player.getId());
+    		this.connector.sendMessage(msg);
+    		break;
+
+    	case DEAD:
+    		respawn();
+    		break;
+    	}
     }
 	
-	private void hitPlayer(int id) {
+	private void hitPlayer(int id, double hitpoints) {
 		Player p = players.get(id);
 		if(p == null) {
 			return;
 		}
 		double hp = p.getHealthpoints();
-		hp -= 20;
+		hp -= hitpoints;
+		System.out.println("hit - new hp: " + hp);
 		if(hp <= 0) {
 			hp = 0;
 			this.killPlayer(id);
@@ -455,9 +492,11 @@ public class GameController extends Application implements ActionListener, Scree
 	}
 	
 	private void killPlayer(int id) {
+		Player p = players.get(id);
+		bulletAppState.getPhysicsSpace().remove(p.getControl());
+		worldController.detachObject(p.getModel());
 		if(id == player.getId()) {
-			pauseGame();
-			
+			gameOver();
 		}
 	}
 	

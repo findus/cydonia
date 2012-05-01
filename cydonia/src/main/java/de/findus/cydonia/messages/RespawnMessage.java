@@ -11,31 +11,32 @@ import com.jme3.network.serializing.Serializable;
  *
  */
 @Serializable
-public class HitMessage extends AbstractMessage {
+public class RespawnMessage extends AbstractMessage {
 
+	
 	private int playerid;
 	
-	private double hitpoints;
-	
-	public HitMessage() {
+	/**
+	 * 
+	 */
+	public RespawnMessage() {
 		this.setReliable(true);
 	}
 
+	/**
+	 * @return the playerid
+	 */
 	public int getPlayerid() {
 		return playerid;
 	}
 
+	/**
+	 * @param playerid the playerid to set
+	 */
 	public void setPlayerid(int playerid) {
 		this.playerid = playerid;
 	}
-
-	public double getHitpoints() {
-		return hitpoints;
-	}
-
-	public void setHitpoints(double hitpoints) {
-		this.hitpoints = hitpoints;
-	}
 	
 	
+
 }

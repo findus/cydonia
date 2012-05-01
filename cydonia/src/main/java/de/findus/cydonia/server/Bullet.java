@@ -57,6 +57,7 @@ public class Bullet {
     	
     	Sphere sphere = new Sphere(10, 10, 0.1f);
     	model = new Geometry("bullet", sphere);
+    	model.setName("bullet" + id);
     	model.setUserData("Sticky", Boolean.TRUE);
     	model.setMaterial(mat_felsen);
     	control = new RigidBodyControl(2f);

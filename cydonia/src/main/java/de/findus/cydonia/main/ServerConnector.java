@@ -14,6 +14,7 @@ import com.jme3.network.serializing.Serializer;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.server.BulletPhysic;
 import de.findus.cydonia.server.PlayerInputState;
@@ -52,6 +53,7 @@ public class ServerConnector {
 			Serializer.registerClass(PlayerInputState.class);
 			Serializer.registerClass(AttackMessage.class);
 			Serializer.registerClass(HitMessage.class);
+			Serializer.registerClass(RespawnMessage.class);
 			
 			client.start();
 		} catch (IOException e) {

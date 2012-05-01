@@ -40,7 +40,7 @@ public class Player {
 		
 		inputs = new PlayerInputState();
 		
-		model = (Spatial) assetManager.loadAsset("Models/Sinbad/Sinbad.j3o");
+		model = assetManager.loadModel("Models/Sinbad/Sinbad.j3o");
 		model.setName("player" + id);
         
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 1.6f, 1);
