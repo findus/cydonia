@@ -12,13 +12,13 @@ import com.jme3.network.Network;
 import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
-import de.findus.cydonia.server.BulletPhysic;
-import de.findus.cydonia.server.PlayerInputState;
-import de.findus.cydonia.server.PlayerPhysic;
+import de.findus.cydonia.player.PlayerInputState;
 
 /**
  * The central connection controller.

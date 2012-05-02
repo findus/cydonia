@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.findus.cydonia.server;
+package de.findus.cydonia.player;
 
 import com.jme3.network.serializing.Serializable;
 

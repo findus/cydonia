@@ -35,13 +35,18 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.JmeContext;
 
+import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
 import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
+import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerInputState;
 
 /**
  * @author Findus
