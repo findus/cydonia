@@ -29,6 +29,8 @@ public class Player {
 	
 	private double healthpoints = 100;
 	
+	private long lastShot = 0;
+	
 	
 	/**
 	 * Constructs a new Player and inits its physics and model.
@@ -114,6 +116,14 @@ public class Player {
 
 	public void setHealthpoints(double healthpoints) {
 		this.healthpoints = healthpoints;
+	}
+	
+	public long getLastShot() {
+		return this.lastShot;
+	}
+	
+	public void setLastShot(long time) {
+		this.lastShot = time;
 	}
 
 }

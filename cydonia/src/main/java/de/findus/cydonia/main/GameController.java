@@ -61,10 +61,11 @@ public class GameController extends Application implements ActionListener, Scree
 	 */
 	private static final float SMOOTHING = 0.2f;
 	
+	private static final int RELOAD_TIME = 500;
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
     public static float PLAYER_SPEED = 5f;
-    public static float PHYSICS_ACCURACY = (1f / 240);
+    public static float PHYSICS_ACCURACY = (1f / 128);
     
     public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
     
@@ -339,6 +340,7 @@ public class GameController extends Application implements ActionListener, Scree
     		}else if(msg instanceof AttackMessage) {
     			AttackMessage attack = (AttackMessage) msg;
     			int playerid = attack.getPlayerid();
+    			player.setLastShot(System.currentTimeMillis());
     			BulletPhysic physic = attack.getPhysic();
     			Bullet b = new Bullet(physic.getId(), playerid);
     			b.getControl().setPhysicsLocation(physic.getTranslation());
@@ -465,9 +467,12 @@ public class GameController extends Application implements ActionListener, Scree
     public void attack() {
     	switch(getGamestate()) {
     	case RUNNING:
-    		AttackMessage msg = new AttackMessage();
-    		msg.setPlayerid(player.getId());
-    		this.connector.sendMessage(msg);
+    		long passedTime = System.currentTimeMillis() - player.getLastShot();
+    		if(passedTime >= RELOAD_TIME) {
+    			AttackMessage msg = new AttackMessage();
+    			msg.setPlayerid(player.getId());
+    			this.connector.sendMessage(msg);
+    		}
     		break;
 
     	case DEAD:

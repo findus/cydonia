@@ -53,11 +53,12 @@ import de.findus.cydonia.player.PlayerInputState;
  *
  */
 public class GameServer extends Application implements MessageListener<HostedConnection>, ConnectionListener, PhysicsCollisionListener {
-
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
 	public static float PLAYER_SPEED = 5f;
-	public static float PHYSICS_ACCURACY = (1f / 240);
+	public static float PHYSICS_ACCURACY = (1f / 128);
+	
+	private static final int RELOAD_TIME = 500;
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -193,25 +194,29 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			}else if(m instanceof AttackMessage) {
 				AttackMessage attack = (AttackMessage) m;
 				Player p = players.get(attack.getPlayerid());
-				Vector3f pos = p.getControl().getPhysicsLocation();
-				Vector3f dir = p.getControl().getViewDirection();
+				long passedTime = System.currentTimeMillis() - p.getLastShot();
+				if(passedTime >= RELOAD_TIME) {
+					p.setLastShot(System.currentTimeMillis());
+					Vector3f pos = p.getControl().getPhysicsLocation();
+					Vector3f dir = p.getControl().getViewDirection();
 
-				Bullet bul = Bullet.createBullet(p.getId());
-				bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
-				rootNode.attachChild(bul.getModel());
-				bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
-				bulletAppState.getPhysicsSpace().add(bul.getControl());
-				bul.getControl().setLinearVelocity(dir.normalize().mult(25));
+					Bullet bul = Bullet.createBullet(p.getId());
+					bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
+					rootNode.attachChild(bul.getModel());
+					bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
+					bulletAppState.getPhysicsSpace().add(bul.getControl());
+					bul.getControl().setLinearVelocity(dir.normalize().mult(25));
 
-				bullets.put(bul.getId(), bul);
+					bullets.put(bul.getId(), bul);
 
-				BulletPhysic physic = new BulletPhysic();
-				physic.setId(bul.getId());
-				physic.setTranslation(bul.getControl().getPhysicsLocation());
-				physic.setVelocity(bul.getControl().getLinearVelocity());
-				attack.setPhysic(physic);
-				for(HostedConnection con : server.getConnections()) {
-					con.send(attack);
+					BulletPhysic physic = new BulletPhysic();
+					physic.setId(bul.getId());
+					physic.setTranslation(bul.getControl().getPhysicsLocation());
+					physic.setVelocity(bul.getControl().getLinearVelocity());
+					attack.setPhysic(physic);
+					for(HostedConnection con : server.getConnections()) {
+						con.send(attack);
+					}
 				}
 			}else if(m instanceof RespawnMessage) {
 				RespawnMessage respawn = (RespawnMessage) m;
