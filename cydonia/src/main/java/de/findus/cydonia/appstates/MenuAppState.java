@@ -34,6 +34,15 @@ public class MenuAppState extends AbstractAppState {
 
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
+		this.actualizeScreen();
+	}
+
+	@Override
+	public void stateDetached(AppStateManager stateManager) {
+		this.actualizeScreen();
+	}
+	
+	public void actualizeScreen() {
 		switch (gameController.getGamestate()) {
 		case LOBBY:
 			gameController.getNifty().gotoScreen("lobbymenu");
@@ -50,14 +59,14 @@ public class MenuAppState extends AbstractAppState {
 			gameController.getInputManager().setCursorVisible(false);
 			break;
 			
+		case RUNNING:
+			gameController.getNifty().gotoScreen("none");
+			gameController.getInputManager().setCursorVisible(false);
+			break;
+			
 		default:
 			break;
 		}
-	}
-
-	@Override
-	public void stateDetached(AppStateManager stateManager) {
-		gameController.getNifty().gotoScreen("none");
 	}
 
 }

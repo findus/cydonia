@@ -56,7 +56,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
 	public static float PLAYER_SPEED = 5f;
-	public static float PHYSICS_ACCURACY = (1f / 128);
+	public static float PHYSICS_ACCURACY = (1f / 192);
 	
 	private static final int RELOAD_TIME = 500;
 	

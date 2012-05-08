@@ -56,6 +56,13 @@ public class ServerConnector {
 			Serializer.registerClass(RespawnMessage.class);
 			
 			client.start();
+			while(!client.isConnected()) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					
+				}
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

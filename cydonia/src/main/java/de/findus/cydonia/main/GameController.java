@@ -43,6 +43,8 @@ import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.controls.textfield.TextFieldControl;
+import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
@@ -65,7 +67,7 @@ public class GameController extends Application implements ActionListener, Scree
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
     public static float PLAYER_SPEED = 5f;
-    public static float PHYSICS_ACCURACY = (1f / 128);
+    public static float PHYSICS_ACCURACY = (1f / 192);
     
     public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
     
@@ -92,6 +94,8 @@ public class GameController extends Application implements ActionListener, Scree
     private boolean left=false, right=false, up=false, down=false;
     
     private Nifty nifty;
+    private Element serverAddressInput;
+    
     private Player player;
     private HashMap<Integer, Player> players;
     private HashMap<Long, Bullet> bullets;
@@ -169,7 +173,7 @@ public class GameController extends Application implements ActionListener, Scree
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         
-        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         
@@ -193,44 +197,58 @@ public class GameController extends Application implements ActionListener, Scree
         bulletAppState.getPhysicsSpace().add(player.getControl());
         player.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
         
-        Player p2 = new Player(-1, assetManager);
-        bulletAppState.getPhysicsSpace().add(p2.getControl());
-        p2.getControl().setPhysicsLocation(new Vector3f(5, 10, 0));
-        worldController.attachObject(p2.getModel());
-        
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
-        bulletAppState.getPhysicsSpace().addCollisionObject(p2.getControl());
+        
+//        Player p2 = new Player(-1, assetManager);
+//        bulletAppState.getPhysicsSpace().add(p2.getControl());
+//        p2.getControl().setPhysicsLocation(new Vector3f(5, 10, 0));
+//        worldController.attachObject(p2.getModel());
+//        bulletAppState.getPhysicsSpace().addCollisionObject(p2.getControl());
         
         connector = new ServerConnector(this);
+    }
+    
+    public void connect() {
+    	gamestate = GameState.LOADING;
+    	menuAppState.actualizeScreen();
+    	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
+    	connector.connectToServer(serveraddress, 6173);
+    	player.setId(connector.getConnectionId());
+    	players.put(player.getId(), player);
+    	bulletAppState.setEnabled(true);
+    	connector.addMessageListener(this);
+    	gamestate = GameState.DEAD;
+    	stateManager.attach(gameInputAppState);
+    	menuAppState.actualizeScreen();
     }
     
     /**
      * Starts the actual game eg. the game loop.
      */
-    public void startGame() {
-    	stateManager.detach(menuAppState);
-    	gamestate = GameState.RUNNING;
-    	stateManager.attach(gameInputAppState);
-    	bulletAppState.setEnabled(true);
-    	connector.connectToServer("localhost", 6173);
-    	try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	player.setId(connector.getConnectionId());
-    	players.put(player.getId(), player);
-    	connector.addMessageListener(this);
-    	connector.startInputSender();
-    }
+//    public void startGame() {
+//    	stateManager.detach(menuAppState);
+//    	gamestate = GameState.RUNNING;
+//    	stateManager.attach(gameInputAppState);
+//    	bulletAppState.setEnabled(true);
+//    	connector.connectToServer("localhost", 6173);
+//    	try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    	player.setId(connector.getConnectionId());
+//    	players.put(player.getId(), player);
+//    	connector.addMessageListener(this);
+//    	connector.startInputSender();
+//    }
     
     /**
      * Resumes the game after pausing.
      */
     public void resumeGame() {
-    	stateManager.detach(menuAppState);
     	gamestate = GameState.RUNNING;
+    	stateManager.detach(menuAppState);
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	connector.startInputSender();
@@ -264,7 +282,6 @@ public class GameController extends Application implements ActionListener, Scree
     	RespawnMessage respawn = new RespawnMessage();
     	respawn.setPlayerid(player.getId());
     	connector.sendMessage(respawn);
-    	
     }
     
     @Override
@@ -545,9 +562,8 @@ public class GameController extends Application implements ActionListener, Scree
     }
 
 	@Override
-	public void bind(Nifty arg0, Screen arg1) {
-		// TODO Auto-generated method stub
-		
+	public void bind(Nifty nifty, Screen screen) {
+		this.serverAddressInput = screen.findElementByName("serveraddress");
 	}
 
 	@Override
