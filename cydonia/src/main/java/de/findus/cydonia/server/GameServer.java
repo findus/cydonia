@@ -276,10 +276,11 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			rootNode.detachChild(bullet);
 			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
 			bullet.removeControl(RigidBodyControl.class);
-			if(other.getName().startsWith("player")) {
-				int playerid = Integer.parseInt(other.getName().substring(6));
-				System.out.println("detected hit at player: " + playerid);
-				this.hitPlayer(playerid);
+			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
+				int victimid = Integer.parseInt(other.getName().substring(6));
+				int bulletid = Integer.parseInt(bullet.getName().substring(6));
+				Bullet bul = bullets.get(bulletid);
+				this.hitPlayer(bul.getPlayerid(), victimid, 20);
 			}else {
 				if(other != null) {
 					if (other instanceof Node) {
@@ -292,22 +293,25 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		}
 	}
 	
-	private void hitPlayer(int id) {
-		Player p = players.get(id);
+	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
+		Player p = players.get(victimid);
 		if(p == null) {
 			return;
 		}
 		double hp = p.getHealthpoints();
-		hp -= 20;
+		hp -= hitpoints;
 		if(hp <= 0) {
 			hp = 0;
-			this.killPlayer(id);
+			this.killPlayer(victimid);
+			Player source = players.get(sourceid);
+			source.setKills(source.getKills() + 1);
 		}
 		p.setHealthpoints(hp);
 		
 		HitMessage hit = new HitMessage();
-		hit.setPlayerid(id);
+		hit.setVictimPlayerid(victimid);
 		hit.setHitpoints(20);
+		hit.setSourcePlayerid(sourceid);
 		
 		for(HostedConnection con : server.getConnections()) {
 			con.send(hit);

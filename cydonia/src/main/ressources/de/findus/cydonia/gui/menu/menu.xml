@@ -45,4 +45,13 @@
       </panel>
     </layer>
   </screen>
+  
+  <screen id="scoreboardscreen" controller="de.findus.cydonia.main.GameController">
+    <layer id="layer" backgroundColor="#fff0" childLayout="center">
+      <panel height="50%" width="50%" align="center" valign="center" backgroundColor="#8885" childLayout="vertical">
+	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" align="center" valign="center" />
+	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" align="left" valign="center" />
+      </panel>
+    </layer>
+  </screen>
 </nifty>

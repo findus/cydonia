@@ -8,6 +8,7 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 
 import de.findus.cydonia.main.GameController;
+import de.lessvoid.nifty.elements.render.TextRenderer;
 
 /**
  * This AppState controls the menu.
@@ -15,7 +16,7 @@ import de.findus.cydonia.main.GameController;
  * @author Findus
  *
  */
-public class MenuAppState extends AbstractAppState {
+public class MenuController {
 
 	/**
 	 * Path to the menu description xml files.
@@ -24,22 +25,10 @@ public class MenuAppState extends AbstractAppState {
 	
 	private GameController gameController;
 	
-	@Override
-	public void initialize(AppStateManager stateManager, Application app) {
-		super.initialize(stateManager, app);
-		this.gameController = (GameController) app;
+	public MenuController(GameController game) {
+		this.gameController = game;
 		gameController.getNifty().registerScreenController(gameController);
 		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
-	}
-
-	@Override
-	public void stateAttached(AppStateManager stateManager) {
-		this.actualizeScreen();
-	}
-
-	@Override
-	public void stateDetached(AppStateManager stateManager) {
-		this.actualizeScreen();
 	}
 	
 	public void actualizeScreen() {
@@ -67,6 +56,11 @@ public class MenuAppState extends AbstractAppState {
 		default:
 			break;
 		}
+	}
+	
+	public void showScorebord() {
+		gameController.getNifty().gotoScreen("scoreboardscreen");
+		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());						
 	}
 
 }

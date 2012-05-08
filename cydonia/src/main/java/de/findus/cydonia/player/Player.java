@@ -31,6 +31,10 @@ public class Player {
 	
 	private long lastShot = 0;
 	
+	private int kills = 0;
+	
+	private int deaths = 0;
+	
 	
 	/**
 	 * Constructs a new Player and inits its physics and model.
@@ -124,6 +128,22 @@ public class Player {
 	
 	public void setLastShot(long time) {
 		this.lastShot = time;
+	}
+
+	public int getKills() {
+		return kills;
+	}
+
+	public void setKills(int kills) {
+		this.kills = kills;
+	}
+
+	public int getDeaths() {
+		return deaths;
+	}
+
+	public void setDeaths(int deaths) {
+		this.deaths = deaths;
 	}
 
 }

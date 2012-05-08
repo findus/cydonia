@@ -53,8 +53,9 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping("Attack", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addListener(this, "Left", "Right", "Up", "Down", "Jump", "Attack");
         
+        inputManager.addMapping("scoreboard", new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addMapping(SimpleApplication.INPUT_MAPPING_HIDE_STATS, new KeyTrigger(KeyInput.KEY_F5));
-        inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_HIDE_STATS);
+        inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_HIDE_STATS, "scoreboard");
         
         inputManager.addMapping(SimpleApplication.INPUT_MAPPING_EXIT, new KeyTrigger(KeyInput.KEY_ESCAPE));
         inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_EXIT);
@@ -89,9 +90,11 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
             if(isPressed) gameController.attack();
         }else if (name.equals(SimpleApplication.INPUT_MAPPING_EXIT)) {
             gameController.pauseGame();
+        }else if (name.equals(SimpleApplication.INPUT_MAPPING_HIDE_STATS)) {
+            if(isPressed) gameController.setDisplayStatView();
+        }else if (name.equals("scoreboard")) {
+            gameController.scoreboard(isPressed);
         }
-		PlayerInputMessage m = new PlayerInputMessage();
-		m.setInputs(gameController.getPlayer().getInputState());
 	}
 	
 	/**

@@ -13,7 +13,9 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class HitMessage extends AbstractMessage {
 
-	private int playerid;
+	private int victimPlayerid;
+	
+	private int sourcePlayerid;
 	
 	private double hitpoints;
 	
@@ -21,12 +23,12 @@ public class HitMessage extends AbstractMessage {
 		this.setReliable(true);
 	}
 
-	public int getPlayerid() {
-		return playerid;
+	public int getVictimPlayerid() {
+		return victimPlayerid;
 	}
 
-	public void setPlayerid(int playerid) {
-		this.playerid = playerid;
+	public void setVictimPlayerid(int playerid) {
+		this.victimPlayerid = playerid;
 	}
 
 	public double getHitpoints() {
@@ -35,6 +37,14 @@ public class HitMessage extends AbstractMessage {
 
 	public void setHitpoints(double hitpoints) {
 		this.hitpoints = hitpoints;
+	}
+
+	public int getSourcePlayerid() {
+		return sourcePlayerid;
+	}
+
+	public void setSourcePlayerid(int sourcePlayerid) {
+		this.sourcePlayerid = sourcePlayerid;
 	}
 	
 	

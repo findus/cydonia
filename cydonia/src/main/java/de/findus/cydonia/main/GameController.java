@@ -32,7 +32,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
 
 import de.findus.cydonia.appstates.GameInputAppState;
-import de.findus.cydonia.appstates.MenuAppState;
+import de.findus.cydonia.appstates.MenuController;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.AttackMessage;
@@ -54,7 +54,7 @@ import de.lessvoid.nifty.screen.ScreenController;
  * 
  * @author Findus
  */
-public class GameController extends Application implements ActionListener, ScreenController, MessageListener<Client>, PhysicsCollisionListener{
+public class GameController extends Application implements ScreenController, MessageListener<Client>, PhysicsCollisionListener{
 	
 	public static final String TEXTURES_PATH = "de/findus/cydonia/textures/";
 	
@@ -77,7 +77,9 @@ public class GameController extends Application implements ActionListener, Scree
     
     protected WorldController worldController;
     
-    protected Node guiNode = new Node("Gui Node");
+    protected MenuController menuController;
+
+	protected Node guiNode = new Node("Gui Node");
     
     private  boolean showFps = true;
     protected float secondCounter = 0.0f;
@@ -87,7 +89,6 @@ public class GameController extends Application implements ActionListener, Scree
     protected StatsView statsView;
     
     private BulletAppState bulletAppState;
-    private MenuAppState menuAppState;
     private GameInputAppState gameInputAppState;
     
     private Vector3f walkDirection = new Vector3f();
@@ -158,9 +159,8 @@ public class GameController extends Application implements ActionListener, Scree
     	nifty = niftyDisplay.getNifty();
     	guiViewPort.addProcessor(niftyDisplay);
 
-    	menuAppState = new MenuAppState();
-    	menuAppState.initialize(stateManager, this);
-    	stateManager.attach(menuAppState);
+    	menuController = new MenuController(this);
+    	menuController.actualizeScreen();
     	
     	gameInputAppState = new GameInputAppState(this);
     	
@@ -210,7 +210,7 @@ public class GameController extends Application implements ActionListener, Scree
     
     public void connect() {
     	gamestate = GameState.LOADING;
-    	menuAppState.actualizeScreen();
+    	menuController.actualizeScreen();
     	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
     	connector.connectToServer(serveraddress, 6173);
     	player.setId(connector.getConnectionId());
@@ -219,7 +219,7 @@ public class GameController extends Application implements ActionListener, Scree
     	connector.addMessageListener(this);
     	gamestate = GameState.DEAD;
     	stateManager.attach(gameInputAppState);
-    	menuAppState.actualizeScreen();
+    	menuController.actualizeScreen();
     }
     
     /**
@@ -248,7 +248,7 @@ public class GameController extends Application implements ActionListener, Scree
      */
     public void resumeGame() {
     	gamestate = GameState.RUNNING;
-    	stateManager.detach(menuAppState);
+    	menuController.actualizeScreen();
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	connector.startInputSender();
@@ -261,7 +261,7 @@ public class GameController extends Application implements ActionListener, Scree
     	bulletAppState.setEnabled(false);
     	stateManager.detach(gameInputAppState);
     	gamestate = GameState.PAUSED;
-    	stateManager.attach(menuAppState);
+    	menuController.actualizeScreen();
     	connector.stopInputSender();
     }
     
@@ -274,7 +274,7 @@ public class GameController extends Application implements ActionListener, Scree
     public void gameOver() {
 //    	stateManager.detach(gameInputAppState);
     	gamestate = GameState.DEAD;
-    	stateManager.attach(menuAppState);
+    	menuController.actualizeScreen();
     	connector.stopInputSender();
     }
     
@@ -367,7 +367,7 @@ public class GameController extends Application implements ActionListener, Scree
     			worldController.attachObject(b.getModel());
     		}else if(msg instanceof HitMessage) {
     			HitMessage hit = (HitMessage) msg;
-    			hitPlayer(hit.getPlayerid(), hit.getHitpoints());
+    			hitPlayer(hit.getSourcePlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
     		}else if(msg instanceof RespawnMessage) {
     			RespawnMessage respawn = (RespawnMessage) msg;
         		int playerid = respawn.getPlayerid();
@@ -429,18 +429,6 @@ public class GameController extends Application implements ActionListener, Scree
     }
 
     @Override
-	public void onAction(String name, boolean isPressed, float tpf) {
-    	if (!isPressed) {
-            return;
-        }
-    	if (name.equals(SimpleApplication.INPUT_MAPPING_HIDE_STATS)){
-            boolean show = showFps;
-            setDisplayFps(!show);
-            setDisplayStatView(!show);
-        }
-	}
-
-    @Override
 	public void collision(PhysicsCollisionEvent e) {
     	Spatial bullet = null;
     	Spatial other = null;
@@ -498,27 +486,48 @@ public class GameController extends Application implements ActionListener, Scree
     	}
     }
 	
-	private void hitPlayer(int id, double hitpoints) {
-		Player p = players.get(id);
-		if(p == null) {
+	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
+		Player victim = players.get(victimid);
+		if(victim == null) {
 			return;
 		}
-		double hp = p.getHealthpoints();
+		double hp = victim.getHealthpoints();
 		hp -= hitpoints;
 		System.out.println("hit - new hp: " + hp);
 		if(hp <= 0) {
 			hp = 0;
-			this.killPlayer(id);
+			this.killPlayer(victimid);
+			Player source = this.players.get(sourceid);
+			source.setKills(source.getKills() + 1);
 		}
-		p.setHealthpoints(hp);
+		victim.setHealthpoints(hp);
 	}
 	
 	private void killPlayer(int id) {
 		Player p = players.get(id);
 		bulletAppState.getPhysicsSpace().remove(p.getControl());
 		worldController.detachObject(p.getModel());
+		p.setDeaths(p.getDeaths() + 1);
 		if(id == player.getId()) {
 			gameOver();
+		}
+	}
+	
+	public String getScores() {
+		StringBuilder builder = new StringBuilder();
+		for (Player p : players.values()) {
+			builder.append(p.getId() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+		}
+		return builder.toString();
+	}
+	
+	public void scoreboard(boolean show) {
+		if(gamestate == GameState.RUNNING || gamestate == GameState.DEAD || gamestate == GameState.SPECTATE) {
+			if(show) {
+				menuController.showScorebord();
+			}else {
+				menuController.actualizeScreen();
+			}
 		}
 	}
 	
@@ -556,8 +565,9 @@ public class GameController extends Application implements ActionListener, Scree
 	 * Sets the displayStats property.
 	 * @param show if true stats are painted
 	 */
-    public void setDisplayStatView(boolean show) {
-        statsView.setEnabled(show);
+    public void setDisplayStatView() {
+        boolean show = !statsView.isEnabled();
+    	statsView.setEnabled(show);
         statsView.setCullHint(show ? CullHint.Never : CullHint.Always);
     }
 
