@@ -18,6 +18,10 @@ import de.findus.cydonia.main.GameController;
 public class Player {
 	
 	private int id;
+	
+	private String name;
+	
+	private boolean alive = false;
 
 	private PlayerInputState inputs;
 	
@@ -104,6 +108,34 @@ public class Player {
 	 */
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @return the alive
+	 */
+	public boolean isAlive() {
+		return alive;
+	}
+
+	/**
+	 * @param alive the alive to set
+	 */
+	public void setAlive(boolean alive) {
+		this.alive = alive;
 	}
 
 	public Vector3f getExactLoc() {

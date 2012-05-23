@@ -15,6 +15,7 @@ import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
@@ -54,6 +55,7 @@ public class ServerConnector {
 			Serializer.registerClass(AttackMessage.class);
 			Serializer.registerClass(HitMessage.class);
 			Serializer.registerClass(RespawnMessage.class);
+			Serializer.registerClass(PlayerJoinMessage.class);
 			
 			client.start();
 			while(!client.isConnected()) {

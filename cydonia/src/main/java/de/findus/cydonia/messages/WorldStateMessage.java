@@ -39,6 +39,7 @@ public class WorldStateMessage extends AbstractMessage {
 		for (Bullet b : bulletlist) {
 			BulletPhysic physic = new BulletPhysic();
 			physic.setId(b.getId());
+			physic.setSourceid(b.getPlayerid());
 			physic.setTranslation(b.getControl().getPhysicsLocation());
 			physic.setVelocity(b.getControl().getLinearVelocity());
 			

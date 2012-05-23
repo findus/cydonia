@@ -38,6 +38,7 @@ import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
+import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
@@ -96,6 +97,7 @@ public class GameController extends Application implements ScreenController, Mes
     
     private Nifty nifty;
     private Element serverAddressInput;
+    private Element playerNameInput;
     
     private Player player;
     private HashMap<Integer, Player> players;
@@ -212,9 +214,15 @@ public class GameController extends Application implements ScreenController, Mes
     	gamestate = GameState.LOADING;
     	menuController.actualizeScreen();
     	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
+    	String playername = this.playerNameInput.getControl(TextFieldControl.class).getText();
     	connector.connectToServer(serveraddress, 6173);
     	player.setId(connector.getConnectionId());
+    	player.setName(playername);
     	players.put(player.getId(), player);
+    	PlayerJoinMessage join = new PlayerJoinMessage();
+    	join.setId(player.getId());
+    	join.setName(playername);
+    	connector.sendMessage(join);
     	bulletAppState.setEnabled(true);
     	connector.addMessageListener(this);
     	gamestate = GameState.DEAD;
@@ -332,14 +340,14 @@ public class GameController extends Application implements ScreenController, Mes
 
     			for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
     				Player p = players.get(physic.getId());
-    				if(p == null) {
-    					p = new Player(physic.getId(), assetManager);
-    					System.out.println("generated playermodel client: " + p.getId());
-    					p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
-    					players.put(p.getId(), p);
-    					bulletAppState.getPhysicsSpace().add(p.getControl());
-    					worldController.attachObject(p.getModel());
-    				}
+//    				if(p == null) {
+//    					p = new Player(physic.getId(), assetManager);
+//    					System.out.println("generated playermodel client: " + p.getId());
+//    					p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
+//    					players.put(p.getId(), p);
+//    					bulletAppState.getPhysicsSpace().add(p.getControl());
+//    					worldController.attachObject(p.getModel());
+//    				}
     				if(p != null) {
     					p.setExactLoc(physic.getTranslation());
     					p.getControl().setViewDirection(physic.getOrientation());
@@ -348,6 +356,12 @@ public class GameController extends Application implements ScreenController, Mes
 
     			for (BulletPhysic physic : worldState.getBulletPhysics()) {
     				Bullet b = bullets.get(physic.getId());
+    				if(b == null) {
+    					b = new Bullet(physic.getId(), physic.getSourceid());
+    					bullets.put(b.getId(), b);
+    					bulletAppState.getPhysicsSpace().add(b.getControl());
+    					worldController.attachObject(b.getModel());
+    				}
     				if(b != null) {	
     					b.setExactLoc(physic.getTranslation());
     					b.getControl().setPhysicsLocation(physic.getTranslation());
@@ -368,11 +382,21 @@ public class GameController extends Application implements ScreenController, Mes
     		}else if(msg instanceof HitMessage) {
     			HitMessage hit = (HitMessage) msg;
     			hitPlayer(hit.getSourcePlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
+    		}else if(msg instanceof PlayerJoinMessage) {
+    			PlayerJoinMessage join = (PlayerJoinMessage) msg;
+    			int playerid = join.getId();
+    			if(player.getId() != playerid) {
+    				String playername = join.getName();
+    				Player p = new Player(playerid, assetManager);
+    				p.setName(playername);
+    				players.put(p.getId(), p);
+    			}
     		}else if(msg instanceof RespawnMessage) {
     			RespawnMessage respawn = (RespawnMessage) msg;
         		int playerid = respawn.getPlayerid();
         		Player p = players.get(playerid);
         		p.setHealthpoints(100);
+        		p.setAlive(true);
         		bulletAppState.getPhysicsSpace().add(p.getControl());
         		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
         		worldController.attachObject(p.getModel());
@@ -516,7 +540,7 @@ public class GameController extends Application implements ScreenController, Mes
 	public String getScores() {
 		StringBuilder builder = new StringBuilder();
 		for (Player p : players.values()) {
-			builder.append(p.getId() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			builder.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
 		}
 		return builder.toString();
 	}
@@ -574,6 +598,7 @@ public class GameController extends Application implements ScreenController, Mes
 	@Override
 	public void bind(Nifty nifty, Screen screen) {
 		this.serverAddressInput = screen.findElementByName("serveraddress");
+		this.playerNameInput = screen.findElementByName("playername");
 	}
 
 	@Override

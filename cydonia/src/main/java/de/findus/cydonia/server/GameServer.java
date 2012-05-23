@@ -42,6 +42,7 @@ import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
@@ -141,6 +142,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			Serializer.registerClass(AttackMessage.class);
 			Serializer.registerClass(HitMessage.class);
 			Serializer.registerClass(RespawnMessage.class);
+			Serializer.registerClass(PlayerJoinMessage.class);
 			
 			server.addMessageListener(this);
 			server.addConnectionListener(this);
@@ -218,11 +220,26 @@ public class GameServer extends Application implements MessageListener<HostedCon
 						con.send(attack);
 					}
 				}
+			}else if(m instanceof PlayerJoinMessage) {
+				PlayerJoinMessage join = (PlayerJoinMessage) m;
+				int playerid = join.getId();
+				String playername = join.getName();
+				Player p = new Player(playerid, assetManager);
+				p.setName(playername);
+				players.put(playerid, p);
+				bulletAppState.getPhysicsSpace().add(p.getControl());
+				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+				rootNode.attachChild(p.getModel());
+				
+				for (HostedConnection con : server.getConnections()) {
+					con.send(join);
+				}
 			}else if(m instanceof RespawnMessage) {
 				RespawnMessage respawn = (RespawnMessage) m;
 				int playerid = respawn.getPlayerid();
 				Player p = players.get(playerid);
 				p.setHealthpoints(100);
+				p.setAlive(true);
 				bulletAppState.getPhysicsSpace().add(p.getControl());
 				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
 				rootNode.attachChild(p.getModel());
@@ -278,7 +295,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			bullet.removeControl(RigidBodyControl.class);
 			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
 				int victimid = Integer.parseInt(other.getName().substring(6));
-				int bulletid = Integer.parseInt(bullet.getName().substring(6));
+				long bulletid = Long.parseLong(bullet.getName().substring(6));
 				Bullet bul = bullets.get(bulletid);
 				this.hitPlayer(bul.getPlayerid(), victimid, 20);
 			}else {
@@ -332,11 +349,17 @@ public class GameServer extends Application implements MessageListener<HostedCon
 
 	@Override
 	public void connectionAdded(Server server, HostedConnection conn) {
-		Player p = new Player(conn.getId(), assetManager);
-		players.put(conn.getId(), p);
-		bulletAppState.getPhysicsSpace().add(p.getControl());
-		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-		rootNode.attachChild(p.getModel());
+		for (Player p : players.values()) {
+			PlayerJoinMessage join = new PlayerJoinMessage();
+			join.setId(p.getId());
+			join.setName(p.getName());
+			conn.send(join);
+			if(p.isAlive()) {
+				RespawnMessage respawn = new RespawnMessage();
+				respawn.setPlayerid(p.getId());
+				conn.send(respawn);
+			}
+		}
 	}
 
 	@Override

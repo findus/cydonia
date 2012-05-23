@@ -13,7 +13,8 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class BulletPhysic {
 	
-	private long id;
+	private long id; 
+	private int sourceid;
 	private Vector3f translation;
 	private Vector3f velocity;
 
@@ -22,6 +23,18 @@ public class BulletPhysic {
 	}
 	public void setId(long id) {
 		this.id = id;
+	}
+	/**
+	 * @return the sourceid
+	 */
+	public int getSourceid() {
+		return sourceid;
+	}
+	/**
+	 * @param sourceid the sourceid to set
+	 */
+	public void setSourceid(int sourceid) {
+		this.sourceid = sourceid;
 	}
 	public Vector3f getTranslation() {
 		return translation;

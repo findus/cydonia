@@ -11,6 +11,7 @@
 	          <onStartScreen name="move" mode="in" direction="top" length="1000" startDelay="0" inherit="true"/>
 	          <onEndScreen name="move" mode="out" direction="top" length="1000" startDelay="0" inherit="true"/>
 	      </effect>
+	      <control name="textfield" id="playername" text="Player name" width="100%" align="center" valign="center"/>
 	      <control name="textfield" id="serveraddress" text="Server IP address or name" width="100%" align="center" valign="center"/>
 	      <control name="button" label="Connect" width="40%" align="center">
 	      	<interact onClick="connect()" />
