@@ -44,9 +44,11 @@ public class ServerConnector {
 	 * @param address IPv4 address of the server
 	 * @param port listening port of the server
 	 */
-	public void connectToServer(String address, int port) {
+	public void connectToServer(String address, int port, MessageListener<? super Client> listener) {
 		try {
 			client = Network.connectToServer(address, port);
+			client.addMessageListener(listener);
+			
 			Serializer.registerClass(WorldStateMessage.class);
 			Serializer.registerClass(PlayerPhysic.class);
 			Serializer.registerClass(BulletPhysic.class);

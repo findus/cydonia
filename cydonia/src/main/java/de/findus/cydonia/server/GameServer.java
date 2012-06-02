@@ -38,6 +38,7 @@ import com.jme3.system.JmeContext;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
+import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
@@ -110,15 +111,6 @@ public class GameServer extends Application implements MessageListener<HostedCon
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-        
-        Box box1 = new Box( new Vector3f(0,3,0), 1,1,1);
-        Geometry blue = new Geometry("Box", box1);
-        Material mat1 = new Material(assetManager, 
-                "Common/MatDefs/Misc/Unshaded.j3md");
-        mat1.setColor("Color", ColorRGBA.Blue);
-        blue.setMaterial(mat1);
-        rootNode.attachChild(blue);
-        
         Level level = new Level1();
         Spatial scene = null;
         //scene = assetManager.loadModel("Scenes/firstworld.j3o");
@@ -130,6 +122,8 @@ public class GameServer extends Application implements MessageListener<HostedCon
         
         rootNode.attachChild(scene);
         bulletAppState.getPhysicsSpace().add(landscape);
+        
+        assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
         
         try {
 			server = Network.createServer(6173);

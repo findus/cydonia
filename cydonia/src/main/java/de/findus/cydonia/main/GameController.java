@@ -215,22 +215,25 @@ public class GameController extends Application implements ScreenController, Mes
     	menuController.actualizeScreen();
     	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
     	String playername = this.playerNameInput.getControl(TextFieldControl.class).getText();
-    	connector.connectToServer(serveraddress, 6173);
+    	connector.connectToServer(serveraddress, 6173, this);
+//    	connector.addMessageListener(this);
     	player.setId(connector.getConnectionId());
     	player.setName(playername);
     	players.put(player.getId(), player);
     	PlayerJoinMessage join = new PlayerJoinMessage();
     	join.setId(player.getId());
     	join.setName(playername);
+    	preload();
     	connector.sendMessage(join);
     	bulletAppState.setEnabled(true);
-    	connector.addMessageListener(this);
     	gamestate = GameState.DEAD;
     	stateManager.attach(gameInputAppState);
     	menuController.actualizeScreen();
     }
     
-    /**
+    
+
+	/**
      * Starts the actual game eg. the game loop.
      */
 //    public void startGame() {
@@ -292,7 +295,11 @@ public class GameController extends Application implements ScreenController, Mes
     	connector.sendMessage(respawn);
     }
     
-    @Override
+    private void preload() {
+		assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
+	}
+
+	@Override
     public void update() {
         super.update(); // makes sure to execute AppTasks
         if (speed == 0 || paused) {
