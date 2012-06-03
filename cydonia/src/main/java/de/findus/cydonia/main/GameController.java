@@ -40,6 +40,7 @@ import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.PlayerQuitMessage;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.player.Player;
@@ -201,12 +202,6 @@ public class GameController extends Application implements ScreenController, Mes
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-//        Player p2 = new Player(-1, assetManager);
-//        bulletAppState.getPhysicsSpace().add(p2.getControl());
-//        p2.getControl().setPhysicsLocation(new Vector3f(5, 10, 0));
-//        worldController.attachObject(p2.getModel());
-//        bulletAppState.getPhysicsSpace().addCollisionObject(p2.getControl());
-        
         connector = new ServerConnector(this);
     }
     
@@ -216,7 +211,6 @@ public class GameController extends Application implements ScreenController, Mes
     	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
     	String playername = this.playerNameInput.getControl(TextFieldControl.class).getText();
     	connector.connectToServer(serveraddress, 6173, this);
-//    	connector.addMessageListener(this);
     	player.setId(connector.getConnectionId());
     	player.setName(playername);
     	players.put(player.getId(), player);
@@ -410,6 +404,13 @@ public class GameController extends Application implements ScreenController, Mes
         		if(p.getId() == player.getId()) {
         			resumeGame();
         		}
+    		}else if(msg instanceof PlayerQuitMessage) {
+    			PlayerQuitMessage quit = (PlayerQuitMessage) msg;
+    			int playerid = quit.getId();
+    			Player p = players.get(playerid);
+    			bulletAppState.getPhysicsSpace().remove(p.getControl());
+    			worldController.detachObject(p.getModel());
+    			players.remove(playerid);
     		}
     	}
     }
@@ -529,18 +530,23 @@ public class GameController extends Application implements ScreenController, Mes
 			hp = 0;
 			this.killPlayer(victimid);
 			Player source = this.players.get(sourceid);
-			source.setKills(source.getKills() + 1);
+			if(source != null) {
+				source.setKills(source.getKills() + 1);
+			}
 		}
 		victim.setHealthpoints(hp);
 	}
 	
 	private void killPlayer(int id) {
 		Player p = players.get(id);
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		worldController.detachObject(p.getModel());
-		p.setDeaths(p.getDeaths() + 1);
-		if(id == player.getId()) {
-			gameOver();
+		if(p != null) {
+			bulletAppState.getPhysicsSpace().remove(p.getControl());
+			worldController.detachObject(p.getModel());
+			p.setAlive(false);
+			p.setDeaths(p.getDeaths() + 1);
+			if(id == player.getId()) {
+				gameOver();
+			}
 		}
 	}
 	

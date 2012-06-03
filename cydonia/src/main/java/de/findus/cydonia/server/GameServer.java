@@ -45,6 +45,7 @@ import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
 import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.PlayerQuitMessage;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.player.Player;
@@ -137,6 +138,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			Serializer.registerClass(HitMessage.class);
 			Serializer.registerClass(RespawnMessage.class);
 			Serializer.registerClass(PlayerJoinMessage.class);
+			Serializer.registerClass(PlayerQuitMessage.class);
 			
 			server.addMessageListener(this);
 			server.addConnectionListener(this);
@@ -315,7 +317,9 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			hp = 0;
 			this.killPlayer(victimid);
 			Player source = players.get(sourceid);
-			source.setKills(source.getKills() + 1);
+			if(source != null) {
+				source.setKills(source.getKills() + 1);
+			}
 		}
 		p.setHealthpoints(hp);
 		
@@ -331,9 +335,11 @@ public class GameServer extends Application implements MessageListener<HostedCon
 	
 	private void killPlayer(int id) {
 		Player p = players.get(id);
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		rootNode.detachChild(p.getModel());
-		
+		if(p != null) {
+			bulletAppState.getPhysicsSpace().remove(p.getControl());
+			rootNode.detachChild(p.getModel());
+			p.setAlive(false);
+		}
 	}
 
 	@Override
@@ -362,6 +368,12 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		bulletAppState.getPhysicsSpace().remove(p.getControl());
 		players.remove(conn.getId());
 		rootNode.detachChild(p.getModel());
+		
+		PlayerQuitMessage quit = new PlayerQuitMessage();
+		quit.setId(conn.getId());
+		for(HostedConnection client : server.getConnections()) {
+			client.send(quit);
+		}
 	}
 	
 	/**
