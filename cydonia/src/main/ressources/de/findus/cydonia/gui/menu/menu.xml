@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+   <useStyles filename="nifty-default-styles.xml" />
+   <useControls filename="nifty-default-controls.xml" />
+   
    <screen id="lobbymenu" controller="de.findus.cydonia.main.GameController">
     <layer id="layer" backgroundColor="#8888" childLayout="center">
-      <panel height="25%" width="30%" align="center" valign="center" backgroundColor="#555f" childLayout="vertical">
+      <panel width="50%" align="center" valign="center" backgroundColor="#555f" childLayout="vertical">
 	      <effect>
 	          <onStartScreen name="move" mode="in" direction="top" length="1000" startDelay="0" inherit="true"/>
 	          <onEndScreen name="move" mode="out" direction="top" length="1000" startDelay="0" inherit="true"/>
 	      </effect>
-	      <panel id="startgame" height="40%" width="80%" align="center" valign="top" backgroundColor="#f60f" childLayout="center" visibleToMouse="true">
-	        <interact onClick="startGame()"/>
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Spiel Starten" align="center" valign="center" />
-	      </panel>
+	      <control name="textfield" id="playername" text="Player name" width="100%" align="center" valign="center"/>
+	      <control name="textfield" id="serveraddress" text="Server IP address or name" width="100%" align="center" valign="center"/>
+	      <control name="button" label="Connect" width="40%" align="center">
+	      	<interact onClick="connect()" />
+	      </control>
       </panel>
     </layer>
   </screen>
@@ -39,6 +43,15 @@
     <layer id="layer" backgroundColor="#8888" childLayout="center">
       <panel height="20%" width="90%" align="center" valign="center" backgroundColor="#8888" childLayout="vertical">
 	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="You died. Press 'Fire' to respawn." align="center" valign="center" />
+      </panel>
+    </layer>
+  </screen>
+  
+  <screen id="scoreboardscreen" controller="de.findus.cydonia.main.GameController">
+    <layer id="layer" backgroundColor="#fff0" childLayout="center">
+      <panel height="50%" width="50%" align="center" valign="center" backgroundColor="#8885" childLayout="vertical">
+	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" align="center" valign="center" />
+	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" align="left" valign="center" />
       </panel>
     </layer>
   </screen>

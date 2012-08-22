@@ -7,7 +7,8 @@ import com.jme3.math.Vector3f;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
-import de.findus.cydonia.server.PlayerInputState;
+import de.findus.cydonia.player.PlayerInputState;
+
 
 /**
  * A <code>InputUpdate</code> is message containing an input state.

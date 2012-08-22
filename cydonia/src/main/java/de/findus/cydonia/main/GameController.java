@@ -32,17 +32,21 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
 
 import de.findus.cydonia.appstates.GameInputAppState;
-import de.findus.cydonia.appstates.MenuAppState;
+import de.findus.cydonia.appstates.MenuController;
+import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
+import de.findus.cydonia.messages.PlayerJoinMessage;
+import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.PlayerQuitMessage;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
-import de.findus.cydonia.server.Bullet;
-import de.findus.cydonia.server.BulletPhysic;
-import de.findus.cydonia.server.Player;
-import de.findus.cydonia.server.PlayerPhysic;
+import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.controls.textfield.TextFieldControl;
+import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
@@ -52,7 +56,7 @@ import de.lessvoid.nifty.screen.ScreenController;
  * 
  * @author Findus
  */
-public class GameController extends Application implements ActionListener, ScreenController, MessageListener<Client>, PhysicsCollisionListener{
+public class GameController extends Application implements ScreenController, MessageListener<Client>, PhysicsCollisionListener{
 	
 	public static final String TEXTURES_PATH = "de/findus/cydonia/textures/";
 	
@@ -61,10 +65,11 @@ public class GameController extends Application implements ActionListener, Scree
 	 */
 	private static final float SMOOTHING = 0.2f;
 	
+	private static final int RELOAD_TIME = 500;
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
     public static float PLAYER_SPEED = 5f;
-    public static float PHYSICS_ACCURACY = (1f / 240);
+    public static float PHYSICS_ACCURACY = (1f / 192);
     
     public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
     
@@ -74,7 +79,9 @@ public class GameController extends Application implements ActionListener, Scree
     
     protected WorldController worldController;
     
-    protected Node guiNode = new Node("Gui Node");
+    protected MenuController menuController;
+
+	protected Node guiNode = new Node("Gui Node");
     
     private  boolean showFps = true;
     protected float secondCounter = 0.0f;
@@ -84,13 +91,15 @@ public class GameController extends Application implements ActionListener, Scree
     protected StatsView statsView;
     
     private BulletAppState bulletAppState;
-    private MenuAppState menuAppState;
     private GameInputAppState gameInputAppState;
     
     private Vector3f walkDirection = new Vector3f();
     private boolean left=false, right=false, up=false, down=false;
     
     private Nifty nifty;
+    private Element serverAddressInput;
+    private Element playerNameInput;
+    
     private Player player;
     private HashMap<Integer, Player> players;
     private HashMap<Long, Bullet> bullets;
@@ -153,9 +162,8 @@ public class GameController extends Application implements ActionListener, Scree
     	nifty = niftyDisplay.getNifty();
     	guiViewPort.addProcessor(niftyDisplay);
 
-    	menuAppState = new MenuAppState();
-    	menuAppState.initialize(stateManager, this);
-    	stateManager.attach(menuAppState);
+    	menuController = new MenuController(this);
+    	menuController.actualizeScreen();
     	
     	gameInputAppState = new GameInputAppState(this);
     	
@@ -168,7 +176,7 @@ public class GameController extends Application implements ActionListener, Scree
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         
-        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         
@@ -192,44 +200,60 @@ public class GameController extends Application implements ActionListener, Scree
         bulletAppState.getPhysicsSpace().add(player.getControl());
         player.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
         
-        Player p2 = new Player(-1, assetManager);
-        bulletAppState.getPhysicsSpace().add(p2.getControl());
-        p2.getControl().setPhysicsLocation(new Vector3f(5, 10, 0));
-        worldController.attachObject(p2.getModel());
-        
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
-        bulletAppState.getPhysicsSpace().addCollisionObject(p2.getControl());
         
         connector = new ServerConnector(this);
     }
     
-    /**
+    public void connect() {
+    	gamestate = GameState.LOADING;
+    	menuController.actualizeScreen();
+    	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
+    	String playername = this.playerNameInput.getControl(TextFieldControl.class).getText();
+    	connector.connectToServer(serveraddress, 6173, this);
+    	player.setId(connector.getConnectionId());
+    	player.setName(playername);
+    	players.put(player.getId(), player);
+    	PlayerJoinMessage join = new PlayerJoinMessage();
+    	join.setId(player.getId());
+    	join.setName(playername);
+    	preload();
+    	connector.sendMessage(join);
+    	bulletAppState.setEnabled(true);
+    	gamestate = GameState.DEAD;
+    	stateManager.attach(gameInputAppState);
+    	menuController.actualizeScreen();
+    }
+    
+    
+
+	/**
      * Starts the actual game eg. the game loop.
      */
-    public void startGame() {
-    	stateManager.detach(menuAppState);
-    	gamestate = GameState.RUNNING;
-    	stateManager.attach(gameInputAppState);
-    	bulletAppState.setEnabled(true);
-    	connector.connectToServer("localhost", 6173);
-    	try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	player.setId(connector.getConnectionId());
-    	players.put(player.getId(), player);
-    	connector.addMessageListener(this);
-    	connector.startInputSender();
-    }
+//    public void startGame() {
+//    	stateManager.detach(menuAppState);
+//    	gamestate = GameState.RUNNING;
+//    	stateManager.attach(gameInputAppState);
+//    	bulletAppState.setEnabled(true);
+//    	connector.connectToServer("localhost", 6173);
+//    	try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    	player.setId(connector.getConnectionId());
+//    	players.put(player.getId(), player);
+//    	connector.addMessageListener(this);
+//    	connector.startInputSender();
+//    }
     
     /**
      * Resumes the game after pausing.
      */
     public void resumeGame() {
-    	stateManager.detach(menuAppState);
     	gamestate = GameState.RUNNING;
+    	menuController.actualizeScreen();
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	connector.startInputSender();
@@ -242,7 +266,7 @@ public class GameController extends Application implements ActionListener, Scree
     	bulletAppState.setEnabled(false);
     	stateManager.detach(gameInputAppState);
     	gamestate = GameState.PAUSED;
-    	stateManager.attach(menuAppState);
+    	menuController.actualizeScreen();
     	connector.stopInputSender();
     }
     
@@ -255,7 +279,7 @@ public class GameController extends Application implements ActionListener, Scree
     public void gameOver() {
 //    	stateManager.detach(gameInputAppState);
     	gamestate = GameState.DEAD;
-    	stateManager.attach(menuAppState);
+    	menuController.actualizeScreen();
     	connector.stopInputSender();
     }
     
@@ -263,10 +287,13 @@ public class GameController extends Application implements ActionListener, Scree
     	RespawnMessage respawn = new RespawnMessage();
     	respawn.setPlayerid(player.getId());
     	connector.sendMessage(respawn);
-    	
     }
     
-    @Override
+    private void preload() {
+		assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
+	}
+
+	@Override
     public void update() {
         super.update(); // makes sure to execute AppTasks
         if (speed == 0 || paused) {
@@ -314,14 +341,14 @@ public class GameController extends Application implements ActionListener, Scree
 
     			for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
     				Player p = players.get(physic.getId());
-    				if(p == null) {
-    					p = new Player(physic.getId(), assetManager);
-    					System.out.println("generated playermodel client: " + p.getId());
-    					p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
-    					players.put(p.getId(), p);
-    					bulletAppState.getPhysicsSpace().add(p.getControl());
-    					worldController.attachObject(p.getModel());
-    				}
+//    				if(p == null) {
+//    					p = new Player(physic.getId(), assetManager);
+//    					System.out.println("generated playermodel client: " + p.getId());
+//    					p.getControl().setPhysicsLocation(new Vector3f(5, 5, 5));
+//    					players.put(p.getId(), p);
+//    					bulletAppState.getPhysicsSpace().add(p.getControl());
+//    					worldController.attachObject(p.getModel());
+//    				}
     				if(p != null) {
     					p.setExactLoc(physic.getTranslation());
     					p.getControl().setViewDirection(physic.getOrientation());
@@ -330,6 +357,12 @@ public class GameController extends Application implements ActionListener, Scree
 
     			for (BulletPhysic physic : worldState.getBulletPhysics()) {
     				Bullet b = bullets.get(physic.getId());
+    				if(b == null) {
+    					b = new Bullet(physic.getId(), physic.getSourceid());
+    					bullets.put(b.getId(), b);
+    					bulletAppState.getPhysicsSpace().add(b.getControl());
+    					worldController.attachObject(b.getModel());
+    				}
     				if(b != null) {	
     					b.setExactLoc(physic.getTranslation());
     					b.getControl().setPhysicsLocation(physic.getTranslation());
@@ -339,6 +372,7 @@ public class GameController extends Application implements ActionListener, Scree
     		}else if(msg instanceof AttackMessage) {
     			AttackMessage attack = (AttackMessage) msg;
     			int playerid = attack.getPlayerid();
+    			player.setLastShot(System.currentTimeMillis());
     			BulletPhysic physic = attack.getPhysic();
     			Bullet b = new Bullet(physic.getId(), playerid);
     			b.getControl().setPhysicsLocation(physic.getTranslation());
@@ -348,18 +382,35 @@ public class GameController extends Application implements ActionListener, Scree
     			worldController.attachObject(b.getModel());
     		}else if(msg instanceof HitMessage) {
     			HitMessage hit = (HitMessage) msg;
-    			hitPlayer(hit.getPlayerid(), hit.getHitpoints());
+    			hitPlayer(hit.getSourcePlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
+    		}else if(msg instanceof PlayerJoinMessage) {
+    			PlayerJoinMessage join = (PlayerJoinMessage) msg;
+    			int playerid = join.getId();
+    			if(player.getId() != playerid) {
+    				String playername = join.getName();
+    				Player p = new Player(playerid, assetManager);
+    				p.setName(playername);
+    				players.put(p.getId(), p);
+    			}
     		}else if(msg instanceof RespawnMessage) {
     			RespawnMessage respawn = (RespawnMessage) msg;
         		int playerid = respawn.getPlayerid();
         		Player p = players.get(playerid);
         		p.setHealthpoints(100);
+        		p.setAlive(true);
         		bulletAppState.getPhysicsSpace().add(p.getControl());
         		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
         		worldController.attachObject(p.getModel());
         		if(p.getId() == player.getId()) {
         			resumeGame();
         		}
+    		}else if(msg instanceof PlayerQuitMessage) {
+    			PlayerQuitMessage quit = (PlayerQuitMessage) msg;
+    			int playerid = quit.getId();
+    			Player p = players.get(playerid);
+    			bulletAppState.getPhysicsSpace().remove(p.getControl());
+    			worldController.detachObject(p.getModel());
+    			players.remove(playerid);
     		}
     	}
     }
@@ -410,18 +461,6 @@ public class GameController extends Application implements ActionListener, Scree
     }
 
     @Override
-	public void onAction(String name, boolean isPressed, float tpf) {
-    	if (!isPressed) {
-            return;
-        }
-    	if (name.equals(SimpleApplication.INPUT_MAPPING_HIDE_STATS)){
-            boolean show = showFps;
-            setDisplayFps(!show);
-            setDisplayStatView(!show);
-        }
-	}
-
-    @Override
 	public void collision(PhysicsCollisionEvent e) {
     	Spatial bullet = null;
     	Spatial other = null;
@@ -465,9 +504,12 @@ public class GameController extends Application implements ActionListener, Scree
     public void attack() {
     	switch(getGamestate()) {
     	case RUNNING:
-    		AttackMessage msg = new AttackMessage();
-    		msg.setPlayerid(player.getId());
-    		this.connector.sendMessage(msg);
+    		long passedTime = System.currentTimeMillis() - player.getLastShot();
+    		if(passedTime >= RELOAD_TIME) {
+    			AttackMessage msg = new AttackMessage();
+    			msg.setPlayerid(player.getId());
+    			this.connector.sendMessage(msg);
+    		}
     		break;
 
     	case DEAD:
@@ -476,27 +518,53 @@ public class GameController extends Application implements ActionListener, Scree
     	}
     }
 	
-	private void hitPlayer(int id, double hitpoints) {
-		Player p = players.get(id);
-		if(p == null) {
+	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
+		Player victim = players.get(victimid);
+		if(victim == null) {
 			return;
 		}
-		double hp = p.getHealthpoints();
+		double hp = victim.getHealthpoints();
 		hp -= hitpoints;
 		System.out.println("hit - new hp: " + hp);
 		if(hp <= 0) {
 			hp = 0;
-			this.killPlayer(id);
+			this.killPlayer(victimid);
+			Player source = this.players.get(sourceid);
+			if(source != null) {
+				source.setKills(source.getKills() + 1);
+			}
 		}
-		p.setHealthpoints(hp);
+		victim.setHealthpoints(hp);
 	}
 	
 	private void killPlayer(int id) {
 		Player p = players.get(id);
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		worldController.detachObject(p.getModel());
-		if(id == player.getId()) {
-			gameOver();
+		if(p != null) {
+			bulletAppState.getPhysicsSpace().remove(p.getControl());
+			worldController.detachObject(p.getModel());
+			p.setAlive(false);
+			p.setDeaths(p.getDeaths() + 1);
+			if(id == player.getId()) {
+				gameOver();
+			}
+		}
+	}
+	
+	public String getScores() {
+		StringBuilder builder = new StringBuilder();
+		for (Player p : players.values()) {
+			builder.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+		}
+		return builder.toString();
+	}
+	
+	public void scoreboard(boolean show) {
+		if(gamestate == GameState.RUNNING || gamestate == GameState.DEAD || gamestate == GameState.SPECTATE) {
+			if(show) {
+				menuController.showScorebord();
+			}else {
+				menuController.actualizeScreen();
+			}
 		}
 	}
 	
@@ -534,15 +602,16 @@ public class GameController extends Application implements ActionListener, Scree
 	 * Sets the displayStats property.
 	 * @param show if true stats are painted
 	 */
-    public void setDisplayStatView(boolean show) {
-        statsView.setEnabled(show);
+    public void setDisplayStatView() {
+        boolean show = !statsView.isEnabled();
+    	statsView.setEnabled(show);
         statsView.setCullHint(show ? CullHint.Never : CullHint.Always);
     }
 
 	@Override
-	public void bind(Nifty arg0, Screen arg1) {
-		// TODO Auto-generated method stub
-		
+	public void bind(Nifty nifty, Screen screen) {
+		this.serverAddressInput = screen.findElementByName("serveraddress");
+		this.playerNameInput = screen.findElementByName("playername");
 	}
 
 	@Override

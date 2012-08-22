@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.findus.cydonia.server;
+package de.findus.cydonia.player;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
@@ -18,6 +18,10 @@ import de.findus.cydonia.main.GameController;
 public class Player {
 	
 	private int id;
+	
+	private String name;
+	
+	private boolean alive = false;
 
 	private PlayerInputState inputs;
 	
@@ -28,6 +32,12 @@ public class Player {
 	private Spatial model;
 	
 	private double healthpoints = 100;
+	
+	private long lastShot = 0;
+	
+	private int kills = 0;
+	
+	private int deaths = 0;
 	
 	
 	/**
@@ -100,6 +110,34 @@ public class Player {
 		this.id = id;
 	}
 
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @return the alive
+	 */
+	public boolean isAlive() {
+		return alive;
+	}
+
+	/**
+	 * @param alive the alive to set
+	 */
+	public void setAlive(boolean alive) {
+		this.alive = alive;
+	}
+
 	public Vector3f getExactLoc() {
 		return exactLoc;
 	}
@@ -114,6 +152,30 @@ public class Player {
 
 	public void setHealthpoints(double healthpoints) {
 		this.healthpoints = healthpoints;
+	}
+	
+	public long getLastShot() {
+		return this.lastShot;
+	}
+	
+	public void setLastShot(long time) {
+		this.lastShot = time;
+	}
+
+	public int getKills() {
+		return kills;
+	}
+
+	public void setKills(int kills) {
+		this.kills = kills;
+	}
+
+	public int getDeaths() {
+		return deaths;
+	}
+
+	public void setDeaths(int deaths) {
+		this.deaths = deaths;
 	}
 
 }

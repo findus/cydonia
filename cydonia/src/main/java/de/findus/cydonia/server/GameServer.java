@@ -35,24 +35,33 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.JmeContext;
 
+import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
+import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
+import de.findus.cydonia.messages.PlayerJoinMessage;
+import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.PlayerQuitMessage;
 import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
+import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerInputState;
 
 /**
  * @author Findus
  *
  */
 public class GameServer extends Application implements MessageListener<HostedConnection>, ConnectionListener, PhysicsCollisionListener {
-
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
 	public static float PLAYER_SPEED = 5f;
-	public static float PHYSICS_ACCURACY = (1f / 240);
+	public static float PHYSICS_ACCURACY = (1f / 192);
+	
+	private static final int RELOAD_TIME = 500;
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -77,7 +86,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
     
     private boolean senderRunning;
     
-    private ConcurrentLinkedQueue<PlayerInputMessage> updateQueue;
+    private ConcurrentLinkedQueue<Message> updateQueue;
     
     /**
      * Used for moving players.
@@ -91,7 +100,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 
         this.players = new HashMap<Integer, Player>();
         this.bullets = new HashMap<Long, Bullet>();
-        updateQueue = new ConcurrentLinkedQueue<PlayerInputMessage>();
+        updateQueue = new ConcurrentLinkedQueue<Message>();
         
         Bullet.setAssetManager(assetManager);
 
@@ -102,15 +111,6 @@ public class GameServer extends Application implements MessageListener<HostedCon
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
-        
-        
-        Box box1 = new Box( new Vector3f(0,3,0), 1,1,1);
-        Geometry blue = new Geometry("Box", box1);
-        Material mat1 = new Material(assetManager, 
-                "Common/MatDefs/Misc/Unshaded.j3md");
-        mat1.setColor("Color", ColorRGBA.Blue);
-        blue.setMaterial(mat1);
-        rootNode.attachChild(blue);
         
         Level level = new Level1();
         Spatial scene = null;
@@ -124,6 +124,8 @@ public class GameServer extends Application implements MessageListener<HostedCon
         rootNode.attachChild(scene);
         bulletAppState.getPhysicsSpace().add(landscape);
         
+        assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
+        
         try {
 			server = Network.createServer(6173);
 			server.start();
@@ -135,6 +137,8 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			Serializer.registerClass(AttackMessage.class);
 			Serializer.registerClass(HitMessage.class);
 			Serializer.registerClass(RespawnMessage.class);
+			Serializer.registerClass(PlayerJoinMessage.class);
+			Serializer.registerClass(PlayerQuitMessage.class);
 			
 			server.addMessageListener(this);
 			server.addConnectionListener(this);
@@ -162,7 +166,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
         stateManager.update(tpf);
 
         // update game specific things
-        updateInputs();
+        handleMessages();
         movePlayers(tpf);
         
         // update world and gui
@@ -174,16 +178,73 @@ public class GameServer extends Application implements MessageListener<HostedCon
         stateManager.postRender();
     }
 
-	private void updateInputs() {
+	private void handleMessages() {
 		while (!updateQueue.isEmpty()) {
-			PlayerInputMessage inputUpdate = updateQueue.poll();
-			Player p = players.get(inputUpdate.getPlayerId());
-			if(p != null) {
-				p.setInputState(inputUpdate.getInputs());
-				p.getControl().setViewDirection(inputUpdate.getViewDir());
+			Message m = updateQueue.poll();
+
+			if (m instanceof PlayerInputMessage) {
+				PlayerInputMessage inputUpdate = (PlayerInputMessage) m;
+				Player p = players.get(inputUpdate.getPlayerId());
+				if(p != null) {
+					p.setInputState(inputUpdate.getInputs());
+					p.getControl().setViewDirection(inputUpdate.getViewDir());
+				}
+			}else if(m instanceof AttackMessage) {
+				AttackMessage attack = (AttackMessage) m;
+				Player p = players.get(attack.getPlayerid());
+				long passedTime = System.currentTimeMillis() - p.getLastShot();
+				if(passedTime >= RELOAD_TIME) {
+					p.setLastShot(System.currentTimeMillis());
+					Vector3f pos = p.getControl().getPhysicsLocation();
+					Vector3f dir = p.getControl().getViewDirection();
+
+					Bullet bul = Bullet.createBullet(p.getId());
+					bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
+					rootNode.attachChild(bul.getModel());
+					bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
+					bulletAppState.getPhysicsSpace().add(bul.getControl());
+					bul.getControl().setLinearVelocity(dir.normalize().mult(25));
+
+					bullets.put(bul.getId(), bul);
+
+					BulletPhysic physic = new BulletPhysic();
+					physic.setId(bul.getId());
+					physic.setTranslation(bul.getControl().getPhysicsLocation());
+					physic.setVelocity(bul.getControl().getLinearVelocity());
+					attack.setPhysic(physic);
+					for(HostedConnection con : server.getConnections()) {
+						con.send(attack);
+					}
+				}
+			}else if(m instanceof PlayerJoinMessage) {
+				PlayerJoinMessage join = (PlayerJoinMessage) m;
+				int playerid = join.getId();
+				String playername = join.getName();
+				Player p = new Player(playerid, assetManager);
+				p.setName(playername);
+				players.put(playerid, p);
+				bulletAppState.getPhysicsSpace().add(p.getControl());
+				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+				rootNode.attachChild(p.getModel());
+				
+				for (HostedConnection con : server.getConnections()) {
+					con.send(join);
+				}
+			}else if(m instanceof RespawnMessage) {
+				RespawnMessage respawn = (RespawnMessage) m;
+				int playerid = respawn.getPlayerid();
+				Player p = players.get(playerid);
+				p.setHealthpoints(100);
+				p.setAlive(true);
+				bulletAppState.getPhysicsSpace().add(p.getControl());
+				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+				rootNode.attachChild(p.getModel());
+
+				for (HostedConnection con : server.getConnections()) {
+					con.send(respawn);
+				}
 			}
 		}
-		
 	}
 
 	private void movePlayers(float tpf) {
@@ -228,10 +289,11 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			rootNode.detachChild(bullet);
 			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
 			bullet.removeControl(RigidBodyControl.class);
-			if(other.getName().startsWith("player")) {
-				int playerid = Integer.parseInt(other.getName().substring(6));
-				System.out.println("detected hit at player: " + playerid);
-				this.hitPlayer(playerid);
+			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
+				int victimid = Integer.parseInt(other.getName().substring(6));
+				long bulletid = Long.parseLong(bullet.getName().substring(6));
+				Bullet bul = bullets.get(bulletid);
+				this.hitPlayer(bul.getPlayerid(), victimid, 20);
 			}else {
 				if(other != null) {
 					if (other instanceof Node) {
@@ -244,22 +306,27 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		}
 	}
 	
-	private void hitPlayer(int id) {
-		Player p = players.get(id);
+	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
+		Player p = players.get(victimid);
 		if(p == null) {
 			return;
 		}
 		double hp = p.getHealthpoints();
-		hp -= 20;
+		hp -= hitpoints;
 		if(hp <= 0) {
 			hp = 0;
-			this.killPlayer(id);
+			this.killPlayer(victimid);
+			Player source = players.get(sourceid);
+			if(source != null) {
+				source.setKills(source.getKills() + 1);
+			}
 		}
 		p.setHealthpoints(hp);
 		
 		HitMessage hit = new HitMessage();
-		hit.setPlayerid(id);
+		hit.setVictimPlayerid(victimid);
 		hit.setHitpoints(20);
+		hit.setSourcePlayerid(sourceid);
 		
 		for(HostedConnection con : server.getConnections()) {
 			con.send(hit);
@@ -268,61 +335,31 @@ public class GameServer extends Application implements MessageListener<HostedCon
 	
 	private void killPlayer(int id) {
 		Player p = players.get(id);
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		rootNode.detachChild(p.getModel());
-		
+		if(p != null) {
+			bulletAppState.getPhysicsSpace().remove(p.getControl());
+			rootNode.detachChild(p.getModel());
+			p.setAlive(false);
+		}
 	}
 
 	@Override
 	public void messageReceived(HostedConnection source, Message m) {
-		if (m instanceof PlayerInputMessage) {
-    		PlayerInputMessage inputUpdate = (PlayerInputMessage) m;
-    		updateQueue.add(inputUpdate);
-    	}else if(m instanceof AttackMessage) {
-    		AttackMessage attack = (AttackMessage) m;
-    		Player p = players.get(attack.getPlayerid());
-    		Vector3f pos = p.getControl().getPhysicsLocation();
-    		Vector3f dir = p.getControl().getViewDirection();
-    		
-    		Bullet bul = Bullet.createBullet(p.getId());
-    		bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
-        	rootNode.attachChild(bul.getModel());
-        	bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
-        	bulletAppState.getPhysicsSpace().add(bul.getControl());
-        	bul.getControl().setLinearVelocity(dir.normalize().mult(25));
-        	
-        	bullets.put(bul.getId(), bul);
-        	
-        	BulletPhysic physic = new BulletPhysic();
-        	physic.setId(bul.getId());
-        	physic.setTranslation(bul.getControl().getPhysicsLocation());
-        	physic.setVelocity(bul.getControl().getLinearVelocity());
-        	attack.setPhysic(physic);
-        	for(HostedConnection con : server.getConnections()) {
-        		con.send(attack);
-        	}
-    	}else if(m instanceof RespawnMessage) {
-    		RespawnMessage respawn = (RespawnMessage) m;
-    		int playerid = respawn.getPlayerid();
-    		Player p = players.get(playerid);
-    		p.setHealthpoints(100);
-    		bulletAppState.getPhysicsSpace().add(p.getControl());
-    		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-    		rootNode.attachChild(p.getModel());
-    		
-    		for (HostedConnection con : server.getConnections()) {
-				con.send(respawn);
-			}
-    	}
+		updateQueue.add(m);
 	}
 
 	@Override
 	public void connectionAdded(Server server, HostedConnection conn) {
-		Player p = new Player(conn.getId(), assetManager);
-		players.put(conn.getId(), p);
-		bulletAppState.getPhysicsSpace().add(p.getControl());
-		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-		rootNode.attachChild(p.getModel());
+		for (Player p : players.values()) {
+			PlayerJoinMessage join = new PlayerJoinMessage();
+			join.setId(p.getId());
+			join.setName(p.getName());
+			conn.send(join);
+			if(p.isAlive()) {
+				RespawnMessage respawn = new RespawnMessage();
+				respawn.setPlayerid(p.getId());
+				conn.send(respawn);
+			}
+		}
 	}
 
 	@Override
@@ -331,6 +368,12 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		bulletAppState.getPhysicsSpace().remove(p.getControl());
 		players.remove(conn.getId());
 		rootNode.detachChild(p.getModel());
+		
+		PlayerQuitMessage quit = new PlayerQuitMessage();
+		quit.setId(conn.getId());
+		for(HostedConnection client : server.getConnections()) {
+			client.send(quit);
+		}
 	}
 	
 	/**
