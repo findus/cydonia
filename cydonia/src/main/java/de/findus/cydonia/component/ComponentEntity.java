@@ -3,6 +3,8 @@
  */
 package de.findus.cydonia.component;
 
+import java.awt.Dimension;
+
 import de.findus.cydonia.entity.EntityBase;
 
 /**
@@ -12,6 +14,8 @@ import de.findus.cydonia.entity.EntityBase;
 public class ComponentEntity extends EntityBase {
 
 	private String name;
+	
+	protected Dimension size;
 	
 	private int resistance;
 	
@@ -66,6 +70,20 @@ public class ComponentEntity extends EntityBase {
 	 */
 	public void setFlexibility(int flexibility) {
 		this.flexibility = flexibility;
+	}
+
+	/**
+	 * @return the size
+	 */
+	public Dimension getSize() {
+		return size;
+	}
+
+	/**
+	 * @param size the size to set
+	 */
+	public void setSize(Dimension size) {
+		this.size = size;
 	}
 
 }
