@@ -144,6 +144,7 @@ public class GameController extends Application implements ScreenController, Mes
         bullets = new HashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
+        Bullet.preloadTextures();
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -217,7 +218,6 @@ public class GameController extends Application implements ScreenController, Mes
     	PlayerJoinMessage join = new PlayerJoinMessage();
     	join.setId(player.getId());
     	join.setName(playername);
-    	preload();
     	connector.sendMessage(join);
     	bulletAppState.setEnabled(true);
     	gamestate = GameState.DEAD;
@@ -290,7 +290,6 @@ public class GameController extends Application implements ScreenController, Mes
     }
     
     private void preload() {
-		assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
 	}
 
 	@Override

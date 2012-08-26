@@ -124,7 +124,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
         rootNode.attachChild(scene);
         bulletAppState.getPhysicsSpace().add(landscape);
         
-        assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
+        Bullet.preloadTextures();
         
         try {
 			server = Network.createServer(6173);
