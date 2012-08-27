@@ -3,6 +3,9 @@
  */
 package de.findus.cydonia.building;
 
+import java.awt.Dimension;
+
+import de.findus.cydonia.component.ComponentEntity;
 import de.findus.cydonia.component.ComponentGroupEntity;
 
 
@@ -17,9 +20,9 @@ public class BuilderBPO {
 			return;
 		}
 		
-		int top = Integer.MAX_VALUE;
+		int top = (int) builder.getSize().getHeight();
 		int bottom = 0;
-		int left = Integer.MAX_VALUE;
+		int left = (int) builder.getSize().getWidth();
 		int right = 0;
 		
 		for(int x=0; x<builder.getSize().getWidth(); x++) {
@@ -32,10 +35,18 @@ public class BuilderBPO {
 				}
 			}
 		}
+		int width = right-left;
+		int height = bottom-top;
+		
+		ComponentEntity[][] components = new ComponentEntity[width][height];
+		for(int x=0; x<width; x++) {
+			for(int y=0; y<height; y++) {
+				components[x][y] = builder.getComponent(x+left, y+top);
+			}
+		}
 		
 		ComponentGroupEntity group = new ComponentGroupEntity();
-		
-		// TODO: Maße setzen und Komponenten kopieren.
+		group.setComponents(components);
 	}
 
 	private boolean isConnected(BuilderEntity builder) {
