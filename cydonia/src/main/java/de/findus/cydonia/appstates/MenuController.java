@@ -49,6 +49,11 @@ public class MenuController {
 			gameController.getInputManager().setCursorVisible(false);
 			break;
 			
+		case BUILD:
+			gameController.getNifty().gotoScreen("none");
+			gameController.getInputManager().setCursorVisible(false);
+			break;
+			
 		default:
 			break;
 		}

@@ -56,6 +56,9 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(SimpleApplication.INPUT_MAPPING_HIDE_STATS, new KeyTrigger(KeyInput.KEY_F5));
         inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_HIDE_STATS, "scoreboard");
         
+        inputManager.addMapping("toggle-build-mode", new KeyTrigger(KeyInput.KEY_F8));
+        inputManager.addListener(this, "toggle-build-mode");
+        
         inputManager.addMapping(SimpleApplication.INPUT_MAPPING_EXIT, new KeyTrigger(KeyInput.KEY_ESCAPE));
         inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_EXIT);
         
@@ -93,6 +96,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
             if(isPressed) gameController.setDisplayStatView();
         }else if (name.equals("scoreboard")) {
             gameController.scoreboard(isPressed);
+        }else if (name.equals("toggle-build-mode")) {
+        	if(isPressed) gameController.togglebuildMode();
         }
 	}
 	

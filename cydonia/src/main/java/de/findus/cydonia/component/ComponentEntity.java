@@ -12,14 +12,24 @@ import de.findus.cydonia.entity.EntityBase;
  *
  */
 public class ComponentEntity extends EntityBase {
-
-	private String name;
+	
+	public static final byte LINK_NONE = 0x00;
+	public static final byte LINK_FRONT = 0x01;
+	public static final byte LINK_BACK = 0x02;
+	public static final byte LINK_LEFT = 0x04;
+	public static final byte LINK_RIGHT = 0x08;
+	public static final byte LINK_TOP = 0x10;
+	public static final byte LINK_BOTTOM = 0x20;
+	
+	protected String name;
 	
 	protected Dimension size;
 	
-	private int resistance;
+	protected int resistance;
 	
-	private int flexibility;
+	protected int flexibility;
+	
+	protected byte links = LINK_NONE;
 	
 	
 	
@@ -84,6 +94,20 @@ public class ComponentEntity extends EntityBase {
 	 */
 	public void setSize(Dimension size) {
 		this.size = size;
+	}
+
+	/**
+	 * @return the links
+	 */
+	public byte getLinks() {
+		return links;
+	}
+
+	/**
+	 * @param links the links to set
+	 */
+	public void setLinks(byte links) {
+		this.links = links;
 	}
 
 }

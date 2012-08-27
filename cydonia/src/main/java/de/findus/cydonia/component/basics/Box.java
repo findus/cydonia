@@ -15,5 +15,6 @@ public class Box extends ComponentEntity {
 	
 	public Box() {
 		this.size = new Dimension(1, 1);
+		this.links = LINK_FRONT & LINK_BACK & LINK_LEFT & LINK_RIGHT & LINK_TOP & LINK_BOTTOM;
 	}
 }

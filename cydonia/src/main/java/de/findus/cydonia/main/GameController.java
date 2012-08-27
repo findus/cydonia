@@ -281,7 +281,15 @@ public class GameController extends Application implements ScreenController, Mes
     	connector.stopInputSender();
     }
     
-    public void respawn() {
+    public void togglebuildMode() {
+		gamestate = GameState.BUILD;
+		menuController.actualizeScreen();
+		
+		
+		//TODO: implement
+	}
+
+	public void respawn() {
     	RespawnMessage respawn = new RespawnMessage();
     	respawn.setPlayerid(player.getId());
     	connector.sendMessage(respawn);

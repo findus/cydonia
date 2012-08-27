@@ -3,8 +3,6 @@
  */
 package de.findus.cydonia.building;
 
-import java.awt.Dimension;
-
 import de.findus.cydonia.component.ComponentEntity;
 import de.findus.cydonia.component.ComponentGroupEntity;
 
