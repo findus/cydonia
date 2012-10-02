@@ -44,12 +44,8 @@ import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.builder.ElementBuilder;
 import de.lessvoid.nifty.controls.DropDown;
 import de.lessvoid.nifty.controls.TextField;
-import de.lessvoid.nifty.controls.dropdown.DropDownControl;
-import de.lessvoid.nifty.controls.textfield.TextFieldControl;
-import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
@@ -558,11 +554,22 @@ public class GameController extends Application implements ScreenController, Mes
 	}
 	
 	public String getScores() {
-		StringBuilder builder = new StringBuilder();
+		StringBuilder sb_team1 = new StringBuilder();
+		StringBuilder sb_team2 = new StringBuilder();
 		for (Player p : players.values()) {
-			builder.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			if(p.getTeam() == 1) {
+				sb_team1.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			}else if(p.getTeam() == 2) {
+				sb_team2.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			}
 		}
-		return builder.toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Team 1 \t\t Kills \t\t Deaths");
+		sb.append(sb_team1);
+		sb.append("\n\n\n\n");
+		sb.append("Team 2 \t\t Kills \t\t Deaths");
+		sb.append(sb_team2);
+		return sb.toString();
 	}
 	
 	public void scoreboard(boolean show) {

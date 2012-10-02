@@ -34,7 +34,6 @@ import com.jme3.system.JmeContext;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
-import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.HitMessage;
