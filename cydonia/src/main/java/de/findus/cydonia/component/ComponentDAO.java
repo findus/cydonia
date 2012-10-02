@@ -6,6 +6,8 @@ package de.findus.cydonia.component;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.findus.cydonia.component.basics.Box;
+
 /**
  * @author Findus
  *
@@ -30,6 +32,18 @@ public class ComponentDAO {
 	 */
 	private ComponentDAO() {
 		componentList = new HashMap<Long, ComponentEntity>();
+		
+		ComponentEntity com = new Box();
+		com.setName("Box1");
+		com.setFlexibility(1);
+		com.setResistance(1);
+		this.saveNew(com);
+		
+		com = new Box();
+		com.setName("Box2");
+		com.setFlexibility(1);
+		com.setResistance(1);
+		this.saveNew(com);
 	}
 	
 	public ComponentEntity getComponent(long id) {
