@@ -17,6 +17,8 @@ public class PlayerJoinMessage extends AbstractMessage {
 	
 	private String name;
 	
+	private int team;
+	
 	public PlayerJoinMessage() {
 		setReliable(true);
 	}
@@ -48,6 +50,18 @@ public class PlayerJoinMessage extends AbstractMessage {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	
+
+	/**
+	 * @return the team
+	 */
+	public int getTeam() {
+		return team;
+	}
+
+	/**
+	 * @param team the team to set
+	 */
+	public void setTeam(int team) {
+		this.team = team;
+	}
 }

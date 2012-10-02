@@ -34,6 +34,11 @@ public class WorldController {
 	 * Physics control object of the scene.
 	 */
 	private RigidBodyControl worldCollisionControll;
+	
+	/**
+	 * The level currently loaded.
+	 */
+	private Level level;
 
 	/**
 	 * Constructs setting up ambient light.
@@ -47,7 +52,7 @@ public class WorldController {
 	 * @param assetManager an instance of AssetManager
 	 */
 	public void loadWorld() {
-		Level level = new Level1();
+		level = new Level1();
         Spatial scene = null;
         scene = level.getScene(assetManager);
         
@@ -117,6 +122,10 @@ public class WorldController {
 
 	public void setAssetManager(AssetManager assetManager) {
 		this.assetManager = assetManager;
+	}
+
+	public Level getLevel() {
+		return level;
 	}
 
 }

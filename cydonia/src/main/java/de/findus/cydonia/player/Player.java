@@ -21,6 +21,8 @@ public class Player {
 	
 	private String name;
 	
+	private int team;
+	
 	private boolean alive = false;
 
 	private PlayerInputState inputs;
@@ -176,6 +178,20 @@ public class Player {
 
 	public void setDeaths(int deaths) {
 		this.deaths = deaths;
+	}
+
+	/**
+	 * @return the team
+	 */
+	public int getTeam() {
+		return team;
+	}
+
+	/**
+	 * @param team the team to set
+	 */
+	public void setTeam(int team) {
+		this.team = team;
 	}
 
 }

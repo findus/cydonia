@@ -84,6 +84,8 @@ public class GameServer extends Application implements MessageListener<HostedCon
     
     private ConcurrentLinkedQueue<Message> updateQueue;
     
+    private Level level;
+    
     /**
      * Used for moving players.
      * Allocated only once and reused for performance reasons.
@@ -108,7 +110,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-        Level level = new Level1();
+        level = new Level1();
         Spatial scene = null;
         //scene = assetManager.loadModel("Scenes/firstworld.j3o");
         scene = level.getScene(assetManager);
@@ -215,9 +217,9 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			}else if(m instanceof PlayerJoinMessage) {
 				PlayerJoinMessage join = (PlayerJoinMessage) m;
 				int playerid = join.getId();
-				String playername = join.getName();
 				Player p = new Player(playerid, assetManager);
-				p.setName(playername);
+				p.setName(join.getName());
+				p.setTeam(join.getTeam());
 				players.put(playerid, p);
 				bulletAppState.getPhysicsSpace().add(p.getControl());
 				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
@@ -233,7 +235,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 				p.setHealthpoints(100);
 				p.setAlive(true);
 				bulletAppState.getPhysicsSpace().add(p.getControl());
-				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+				p.getControl().setPhysicsLocation(level.getSpawnPoint(p.getTeam()).getPosition());
 				rootNode.attachChild(p.getModel());
 
 				for (HostedConnection con : server.getConnections()) {
@@ -349,6 +351,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 			PlayerJoinMessage join = new PlayerJoinMessage();
 			join.setId(p.getId());
 			join.setName(p.getName());
+			join.setTeam(p.getTeam());
 			conn.send(join);
 			if(p.isAlive()) {
 				RespawnMessage respawn = new RespawnMessage();
