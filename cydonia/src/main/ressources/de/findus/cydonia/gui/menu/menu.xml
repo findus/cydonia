@@ -12,6 +12,8 @@
 	          <onEndScreen name="move" mode="out" direction="top" length="1000" startDelay="0" inherit="true"/>
 	      </effect>
 	      <control name="textfield" id="playername" text="Player name" width="100%" align="center" valign="center"/>
+	      <control name="dropDown" id="team" width="100%" align="center" valign="center">
+          </control>
 	      <control name="textfield" id="serveraddress" text="Server IP address or name" width="100%" align="center" valign="center"/>
 	      <control name="button" label="Connect" width="40%" align="center">
 	      	<interact onClick="connect()" />
@@ -49,9 +51,9 @@
   
   <screen id="scoreboardscreen" controller="de.findus.cydonia.main.GameController">
     <layer id="layer" backgroundColor="#fff0" childLayout="center">
-      <panel height="50%" width="50%" align="center" valign="center" backgroundColor="#8885" childLayout="vertical">
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" align="center" valign="center" />
-	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" align="left" valign="center" />
+      <panel height="50%" width="80%" align="center" valign="center" backgroundColor="#8885" childLayout="vertical">
+	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" height="5%" align="center" valign="center" />
+	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" align="left" valign="top" />
       </panel>
     </layer>
   </screen>

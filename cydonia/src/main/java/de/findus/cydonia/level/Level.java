@@ -19,4 +19,18 @@ public interface Level {
 	 * @return root node of scene graph
 	 */
     public Node getScene(AssetManager assetManager);
+    
+    /**
+     * Returns all available spawnpoints in this level as an array.
+     * 
+     * @return array of spwanpoints
+     */
+    public SpawnPoint[] getSpawnPoints();
+    
+    /**
+     * Returns the spawnpoint for the specified team in this level.
+     * 
+     * @return the spawnpoint
+     */
+    public SpawnPoint getSpawnPoint(int team);
 }

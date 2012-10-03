@@ -24,10 +24,17 @@ public class Bullet {
 	
 	private static AssetManager assetManager;
 	
+	private static Material material;
+	
 	public static void setAssetManager(AssetManager am) {
 		assetManager = am;
 	}
 
+	public static void preloadTextures() {
+		material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture tex2 = assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
+        material.setTexture("ColorMap", tex2);
+	}
 
 	public static Bullet createBullet(int playerid) {
 		return new Bullet(++counter, playerid);
@@ -50,16 +57,12 @@ public class Bullet {
 	public Bullet(long id, int playerid) {
 		this.id = id;	
 		this.playerid = playerid;
-        
-		Material mat_felsen = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture tex2 = assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
-        mat_felsen.setTexture("ColorMap", tex2);
     	
     	Sphere sphere = new Sphere(10, 10, 0.1f);
     	model = new Geometry("bullet", sphere);
     	model.setName("bullet" + id);
     	model.setUserData("Sticky", Boolean.TRUE);
-    	model.setMaterial(mat_felsen);
+    	model.setMaterial(material);
     	control = new RigidBodyControl(2f);
     	model.addControl(control);
     	control.setUserObject(model);

@@ -12,6 +12,7 @@ import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -43,8 +44,8 @@ import de.findus.cydonia.messages.RespawnMessage;
 import de.findus.cydonia.messages.WorldStateMessage;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.controls.textfield.TextFieldControl;
-import de.lessvoid.nifty.elements.Element;
+import de.lessvoid.nifty.controls.DropDown;
+import de.lessvoid.nifty.controls.TextField;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
@@ -95,8 +96,9 @@ public class GameController extends Application implements ScreenController, Mes
     private boolean left=false, right=false, up=false, down=false;
     
     private Nifty nifty;
-    private Element serverAddressInput;
-    private Element playerNameInput;
+    private TextField serverAddressInput;
+    private TextField playerNameInput;
+    private DropDown<String> teamInput;
     
     private Player player;
     private HashMap<Integer, Player> players;
@@ -142,6 +144,7 @@ public class GameController extends Application implements ScreenController, Mes
         bullets = new HashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
+        Bullet.preloadTextures();
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -176,7 +179,7 @@ public class GameController extends Application implements ScreenController, Mes
         
 //        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
-//        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
+        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         
 //        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
 //        FogFilter fog=new FogFilter();
@@ -206,16 +209,18 @@ public class GameController extends Application implements ScreenController, Mes
     public void connect() {
     	gamestate = GameState.LOADING;
     	menuController.actualizeScreen();
-    	String serveraddress = this.serverAddressInput.getControl(TextFieldControl.class).getText();
-    	String playername = this.playerNameInput.getControl(TextFieldControl.class).getText();
+    	String serveraddress = this.serverAddressInput.getText();
+    	String playername = this.playerNameInput.getText();
+    	int team = this.teamInput.getSelectedIndex() + 1;
     	connector.connectToServer(serveraddress, 6173, this);
     	player.setId(connector.getConnectionId());
     	player.setName(playername);
+    	player.setTeam(team);
     	players.put(player.getId(), player);
     	PlayerJoinMessage join = new PlayerJoinMessage();
     	join.setId(player.getId());
     	join.setName(playername);
-    	preload();
+    	join.setTeam(team);
     	connector.sendMessage(join);
     	bulletAppState.setEnabled(true);
     	gamestate = GameState.DEAD;
@@ -296,7 +301,6 @@ public class GameController extends Application implements ScreenController, Mes
     }
     
     private void preload() {
-		assetManager.loadTexture(GameController.TEXTURES_PATH + "felsen1.jpg");
 	}
 
 	@Override
@@ -393,9 +397,10 @@ public class GameController extends Application implements ScreenController, Mes
     			PlayerJoinMessage join = (PlayerJoinMessage) msg;
     			int playerid = join.getId();
     			if(player.getId() != playerid) {
-    				String playername = join.getName();
     				Player p = new Player(playerid, assetManager);
-    				p.setName(playername);
+    				p.setName(join.getName());
+    				p.setTeam(join.getTeam());
+    				System.out.println("player joined client: " + join.getTeam());
     				players.put(p.getId(), p);
     			}
     		}else if(msg instanceof RespawnMessage) {
@@ -405,7 +410,7 @@ public class GameController extends Application implements ScreenController, Mes
         		p.setHealthpoints(100);
         		p.setAlive(true);
         		bulletAppState.getPhysicsSpace().add(p.getControl());
-        		p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+        		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
         		worldController.attachObject(p.getModel());
         		if(p.getId() == player.getId()) {
         			resumeGame();
@@ -557,11 +562,22 @@ public class GameController extends Application implements ScreenController, Mes
 	}
 	
 	public String getScores() {
-		StringBuilder builder = new StringBuilder();
+		StringBuilder sb_team1 = new StringBuilder();
+		StringBuilder sb_team2 = new StringBuilder();
 		for (Player p : players.values()) {
-			builder.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			if(p.getTeam() == 1) {
+				sb_team1.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			}else if(p.getTeam() == 2) {
+				sb_team2.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+			}
 		}
-		return builder.toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Team 1 \t\t Kills \t\t Deaths");
+		sb.append(sb_team1);
+		sb.append("\n\n\n\n");
+		sb.append("Team 2 \t\t Kills \t\t Deaths");
+		sb.append(sb_team2);
+		return sb.toString();
 	}
 	
 	public void scoreboard(boolean show) {
@@ -616,8 +632,12 @@ public class GameController extends Application implements ScreenController, Mes
 
 	@Override
 	public void bind(Nifty nifty, Screen screen) {
-		this.serverAddressInput = screen.findElementByName("serveraddress");
-		this.playerNameInput = screen.findElementByName("playername");
+		this.serverAddressInput = screen.findNiftyControl("serveraddress", TextField.class);
+		this.playerNameInput = screen.findNiftyControl("playername", TextField.class);
+		this.teamInput = screen.findNiftyControl("team", DropDown.class);
+		
+		this.teamInput.addItem("Team 1");
+		this.teamInput.addItem("Team 2");
 	}
 
 	@Override

@@ -76,4 +76,30 @@ public class Level1 implements Level{
         
         return stair;
     }
+
+	@Override
+	public SpawnPoint[] getSpawnPoints() {
+		SpawnPoint sp1 = new SpawnPoint();
+		sp1.setPosition(new Vector3f(5, 1, 5));
+		sp1.setTeam(1);
+		
+		SpawnPoint sp2 = new SpawnPoint();
+		sp2.setPosition(new Vector3f(-5, 1, -5));
+		sp2.setTeam(2);
+		
+		return new SpawnPoint[]{sp1, sp2};
+	}
+
+	@Override
+	public SpawnPoint getSpawnPoint(int team) {
+		SpawnPoint sp = new SpawnPoint();
+		if(team == 1) {
+			sp.setPosition(new Vector3f(5, 1, 5));
+			sp.setTeam(1);
+		}else if(team == 2) {
+			sp.setPosition(new Vector3f(-5, 1, -5));
+			sp.setTeam(2);
+		}
+		return sp;
+	}
 }
