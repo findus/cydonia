@@ -180,6 +180,7 @@ public class GameController extends Application implements ScreenController, Mes
 //        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
+//        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
         
 //        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
 //        FogFilter fog=new FogFilter();

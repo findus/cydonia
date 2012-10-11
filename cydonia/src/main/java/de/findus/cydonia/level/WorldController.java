@@ -52,7 +52,7 @@ public class WorldController {
 	 * @param assetManager an instance of AssetManager
 	 */
 	public void loadWorld() {
-		level = new Level1();
+		level = new Level2();
         Spatial scene = null;
         scene = level.getScene(assetManager);
         
