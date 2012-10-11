@@ -17,6 +17,8 @@ import de.findus.cydonia.main.GameController;
  */
 public class Player {
 	
+	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.7f, 0);
+	
 	private int id;
 	
 	private String name;
@@ -94,6 +96,10 @@ public class Player {
 	 */
 	public CharacterControl getControl() {
 		return control;
+	}
+	
+	public Vector3f getEyePosition() {
+		return control.getPhysicsLocation().add(RELATIVE_EYE_POSITION);
 	}
 
 	/**

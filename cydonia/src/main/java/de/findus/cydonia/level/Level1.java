@@ -10,6 +10,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 
 import de.findus.cydonia.main.GameController;
@@ -33,17 +34,17 @@ public class Level1 implements Level{
         Texture tex_wand = assetManager.loadTexture(GameController.TEXTURES_PATH + "wand1.jpg");
         mat_wand.setTexture("ColorMap", tex_wand);
         
-        
-        
-        Box box1 = new Box( new Vector3f(0,-1,0), 20,1,20);
-        Geometry floor1 = new Geometry("Box", box1);
+        Quad quad1 = new Quad(100, 100);
+        Geometry floor1 = new Geometry("Floor", quad1);
         floor1.setMaterial(mat_pflaster);
+        floor1.rotate((float) (-Math.PI/2), 0, 0);
+        floor1.move(-50, 0, 50);
  
         Box box2 = new Box( new Vector3f(0,1,0), 1,1,1);
         Geometry block = new Geometry("Box", box2);
         block.setMaterial(mat_wand);
         
-        Node stair = makeStair("Treppe", 4, 2, 2);
+        Node stair = makeStair("Stair", 4, 2, 2);
         stair.setMaterial(mat_pflaster);
         stair.setLocalTranslation(-5, 0, 0);
         

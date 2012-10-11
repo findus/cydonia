@@ -177,7 +177,7 @@ public class GameController extends Application implements ScreenController, Mes
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         
-//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         
@@ -453,7 +453,7 @@ public class GameController extends Application implements ScreenController, Mes
 			p.getControl().setWalkDirection(walkDirection);
 			
 			if(p.getId() == connector.getConnectionId()) {
-				cam.setLocation(p.getControl().getPhysicsLocation());
+				cam.setLocation(p.getEyePosition());
 			}
 		}
 		
