@@ -20,7 +20,7 @@ public class Level2 implements Level {
 	@Override
 	public Node getScene(AssetManager assetManager) {
 		Node levelRoot = new Node("levelRoot");
-		Spatial model = assetManager.loadModel("de/findus/cydonia/scenes/testworld.j3o");
+		Spatial model = assetManager.loadModel("de/findus/cydonia/scenes/mittelalter1.j3o");
 		levelRoot.attachChild(model);
 		return levelRoot;
 	}
