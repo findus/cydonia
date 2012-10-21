@@ -9,6 +9,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
@@ -51,8 +52,17 @@ public class WorldController {
 	 * Loads the world.
 	 * @param assetManager an instance of AssetManager
 	 */
-	public void loadWorld() {
-		level = new Level2();
+	public void loadWorld(String levelname) {
+		try {
+			level = (Level) Class.forName(levelname).newInstance();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+
         Spatial scene = null;
         scene = level.getScene(assetManager);
         
@@ -118,6 +128,8 @@ public class WorldController {
         AmbientLight al = new AmbientLight();
         al.setColor(ColorRGBA.White.mult(1.3f));
         rootNode.addLight(al);
+        
+        rootNode.setShadowMode(ShadowMode.Off);
     }
 
 	public void setAssetManager(AssetManager assetManager) {

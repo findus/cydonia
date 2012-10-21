@@ -27,6 +27,7 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
+import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
 
@@ -36,6 +37,7 @@ import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -152,7 +154,6 @@ public class GameController extends Application implements ScreenController, Mes
         loadStatsView();
         worldController = new WorldController();
         worldController.setAssetManager(assetManager);
-        worldController.loadWorld();
         viewPort.attachScene(worldController.getRootNode());
         guiViewPort.attachScene(guiNode);
         
@@ -177,7 +178,7 @@ public class GameController extends Application implements ScreenController, Mes
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         
-        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
 //        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
@@ -191,16 +192,9 @@ public class GameController extends Application implements ScreenController, Mes
 //        viewPort.addProcessor(fpp);
         
         
-//        rootNode.setShadowMode(ShadowMode.Off);
-//        BasicShadowRenderer bsr = new BasicShadowRenderer(assetManager, 256);
-//        bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-//        viewPort.addProcessor(bsr);
-        
-        player = new Player(-1, assetManager);
-        
-        bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
-        bulletAppState.getPhysicsSpace().add(player.getControl());
-        player.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+        BasicShadowRenderer bsr = new BasicShadowRenderer(assetManager, 256);
+        bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+        viewPort.addProcessor(bsr);
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
@@ -214,19 +208,10 @@ public class GameController extends Application implements ScreenController, Mes
     	String playername = this.playerNameInput.getText();
     	int team = this.teamInput.getSelectedIndex() + 1;
     	connector.connectToServer(serveraddress, 6173, this);
-    	player.setId(connector.getConnectionId());
+    	player = new Player(connector.getConnectionId(), assetManager);
     	player.setName(playername);
     	player.setTeam(team);
     	players.put(player.getId(), player);
-    	PlayerJoinMessage join = new PlayerJoinMessage();
-    	join.setId(player.getId());
-    	join.setName(playername);
-    	join.setTeam(team);
-    	connector.sendMessage(join);
-    	bulletAppState.setEnabled(true);
-    	gamestate = GameState.DEAD;
-    	stateManager.attach(gameInputAppState);
-    	menuController.actualizeScreen();
     }
     
     
@@ -234,23 +219,23 @@ public class GameController extends Application implements ScreenController, Mes
 	/**
      * Starts the actual game eg. the game loop.
      */
-//    public void startGame() {
-//    	stateManager.detach(menuAppState);
-//    	gamestate = GameState.RUNNING;
-//    	stateManager.attach(gameInputAppState);
-//    	bulletAppState.setEnabled(true);
-//    	connector.connectToServer("localhost", 6173);
-//    	try {
-//			Thread.sleep(500);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//    	player.setId(connector.getConnectionId());
-//    	players.put(player.getId(), player);
-//    	connector.addMessageListener(this);
-//    	connector.startInputSender();
-//    }
+    public void startGame(String level) {
+        worldController.loadWorld(level);
+    	bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
+        
+        PlayerJoinMessage join = new PlayerJoinMessage();
+    	join.setId(player.getId());
+    	join.setName(player.getName());
+    	join.setTeam(player.getTeam());
+    	connector.sendMessage(join);
+        
+        bulletAppState.getPhysicsSpace().add(player.getControl());
+        player.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
+    	bulletAppState.setEnabled(true);
+    	gamestate = GameState.DEAD;
+    	stateManager.attach(gameInputAppState);
+    	menuController.actualizeScreen();
+    }
     
     /**
      * Resumes the game after pausing.
@@ -292,9 +277,6 @@ public class GameController extends Application implements ScreenController, Mes
     	respawn.setPlayerid(player.getId());
     	connector.sendMessage(respawn);
     }
-    
-    private void preload() {
-	}
 
 	@Override
     public void update() {
@@ -320,7 +302,7 @@ public class GameController extends Application implements ScreenController, Mes
         stateManager.update(tpf);
 
         // update game specific things
-        updateWorldState();
+        handleMessages();
         movePlayers(tpf);
         
         // update world and gui
@@ -336,9 +318,21 @@ public class GameController extends Application implements ScreenController, Mes
         stateManager.postRender();
     }
     
-    private void updateWorldState() {
+    private void handleMessages() {
     	while (!updateQueue.isEmpty()) {
     		Message msg = updateQueue.poll();
+    		if(msg instanceof ConnectionInitMessage) {
+    			ConnectionInitMessage init = (ConnectionInitMessage) msg;
+    			if(init.isDenied()) {
+    				System.out.println("Server denied connection! Reason: '" + init.getReason() + "'");
+    				gamestate = GameState.LOBBY;
+    				menuController.actualizeScreen();
+    				clean();
+    				connector.disconnectFromServer();
+    			}else {
+    				startGame(init.getLevel());
+    			}
+    		}
     		if(msg instanceof WorldStateMessage) {
     			WorldStateMessage worldState = (WorldStateMessage) msg;
 
@@ -418,6 +412,10 @@ public class GameController extends Application implements ScreenController, Mes
     		}
     	}
     }
+
+	private void clean() {
+		players.clear();
+	}
 
 	@Override
 	public void messageReceived(Client source, Message m) {	

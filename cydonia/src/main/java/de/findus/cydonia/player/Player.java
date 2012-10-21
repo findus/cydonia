@@ -17,7 +17,7 @@ import de.findus.cydonia.main.GameController;
  */
 public class Player {
 	
-	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.7f, 0);
+	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.35f, 0);
 	
 	private int id;
 	
@@ -59,7 +59,7 @@ public class Player {
         
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 1.6f, 1);
         control = new CharacterControl(capsuleShape, GameController.MAX_STEP_HEIGHT);
-        control.setJumpSpeed(10);
+        control.setJumpSpeed(15);
         control.setFallSpeed(30);
         control.setGravity(30);
         

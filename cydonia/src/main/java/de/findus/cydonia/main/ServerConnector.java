@@ -13,6 +13,7 @@ import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
 import de.findus.cydonia.messages.PlayerJoinMessage;
@@ -50,6 +51,7 @@ public class ServerConnector {
 			client = Network.connectToServer(address, port);
 			client.addMessageListener(listener);
 			
+			Serializer.registerClass(ConnectionInitMessage.class);
 			Serializer.registerClass(WorldStateMessage.class);
 			Serializer.registerClass(PlayerPhysic.class);
 			Serializer.registerClass(BulletPhysic.class);

@@ -33,10 +33,10 @@ import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.level.Level;
-import de.findus.cydonia.level.Level1;
 import de.findus.cydonia.level.Level2;
 import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.HitMessage;
 import de.findus.cydonia.messages.PlayerInputMessage;
 import de.findus.cydonia.messages.PlayerJoinMessage;
@@ -127,6 +127,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
         try {
 			server = Network.createServer(6173);
 			server.start();
+			Serializer.registerClass(ConnectionInitMessage.class);
 			Serializer.registerClass(WorldStateMessage.class);
 			Serializer.registerClass(PlayerPhysic.class);
 			Serializer.registerClass(BulletPhysic.class);
@@ -210,9 +211,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 					physic.setTranslation(bul.getControl().getPhysicsLocation());
 					physic.setVelocity(bul.getControl().getLinearVelocity());
 					attack.setPhysic(physic);
-					for(HostedConnection con : server.getConnections()) {
-						con.send(attack);
-					}
+					server.broadcast(attack);
 				}
 			}else if(m instanceof PlayerJoinMessage) {
 				PlayerJoinMessage join = (PlayerJoinMessage) m;
@@ -225,9 +224,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
 				rootNode.attachChild(p.getModel());
 				
-				for (HostedConnection con : server.getConnections()) {
-					con.send(join);
-				}
+				server.broadcast(join);
 			}else if(m instanceof RespawnMessage) {
 				RespawnMessage respawn = (RespawnMessage) m;
 				int playerid = respawn.getPlayerid();
@@ -238,9 +235,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 				p.getControl().setPhysicsLocation(level.getSpawnPoint(p.getTeam()).getPosition());
 				rootNode.attachChild(p.getModel());
 
-				for (HostedConnection con : server.getConnections()) {
-					con.send(respawn);
-				}
+				server.broadcast(respawn);
 			}
 		}
 	}
@@ -326,9 +321,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		hit.setHitpoints(20);
 		hit.setSourcePlayerid(sourceid);
 		
-		for(HostedConnection con : server.getConnections()) {
-			con.send(hit);
-		}
+		server.broadcast(hit);
 	}
 	
 	private void killPlayer(int id) {
@@ -347,6 +340,12 @@ public class GameServer extends Application implements MessageListener<HostedCon
 
 	@Override
 	public void connectionAdded(Server server, HostedConnection conn) {
+		ConnectionInitMessage init = new ConnectionInitMessage();
+		init.setDenied(false);
+		init.setReason("Welcome");
+		init.setLevel(level.getClass().getName());
+		conn.send(init);
+		
 		for (Player p : players.values()) {
 			PlayerJoinMessage join = new PlayerJoinMessage();
 			join.setId(p.getId());
@@ -370,9 +369,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 		
 		PlayerQuitMessage quit = new PlayerQuitMessage();
 		quit.setId(conn.getId());
-		for(HostedConnection client : server.getConnections()) {
-			client.send(quit);
-		}
+		server.broadcast(quit);
 	}
 	
 	/**
@@ -387,9 +384,7 @@ public class GameServer extends Application implements MessageListener<HostedCon
 				WorldStateMessage m = WorldStateMessage.getUpdate(players.values(), bullets.values());
 				m.setReliable(false);
 				
-				for (HostedConnection conn : server.getConnections()) {
-					conn.send(m);
-				}
+				server.broadcast(m);
 				
 				try {
 					Thread.sleep(50);
