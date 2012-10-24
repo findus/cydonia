@@ -14,6 +14,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 
 import de.findus.cydonia.main.GameController;
+import de.findus.cydonia.player.Player;
 
 /**
  * This is the first test level.
@@ -67,11 +68,12 @@ public class Level1 implements Level{
     private static Node makeStair(String name, float depth, float height, float width) {
         Node stair = new Node(name);
         
-        int stepCount = (int) Math.floor(height / GameController.MAX_STEP_HEIGHT);
+        int stepCount = (int) Math.floor(height / Player.MAX_STEP_HEIGHT);
         float stepDepth = depth / stepCount;
         for (int i = 0; i < stepCount; i++) {
             //Box step = new Box(new Vector3f(stepDepth * i,Main.MAX_STEP_HEIGHT * i, 0), stepDepth/2, Main.MAX_STEP_HEIGHT/2, width/2);
-            Box step = new Box(new Vector3f(stepDepth*i, GameController.MAX_STEP_HEIGHT*i, -width/2), new Vector3f(stepDepth*(i+1), GameController.MAX_STEP_HEIGHT*(i+1), width/2));
+            Box step = new Box(new Vector3f(stepDepth*i, Player.MAX_STEP_HEIGHT*i, -width/2), new Vector3f(stepDepth*(i+1), Player.MAX_STEP_HEIGHT*(i+1), width/2));
+            System.out.println(step.getYExtent());
             stair.attachChild(new Geometry("Step" + i, step));
         }
         

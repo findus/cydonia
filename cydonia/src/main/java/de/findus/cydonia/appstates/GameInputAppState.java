@@ -84,7 +84,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         }else if(name.equals("Down")) {
             if(isPressed) gameController.getPlayer().getInputState().setBack(true); else gameController.getPlayer().getInputState().setBack(false);
         }else if(name.equals("Jump")) {
-            if(isPressed) gameController.getPlayer().getControl().jump();
+            if(isPressed) gameController.jump();
         }else if(name.equals("Attack")) {
             if(isPressed) gameController.attack();
         }else if (name.equals(SimpleApplication.INPUT_MAPPING_EXIT)) {

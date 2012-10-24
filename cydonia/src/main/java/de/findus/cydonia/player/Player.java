@@ -9,13 +9,13 @@ import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 
-import de.findus.cydonia.main.GameController;
-
 /**
  * @author Findus
  *
  */
 public class Player {
+	
+	public static float MAX_STEP_HEIGHT = 0.2f;
 	
 	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.35f, 0);
 	
@@ -56,12 +56,13 @@ public class Player {
 		
 		model = assetManager.loadModel("Models/Sinbad/Sinbad.j3o");
 		model.setName("player" + id);
+		model.setLocalScale(0.2f);
         
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 1.6f, 1);
-        control = new CharacterControl(capsuleShape, GameController.MAX_STEP_HEIGHT);
-        control.setJumpSpeed(15);
-        control.setFallSpeed(30);
-        control.setGravity(30);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
+        control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
+        control.setJumpSpeed(10);
+        control.setFallSpeed(20);
+        control.setGravity(20);
         
         model.addControl(control);
 	}
