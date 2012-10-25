@@ -67,6 +67,26 @@ public class Player {
         model.addControl(control);
 	}
 	
+	public void handleInput(InputCommand command) {
+		switch (command) {
+		case MOVEFRONT:
+			inputs.setForward(true);
+			break;
+		case MOVEBACK:
+			inputs.setBack(true);
+			break;
+		case STRAFELEFT:
+			inputs.setLeft(true);
+			break;
+		case STRAFERIGHT:
+			inputs.setRight(true);
+			break;
+
+		default:
+			break;
+		}
+	}
+	
 	/**
 	 * Returns the model for visualization of this player.
 	 * @return model of this player

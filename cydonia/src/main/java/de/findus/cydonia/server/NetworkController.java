@@ -13,23 +13,24 @@ import com.jme3.network.Network;
 import com.jme3.network.Server;
 import com.jme3.network.serializing.Serializer;
 
+import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.events.HitEvent;
+import de.findus.cydonia.events.InputEvent;
+import de.findus.cydonia.events.JumpEvent;
+import de.findus.cydonia.events.PlayerJoinEvent;
+import de.findus.cydonia.events.PlayerQuitEvent;
+import de.findus.cydonia.events.RespawnEvent;
+import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
-import de.findus.cydonia.messages.HitMessage;
-import de.findus.cydonia.messages.JumpMessage;
-import de.findus.cydonia.messages.PlayerInputMessage;
-import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
-import de.findus.cydonia.messages.PlayerQuitMessage;
-import de.findus.cydonia.messages.RespawnMessage;
-import de.findus.cydonia.messages.WorldStateMessage;
+import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -58,22 +59,27 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		eventMachine.registerListener(this);
 	}
 	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
-		Serializer.registerClass(WorldStateMessage.class);
+		Serializer.registerClass(WorldStateUpdatedMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
 		Serializer.registerClass(BulletPhysic.class);
-		Serializer.registerClass(PlayerInputMessage.class);
 		Serializer.registerClass(PlayerInputState.class);
-		Serializer.registerClass(AttackMessage.class);
-		Serializer.registerClass(HitMessage.class);
-		Serializer.registerClass(RespawnMessage.class);
-		Serializer.registerClass(PlayerJoinMessage.class);
-		Serializer.registerClass(PlayerQuitMessage.class);
-		Serializer.registerClass(JumpMessage.class);
 		Serializer.registerClass(EventMessage.class);
+		
+		Serializer.registerClass(InputEvent.class);
+		Serializer.registerClass(AttackEvent.class);
+		Serializer.registerClass(HitEvent.class);
+		Serializer.registerClass(JumpEvent.class);
+		Serializer.registerClass(RespawnEvent.class);
+		Serializer.registerClass(RoundEndedEvent.class);
+		Serializer.registerClass(WorldStateUpdatedMessage.class);
+		Serializer.registerClass(PlayerJoinEvent.class);
+		Serializer.registerClass(PlayerQuitEvent.class);
 	}
 
 	@Override
@@ -85,9 +91,16 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 
 	@Override
 	public void connectionAdded(Server s, HostedConnection con) {
-		ConnectionAddedEvent added = new ConnectionAddedEvent();
-		added.setClientid(con.getId());
-		eventMachine.fireEvent(added);
+		if(false) { //check for "too many players"
+			ConnectionInitMessage init = new ConnectionInitMessage();
+			init.setConnectionAccepted(false);
+			init.setText("Server full");
+			con.send(init);
+		}else {
+			ConnectionAddedEvent added = new ConnectionAddedEvent();
+			added.setClientid(con.getId());
+			eventMachine.fireEvent(added);
+		}
 	}
 
 	@Override

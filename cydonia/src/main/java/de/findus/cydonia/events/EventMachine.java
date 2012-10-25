@@ -26,6 +26,8 @@ public class EventMachine {
 	}
 	
 	public void fireEvent(Event ev) {
+		if(ev == null) return;
+		
 		for (Forwarder f : handlers.values()) {
 			f.addEvent(ev);
 		}
@@ -33,6 +35,7 @@ public class EventMachine {
 	
 	public void registerListener(EventListener listener) {
 		Forwarder f = new Forwarder(listener);
+		handlers.put(listener, f);
 		f.start();
 	}
 	
@@ -48,24 +51,27 @@ public class EventMachine {
 		
 		private void addEvent(Event e) {
 			eventQueue.add(e);
-			this.notify();
+			synchronized (this) {
+				this.notify();
+			}
 		}
 		
 		@Override
 		public void run() {
 			Event e = null;
-			while ((e = eventQueue.poll()) != null) {
-				listener.newEvent(e);
-			}
-			try {
-				synchronized (this) {
-					this.wait();
+			while(!Thread.interrupted()) {
+				while ((e = eventQueue.poll()) != null) {
+					listener.newEvent(e);
 				}
-			} catch (InterruptedException e1) {
-				System.err.println("Forwarder termitated!");
+				try {
+					synchronized (this) {
+						this.wait();
+					}
+				} catch (InterruptedException e1) {
+				}
 			}
 		}
-		
+
 	}
 
 }

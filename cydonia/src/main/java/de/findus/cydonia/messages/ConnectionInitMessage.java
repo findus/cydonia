@@ -13,46 +13,42 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class ConnectionInitMessage extends AbstractMessage {
 
+	private boolean connectionAccepted;
 	
-	private boolean denied;
-	
-	private String reason;
+	private String text;
 	
 	private String level;
 	
-	/**
-	 * 
-	 */
 	public ConnectionInitMessage() {
 		setReliable(true);
 	}
 
 	/**
-	 * @return the reason
+	 * @return the connectionAccepted
 	 */
-	public String getReason() {
-		return reason;
+	public boolean isConnectionAccepted() {
+		return connectionAccepted;
 	}
 
 	/**
-	 * @param reason the reason to set
+	 * @param connectionAccepted the connectionAccepted to set
 	 */
-	public void setReason(String reason) {
-		this.reason = reason;
+	public void setConnectionAccepted(boolean connectionAccepted) {
+		this.connectionAccepted = connectionAccepted;
 	}
 
 	/**
-	 * @return the denied
+	 * @return the text
 	 */
-	public boolean isDenied() {
-		return denied;
+	public String getText() {
+		return text;
 	}
 
 	/**
-	 * @param denied the denied to set
+	 * @param text the text to set
 	 */
-	public void setDenied(boolean denied) {
-		this.denied = denied;
+	public void setText(String text) {
+		this.text = text;
 	}
 
 	/**
@@ -68,5 +64,4 @@ public class ConnectionInitMessage extends AbstractMessage {
 	public void setLevel(String level) {
 		this.level = level;
 	}
-
 }

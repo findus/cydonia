@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.events;
 
+
 /**
  * @author Findus
  *
@@ -10,6 +11,10 @@ package de.findus.cydonia.events;
 public class ConnectionDeniedEvent extends AbstractEvent {
 
 	private String reason;
+	
+	public ConnectionDeniedEvent() {
+		
+	}
 
 	/**
 	 * @return the reason

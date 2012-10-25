@@ -16,10 +16,10 @@ import de.findus.cydonia.player.Player;
  *
  */
 @Serializable
-public class WorldStateMessage extends AbstractMessage {
+public class WorldStateUpdatedMessage extends AbstractMessage {
 
-	public static WorldStateMessage getUpdate(Collection<Player> playerlist, Collection<Bullet> bulletlist) {
-		WorldStateMessage upd = new WorldStateMessage();
+	public static WorldStateUpdatedMessage getUpdate(Collection<Player> playerlist, Collection<Bullet> bulletlist) {
+		WorldStateUpdatedMessage upd = new WorldStateUpdatedMessage();
 		
 		PlayerPhysic[] playerphys = new PlayerPhysic[playerlist.size()];
 		int i=0;
@@ -54,8 +54,8 @@ public class WorldStateMessage extends AbstractMessage {
 	private PlayerPhysic[] players;
 	private BulletPhysic[] bullets;
 	
-	public WorldStateMessage() {
-		
+	public WorldStateUpdatedMessage() {
+		setReliable(false);
 	}
 	
 	public void setPlayerPhysics(PlayerPhysic[] p) {

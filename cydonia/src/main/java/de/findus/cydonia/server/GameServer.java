@@ -26,24 +26,24 @@ import com.jme3.scene.Spatial;
 import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.bullet.Bullet;
+import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
+import de.findus.cydonia.events.InputEvent;
+import de.findus.cydonia.events.JumpEvent;
+import de.findus.cydonia.events.PlayerJoinEvent;
+import de.findus.cydonia.events.PlayerQuitEvent;
+import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
-import de.findus.cydonia.messages.AttackMessage;
 import de.findus.cydonia.messages.BulletPhysic;
-import de.findus.cydonia.messages.CommandMessage;
 import de.findus.cydonia.messages.ConnectionInitMessage;
-import de.findus.cydonia.messages.JumpMessage;
-import de.findus.cydonia.messages.PlayerInputMessage;
-import de.findus.cydonia.messages.PlayerJoinMessage;
-import de.findus.cydonia.messages.PlayerQuitMessage;
-import de.findus.cydonia.messages.RespawnMessage;
-import de.findus.cydonia.messages.WorldStateMessage;
+import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
 
 /**
@@ -92,10 +92,14 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private EventMachine eventMachine;
 	
+	private ConcurrentLinkedQueue<Event> eventQueue;
+	
     @Override
     public void initialize() {
         super.initialize();
 
+        eventQueue = new ConcurrentLinkedQueue<Event>();
+        
         eventMachine = new EventMachine();
         
         this.players = new ConcurrentHashMap<Integer, Player>();
@@ -149,7 +153,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         stateManager.update(tpf);
 
         // update game specific things
-        handleMessages();
+        handleEvents();
         movePlayers(tpf);
         
         // update world and gui
@@ -160,84 +164,29 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         renderManager.render(tpf, context.isRenderable());
         stateManager.postRender();
     }
+    
+    private void handleEvents() {
+    	Event e = null;
+    	int size = eventQueue.size();
+    	for (int i = 0; i < size; i++) {
+    		e = eventQueue.poll();
+    		if(e instanceof ConnectionAddedEvent) {
+    			connectionAdded(((ConnectionAddedEvent) e).getClientid());
+    		}else if(e instanceof ConnectionRemovedEvent) {
+    			connectionRemoved(((ConnectionRemovedEvent) e).getClientid());
+    		}else if (e instanceof InputEvent) {
+    			InputEvent input = (InputEvent) e;
+    			handlePlayerInput(input.getPlayerid(), input.getCommand(), input.isValue());
+    		}
+    	}
+    }
 
 	@Override
 	public void newEvent(Event e) {
-		if(e instanceof ConnectionAddedEvent) {
-			connectionAdded(((ConnectionAddedEvent) e).getClientid());
-		}else if(e instanceof ConnectionRemovedEvent) {
-			connectionRemoved(((ConnectionRemovedEvent) e).getClientid());
+		if(e instanceof PlayerJoinEvent) {
+			System.out.println("test");
 		}
-	}
-
-	private void handleMessages() {
-		while (!updateQueue.isEmpty()) {
-			Message m = updateQueue.poll();
-
-			if (m instanceof PlayerInputMessage) {
-				PlayerInputMessage inputUpdate = (PlayerInputMessage) m;
-				Player p = players.get(inputUpdate.getPlayerId());
-				if(p != null) {
-					p.setInputState(inputUpdate.getInputs());
-					p.getControl().setViewDirection(inputUpdate.getViewDir());
-				}
-			}else if(m instanceof AttackMessage) {
-				AttackMessage attack = (AttackMessage) m;
-				Player p = players.get(attack.getPlayerid());
-				long passedTime = System.currentTimeMillis() - p.getLastShot();
-				if(passedTime >= RELOAD_TIME) {
-					p.setLastShot(System.currentTimeMillis());
-					Vector3f pos = p.getControl().getPhysicsLocation();
-					Vector3f dir = p.getControl().getViewDirection();
-
-					Bullet bul = Bullet.createBullet(p.getId());
-					bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
-					rootNode.attachChild(bul.getModel());
-					bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
-					bulletAppState.getPhysicsSpace().add(bul.getControl());
-					bul.getControl().setLinearVelocity(dir.normalize().mult(25));
-
-					bullets.put(bul.getId(), bul);
-
-					BulletPhysic physic = new BulletPhysic();
-					physic.setId(bul.getId());
-					physic.setTranslation(bul.getControl().getPhysicsLocation());
-					physic.setVelocity(bul.getControl().getLinearVelocity());
-					attack.setPhysic(physic);
-					networkController.broadcast(attack);
-				}
-			}else if(m instanceof PlayerJoinMessage) {
-				PlayerJoinMessage join = (PlayerJoinMessage) m;
-				int playerid = join.getId();
-				Player p = new Player(playerid, assetManager);
-				p.setName(join.getName());
-				p.setTeam(join.getTeam());
-				players.put(playerid, p);
-				bulletAppState.getPhysicsSpace().add(p.getControl());
-				p.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-				rootNode.attachChild(p.getModel());
-				
-				networkController.broadcast(join);
-			}else if(m instanceof RespawnMessage) {
-				RespawnMessage respawn = (RespawnMessage) m;
-				int playerid = respawn.getPlayerid();
-				Player p = players.get(playerid);
-				p.setHealthpoints(100);
-				p.setAlive(true);
-				bulletAppState.getPhysicsSpace().add(p.getControl());
-				p.getControl().setPhysicsLocation(level.getSpawnPoint(p.getTeam()).getPosition());
-				rootNode.attachChild(p.getModel());
-
-				networkController.broadcast(respawn);
-			}else if (m instanceof CommandMessage) {
-				CommandMessage command = (CommandMessage) m;
-				// command verarbeiten
-			}else if (m instanceof JumpMessage) {
-				JumpMessage jump = (JumpMessage) m;
-				players.get(jump.getPlayerid()).getControl().jump();
-				networkController.broadcast(jump);
-			}
-		}
+		eventQueue.offer(e);
 	}
 
 	private void movePlayers(float tpf) {
@@ -336,6 +285,109 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			p.setDeaths(p.getDeaths() + 1);
 		}
 	}
+	
+	private void attack(Player p) {
+		if(p == null) return;
+		long passedTime = System.currentTimeMillis() - p.getLastShot();
+		if(passedTime >= RELOAD_TIME) {
+			p.setLastShot(System.currentTimeMillis());
+			Vector3f pos = p.getControl().getPhysicsLocation();
+			Vector3f dir = p.getControl().getViewDirection();
+
+			Bullet bul = Bullet.createBullet(p.getId());
+			bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
+			rootNode.attachChild(bul.getModel());
+			bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
+			bulletAppState.getPhysicsSpace().add(bul.getControl());
+			bul.getControl().setLinearVelocity(dir.normalize().mult(25));
+
+			bullets.put(bul.getId(), bul);
+
+			BulletPhysic physic = new BulletPhysic();
+			physic.setId(bul.getId());
+			physic.setTranslation(bul.getControl().getPhysicsLocation());
+			physic.setVelocity(bul.getControl().getLinearVelocity());
+			
+			AttackEvent attack = new AttackEvent();
+			attack.setPlayerid(p.getId());
+			attack.setBulletid(bul.getId());
+		}
+	}
+	
+	private void jump(Player p) {
+		if(p == null) return;
+		p.getControl().jump();
+		JumpEvent jump = new JumpEvent(p.getId(), true);
+		eventMachine.fireEvent(jump);
+	}
+	
+	private void joinPlayer(int playerid) {
+		Player p = new Player(playerid, assetManager);
+		players.put(playerid, p);
+		
+		PlayerJoinEvent join = new PlayerJoinEvent(playerid, true);
+		eventMachine.fireEvent(join);
+	}
+	
+	private void quitPlayer(Player p) {
+		if(p != null) {
+			bulletAppState.getPhysicsSpace().remove(p.getControl());
+			rootNode.detachChild(p.getModel());
+			players.remove(p.getId());
+		}
+
+		PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
+		eventMachine.fireEvent(quit);
+	}
+	
+	private void respawn(Player p) {
+		if(p == null) return;
+		p.setHealthpoints(100);
+		p.setAlive(true);
+		bulletAppState.getPhysicsSpace().add(p.getControl());
+		p.getControl().setPhysicsLocation(level.getSpawnPoint(p.getTeam()).getPosition());
+		rootNode.attachChild(p.getModel());
+
+		RespawnEvent respawn = new RespawnEvent(p.getId(), true);
+		eventMachine.fireEvent(respawn);
+	}
+	
+	private void handlePlayerInput(int playerid, InputCommand command, boolean value) {
+		Player p = players.get(playerid);
+		switch (command) {
+		case ATTACK:
+			if(p.isAlive()) {
+				if(value) attack(p);
+			}else {
+				if(value) respawn(p);
+			}
+			break;
+		case JUMP:
+			jump(p);
+			break;
+		case JOINGAME:
+			joinPlayer(playerid);
+			break;
+		case CHOOSETEAM1:
+			chooseTeam(p, 1);
+			break;
+		case CHOOSETEAM2:
+			chooseTeam(p, 2);
+			break;
+		case QUITGAME:
+			quitPlayer(p);
+			break;
+
+		default:
+			p.handleInput(command);
+			break;
+		}
+	}
+
+	private void chooseTeam(Player p, int team) {
+		if(p == null) return;
+		p.setTeam(team);
+	}
 
 	public void messageReceived(HostedConnection source, Message m) {
 		updateQueue.add(m);
@@ -344,34 +396,18 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	public void connectionAdded(int clientid) {
 		ConnectionInitMessage init = new ConnectionInitMessage();
-		init.setDenied(false);
-		init.setReason("Welcome");
+		init.setConnectionAccepted(true);
+		init.setText("Welcome");
 		init.setLevel(level.getClass().getName());
 		networkController.sendMessage(init, clientid);
 		
-		for (Player p : players.values()) {
-			PlayerJoinMessage join = new PlayerJoinMessage();
-			join.setId(p.getId());
-			join.setName(p.getName());
-			join.setTeam(p.getTeam());
-			networkController.sendMessage(join, clientid);
-			if(p.isAlive()) {
-				RespawnMessage respawn = new RespawnMessage();
-				respawn.setPlayerid(p.getId());
-				networkController.sendMessage(respawn, clientid);
-			}
-		}
+		//TODO: send player information
+		// id, name, team, alive, hitpoints
 	}
 
 	public void connectionRemoved(int clientid) {
 		Player p = players.get(clientid);
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		players.remove(clientid);
-		rootNode.detachChild(p.getModel());
-		
-		PlayerQuitMessage quit = new PlayerQuitMessage();
-		quit.setId(clientid);
-		networkController.broadcast(quit);
+		quitPlayer(p);
 	}
 	
 	/**
@@ -383,10 +419,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		@Override
 		public void run() {
 			while(senderRunning) {
-				WorldStateMessage m = WorldStateMessage.getUpdate(players.values(), bullets.values());
-				m.setReliable(false);
-				
-				networkController.broadcast(m);
+				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(players.values(), bullets.values());
+				networkController.broadcast(worldstate);
 				
 				try {
 					Thread.sleep(50);

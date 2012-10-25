@@ -3,17 +3,25 @@
  */
 package de.findus.cydonia.events;
 
+import com.jme3.network.serializing.Serializable;
+
 
 /**
  * @author Findus
  *
  */
+@Serializable
 public class PlayerQuitEvent extends AbstractEvent {
 
 	private int playerid;
 	
 	public PlayerQuitEvent() {
-		setNetworkEvent(true);
+		super();
+	}
+	
+	public PlayerQuitEvent(int playerid, boolean forward) {
+		this.playerid = playerid;
+		this.network = forward;
 	}
 
 	/**
@@ -21,12 +29,5 @@ public class PlayerQuitEvent extends AbstractEvent {
 	 */
 	public int getPlayerId() {
 		return playerid;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setPlayerId(int id) {
-		this.playerid = id;
 	}
 }

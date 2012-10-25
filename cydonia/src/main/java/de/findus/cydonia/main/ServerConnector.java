@@ -11,21 +11,24 @@ import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
 import com.jme3.network.serializing.Serializer;
 
+import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
-import de.findus.cydonia.events.ConnectionEstablishedEvent;
+import de.findus.cydonia.events.ConnectionInitEvent;
+import de.findus.cydonia.events.Event;
+import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.messages.AttackMessage;
+import de.findus.cydonia.events.HitEvent;
+import de.findus.cydonia.events.InputEvent;
+import de.findus.cydonia.events.JumpEvent;
+import de.findus.cydonia.events.PlayerJoinEvent;
+import de.findus.cydonia.events.PlayerQuitEvent;
+import de.findus.cydonia.events.RespawnEvent;
+import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
-import de.findus.cydonia.messages.HitMessage;
-import de.findus.cydonia.messages.JumpMessage;
-import de.findus.cydonia.messages.PlayerInputMessage;
-import de.findus.cydonia.messages.PlayerJoinMessage;
 import de.findus.cydonia.messages.PlayerPhysic;
-import de.findus.cydonia.messages.PlayerQuitMessage;
-import de.findus.cydonia.messages.RespawnMessage;
-import de.findus.cydonia.messages.WorldStateMessage;
+import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -33,7 +36,9 @@ import de.findus.cydonia.player.PlayerInputState;
  * @author Findus
  *
  */
-public class ServerConnector implements MessageListener<Client> {
+public class ServerConnector implements MessageListener<Client>, EventListener {
+	
+	private GameController gameController;
 	
 	private EventMachine eventMachine;
 	
@@ -44,9 +49,11 @@ public class ServerConnector implements MessageListener<Client> {
 	 * Constructor.
 	 * @param controller the game controller
 	 */
-	public ServerConnector(EventMachine em) {
+	public ServerConnector(GameController app, EventMachine em) {
+		gameController = app;
 		eventMachine = em;
 		initSerializer();
+		eventMachine.registerListener(this);
 	}
 	
 	/**
@@ -75,18 +82,21 @@ public class ServerConnector implements MessageListener<Client> {
 	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
-		Serializer.registerClass(WorldStateMessage.class);
+		Serializer.registerClass(WorldStateUpdatedMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
 		Serializer.registerClass(BulletPhysic.class);
-		Serializer.registerClass(PlayerInputMessage.class);
 		Serializer.registerClass(PlayerInputState.class);
-		Serializer.registerClass(AttackMessage.class);
-		Serializer.registerClass(HitMessage.class);
-		Serializer.registerClass(RespawnMessage.class);
-		Serializer.registerClass(PlayerJoinMessage.class);
-		Serializer.registerClass(PlayerQuitMessage.class);
-		Serializer.registerClass(JumpMessage.class);
 		Serializer.registerClass(EventMessage.class);
+		
+		Serializer.registerClass(InputEvent.class);
+		Serializer.registerClass(AttackEvent.class);
+		Serializer.registerClass(HitEvent.class);
+		Serializer.registerClass(JumpEvent.class);
+		Serializer.registerClass(RespawnEvent.class);
+		Serializer.registerClass(RoundEndedEvent.class);
+		Serializer.registerClass(WorldStateUpdatedMessage.class);
+		Serializer.registerClass(PlayerJoinEvent.class);
+		Serializer.registerClass(PlayerQuitEvent.class);
 	}
 	
 	/**
@@ -114,19 +124,31 @@ public class ServerConnector implements MessageListener<Client> {
 
 	@Override
 	public void messageReceived(Client c, Message m) {
-		if(m instanceof EventMessage) {
+		if(m instanceof WorldStateUpdatedMessage) {
+			gameController.setlatestWorldstate((WorldStateUpdatedMessage) m);
+		}else if(m instanceof EventMessage) {
 			eventMachine.fireEvent(((EventMessage) m).getEvent());
 		}else if(m instanceof ConnectionInitMessage) {
 			ConnectionInitMessage init = (ConnectionInitMessage) m;
-			if(init.isDenied()) {
-				System.out.println("Server denied connection! Reason: '" + init.getReason() + "'");
-				ConnectionDeniedEvent denied = new ConnectionDeniedEvent();
-				denied.setReason(init.getReason());
-			}else {
-				ConnectionEstablishedEvent established = new ConnectionEstablishedEvent();
+			if(init.isConnectionAccepted()) {
+				ConnectionInitEvent established = new ConnectionInitEvent();
 				established.setLevel(init.getLevel());
 				eventMachine.fireEvent(established);
+			}else {
+				System.out.println("Server denied connection! Reason: '" + init.getText() + "'");
+				ConnectionDeniedEvent denied = new ConnectionDeniedEvent();
+				denied.setReason(init.getText());
+				eventMachine.fireEvent(denied);
 			}
+		}
+	}
+
+	@Override
+	public void newEvent(Event e) {
+		if(e.isNetworkEvent() && client.isConnected()) {
+			EventMessage msg = new EventMessage();
+			msg.setEvent(e);
+			client.send(msg);
 		}
 	}
 }

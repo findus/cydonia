@@ -3,7 +3,15 @@
  */
 package de.findus.cydonia.appstates;
 
-import com.jme3.app.SimpleApplication;
+import static de.findus.cydonia.player.InputCommand.ATTACK;
+import static de.findus.cydonia.player.InputCommand.EXIT;
+import static de.findus.cydonia.player.InputCommand.JUMP;
+import static de.findus.cydonia.player.InputCommand.MOVEBACK;
+import static de.findus.cydonia.player.InputCommand.MOVEFRONT;
+import static de.findus.cydonia.player.InputCommand.SCOREBOARD;
+import static de.findus.cydonia.player.InputCommand.STRAFELEFT;
+import static de.findus.cydonia.player.InputCommand.STRAFERIGHT;
+
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.font.BitmapFont;
@@ -16,7 +24,10 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 
+import de.findus.cydonia.events.EventMachine;
+import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.main.GameController;
+import de.findus.cydonia.player.InputCommand;
 
 /**
  * This Appstate controls user inputs and maps them to commands.
@@ -28,6 +39,7 @@ import de.findus.cydonia.main.GameController;
 public class GameInputAppState extends AbstractAppState implements ActionListener{
 
 	private GameController gameController;
+	private EventMachine eventMachine;
 	private InputManager inputManager;
 	private FlyByCamera flyCam;
 	private BitmapText crosshair;
@@ -36,28 +48,32 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	 * Constructor.
 	 * @param app the game controller
 	 */
-	public GameInputAppState(GameController app) {
+	public GameInputAppState(GameController app, EventMachine em) {
 		this.gameController = app;
+		this.eventMachine = em;
 		this.inputManager = app.getInputManager();
 		flyCam = new FlyByCamera(app.getCamera());
 	}
 	
+	private void mapDefaultKeys() {
+        inputManager.addMapping(EXIT.getCode(), new KeyTrigger(KeyInput.KEY_ESCAPE));
+        inputManager.addListener(this, EXIT.getCode());
+	}
+
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
-		inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
-        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
-        inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_LSHIFT));
-        inputManager.addMapping("Attack", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addListener(this, "Left", "Right", "Up", "Down", "Jump", "Attack");
+		inputManager.addMapping(STRAFELEFT.getCode(), new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping(STRAFERIGHT.getCode(), new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping(MOVEFRONT.getCode(), new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping(MOVEBACK.getCode(), new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
+        inputManager.addMapping(ATTACK.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode());
         
-        inputManager.addMapping("scoreboard", new KeyTrigger(KeyInput.KEY_TAB));
-        inputManager.addMapping(SimpleApplication.INPUT_MAPPING_HIDE_STATS, new KeyTrigger(KeyInput.KEY_F5));
-        inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_HIDE_STATS, "scoreboard");
+        inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
+        inputManager.addListener(this, SCOREBOARD.getCode());
         
-        inputManager.addMapping(SimpleApplication.INPUT_MAPPING_EXIT, new KeyTrigger(KeyInput.KEY_ESCAPE));
-        inputManager.addListener(this, SimpleApplication.INPUT_MAPPING_EXIT);
+        mapDefaultKeys();
         
         flyCam.registerWithInput(inputManager);
         flyCam.setEnabled(true);
@@ -75,25 +91,11 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 
 	@Override
     public void onAction(String name, boolean isPressed, float tpf) {
-		if(name.equals("Left")) {
-            if(isPressed) gameController.getPlayer().getInputState().setLeft(true); else gameController.getPlayer().getInputState().setLeft(false);
-        }else if(name.equals("Right")) {
-            if(isPressed) gameController.getPlayer().getInputState().setRight(true); else gameController.getPlayer().getInputState().setRight(false);
-        }else if(name.equals("Up")) {
-            if(isPressed) gameController.getPlayer().getInputState().setForward(true); else gameController.getPlayer().getInputState().setForward(false);
-        }else if(name.equals("Down")) {
-            if(isPressed) gameController.getPlayer().getInputState().setBack(true); else gameController.getPlayer().getInputState().setBack(false);
-        }else if(name.equals("Jump")) {
-            if(isPressed) gameController.jump();
-        }else if(name.equals("Attack")) {
-            if(isPressed) gameController.attack();
-        }else if (name.equals(SimpleApplication.INPUT_MAPPING_EXIT)) {
-            gameController.pauseGame();
-        }else if (name.equals(SimpleApplication.INPUT_MAPPING_HIDE_STATS)) {
-            if(isPressed) gameController.setDisplayStatView();
-        }else if (name.equals("scoreboard")) {
-            gameController.scoreboard(isPressed);
-        }
+		InputCommand command = InputCommand.parseInputCommand(name);
+		if(command != null) {
+			InputEvent event = new InputEvent(gameController.getPlayer().getId(), command, isPressed, true);
+			eventMachine.fireEvent(event);
+		}
 	}
 	
 	/**
