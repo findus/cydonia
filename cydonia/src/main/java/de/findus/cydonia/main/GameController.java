@@ -34,6 +34,7 @@ import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.MenuController;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
@@ -47,7 +48,9 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
@@ -71,8 +74,6 @@ public class GameController extends Application implements ScreenController, Phy
 	 * The time in seconds it should take to compensate a deviation from the accurate (=server defined) physical location of an object. 
 	 */
 	private static final float SMOOTHING = 0.2f;
-	
-	private static final int RELOAD_TIME = 500;
 	
     public static float PLAYER_SPEED = 5f;
     public static float PHYSICS_ACCURACY = (1f / 192);
@@ -371,7 +372,7 @@ public class GameController extends Application implements ScreenController, Phy
 	private void handleEvents() {
 		Event e = null;
 		while ((e = eventQueue.poll()) != null) {
-			if(e instanceof ConnectionDeniedEvent) {
+			if (e instanceof ConnectionDeniedEvent) {
 				System.out.println("Server denied connection! Reason: '" + ((ConnectionDeniedEvent) e).getReason() + "'");
 				gamestate = GameState.LOBBY;
 				menuController.actualizeScreen();
@@ -379,51 +380,40 @@ public class GameController extends Application implements ScreenController, Phy
 				connector.disconnectFromServer();
 			}else if (e instanceof ConnectionInitEvent) {
 				startGame(((ConnectionInitEvent) e).getLevel());
-			}else if(e instanceof AttackEvent) {
+			}else if (e instanceof AttackEvent) {
 				AttackEvent attack = (AttackEvent) e;
-				int playerid = attack.getPlayerid();
-				Player p = players.get(playerid);
-				p.setLastShot(System.currentTimeMillis());
-				Bullet b = new Bullet(attack.getBulletid(), playerid);
-				b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation());
-				bullets.put(b.getId(), b);
-				bulletAppState.getPhysicsSpace().add(b.getControl());
-				worldController.attachObject(b.getModel());
-			}else if(e instanceof HitEvent) {
+				Player p = players.get(attack.getPlayerid());
+				attack(p, attack.getBulletid());
+			}else if (e instanceof HitEvent) {
 				HitEvent hit = (HitEvent) e;
 				hitPlayer(hit.getAttackerPlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
-			}else if(e instanceof PlayerJoinEvent) {
+			}else if (e instanceof PlayerJoinEvent) {
 				PlayerJoinEvent join = (PlayerJoinEvent) e;
 				int playerid = join.getPlayerId();
 				if(player.getId() != playerid) {
-					Player p = new Player(playerid, assetManager);
-					players.put(p.getId(), p);
+					joinPlayer(playerid);
 				}
-			}else if(e instanceof RespawnEvent) {
+			}else if (e instanceof ChooseTeamEvent) {
+				ChooseTeamEvent choose = (ChooseTeamEvent) e;
+				Player p = players.get(choose.getPlayerId());
+				chooseTeam(p, choose.getTeam());
+			}else if (e instanceof RespawnEvent) {
 				RespawnEvent respawn = (RespawnEvent) e;
-				int playerid = respawn.getPlayerid();
-				Player p = players.get(playerid);
-				p.setHealthpoints(100);
-				p.setAlive(true);
-				bulletAppState.getPhysicsSpace().add(p.getControl());
-				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
-				worldController.attachObject(p.getModel());
-				if(p.getId() == player.getId()) {
-					resumeGame();
-				}
-			}else if(e instanceof PlayerQuitEvent) {
+				Player p = players.get(respawn.getPlayerid());
+				respawn(p);
+			}else if (e instanceof PlayerQuitEvent) {
 				PlayerQuitEvent quit = (PlayerQuitEvent) e;
-				int playerid = quit.getPlayerId();
-				Player p = players.get(playerid);
-				bulletAppState.getPhysicsSpace().remove(p.getControl());
-				worldController.detachObject(p.getModel());
-				players.remove(playerid);
+				Player p = players.get(quit.getPlayerId());
+				quitPlayer(p);
 			}else if (e instanceof JumpEvent) {
 				JumpEvent jump = (JumpEvent) e;
-				if(jump.getPlayerid() != player.getId()) {
-					players.get(jump.getPlayerid()).getControl().jump();
-				}
-			}
+				Player p = players.get(jump.getPlayerid());
+				jump(p);
+			}else if (e instanceof InputEvent) {
+    			InputEvent input = (InputEvent) e;
+    			Player p = players.get(input.getPlayerid());
+    			handlePlayerInput(p, input.getCommand(), input.isValue());
+    		}
 		}
 	}
 
@@ -438,6 +428,45 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	public void setlatestWorldstate(WorldStateUpdatedMessage update) {
 		latestWorldState = update;
+	}
+	
+	public void setInitialState(PlayerInfo[] infos) {
+		for (PlayerInfo info : infos) {
+			if(player.getId() == info.getPlayerid()) continue;
+			Player p = new Player(info.getPlayerid(), assetManager);
+			p.setName(info.getName());
+			p.setTeam(info.getTeam());
+			p.setAlive(info.isAlive());
+			p.setHealthpoints(info.getHealthpoints());
+			p.setKills(info.getKills());
+			p.setDeaths(info.getDeaths());
+			players.put(p.getId(), p);
+			if(p.isAlive()) {
+				bulletAppState.getPhysicsSpace().add(p.getControl());
+				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
+				worldController.attachObject(p.getModel());
+			}
+		}
+	}
+	
+	private void handlePlayerInput(Player p, InputCommand command, boolean value) {
+		if(p == null) return;
+		switch (command) {
+		case QUITGAME:
+			quitPlayer(p);
+			break;
+		case EXIT:
+			if(gamestate == GameState.RUNNING) {
+				pauseGame();
+			}else if (gamestate == GameState.PAUSED) {
+				resumeGame();
+			}
+			break;
+
+		default:
+			p.handleInput(command, value);
+			break;
+		}
 	}
 
     /**
@@ -507,12 +536,10 @@ public class GameController extends Application implements ScreenController, Phy
     		if(other.getName().startsWith("player")) {
     			// Hit Player not here. only when message from server.
     		}else {
-    			if(other != null) {
-    				if (other instanceof Node) {
-    					((Node) other).attachChild(bullet);
-    				}else {
-    					other.getParent().attachChild(bullet);
-    				}
+    			if (other instanceof Node) {
+    				((Node) other).attachChild(bullet);
+    			}else {
+    				other.getParent().attachChild(bullet);
     			}
     		}
     	}
@@ -548,6 +575,51 @@ public class GameController extends Application implements ScreenController, Phy
 				gameOver();
 			}
 		}
+	}
+	
+	private void attack(Player p, long bulletid) {
+		if(p == null) return;
+
+		p.setLastShot(System.currentTimeMillis());
+		Bullet b = new Bullet(bulletid, p.getId());
+		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation());
+		bullets.put(b.getId(), b);
+		bulletAppState.getPhysicsSpace().add(b.getControl());
+		worldController.attachObject(b.getModel());
+	}
+	
+	private void jump(Player p) {
+		if(p == null) return;
+		p.getControl().jump();
+	}
+	
+	private void joinPlayer(int playerid) {
+		Player p = new Player(playerid, assetManager);
+		players.put(playerid, p);
+	}
+	
+	private void quitPlayer(Player p) {
+		if(p == null) return;
+		bulletAppState.getPhysicsSpace().remove(p.getControl());
+		worldController.detachObject(p.getModel());
+		players.remove(p.getId());
+	}
+	
+	private void respawn(Player p) {
+		if(p == null) return;
+		p.setHealthpoints(100);
+		p.setAlive(true);
+		bulletAppState.getPhysicsSpace().add(p.getControl());
+		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
+		worldController.attachObject(p.getModel());
+		if(p.getId() == player.getId()) {
+			resumeGame();
+		}
+	}
+	
+	private void chooseTeam(Player p, int team) {
+		if(p == null) return;
+		p.setTeam(team);
 	}
 	
 	public String getScores() {
@@ -721,6 +793,11 @@ public class GameController extends Application implements ScreenController, Phy
 		@Override
 		public void run() {
 			while(!Thread.interrupted()) {
+				ViewDirMessage msg = new ViewDirMessage();
+				msg.setPlayerid(player.getId());
+				msg.setViewDir(cam.getDirection());
+				
+				connector.sendMessage(msg);
 				
 				try {
 					Thread.sleep(50);

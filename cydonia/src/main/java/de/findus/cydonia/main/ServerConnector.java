@@ -12,6 +12,7 @@ import com.jme3.network.Network;
 import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
@@ -27,7 +28,10 @@ import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
+import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
@@ -82,7 +86,10 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
+		Serializer.registerClass(InitialStateMessage.class);
+		Serializer.registerClass(PlayerInfo.class);
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
+		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
 		Serializer.registerClass(BulletPhysic.class);
 		Serializer.registerClass(PlayerInputState.class);
@@ -97,6 +104,7 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
 		Serializer.registerClass(PlayerJoinEvent.class);
 		Serializer.registerClass(PlayerQuitEvent.class);
+		Serializer.registerClass(ChooseTeamEvent.class);
 	}
 	
 	/**
@@ -140,6 +148,8 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 				denied.setReason(init.getText());
 				eventMachine.fireEvent(denied);
 			}
+		}else if (m instanceof InitialStateMessage) {
+			gameController.setInitialState(((InitialStateMessage) m).getInfos());
 		}
 	}
 

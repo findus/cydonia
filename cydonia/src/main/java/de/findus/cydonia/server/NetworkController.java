@@ -14,6 +14,7 @@ import com.jme3.network.Server;
 import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
@@ -29,7 +30,10 @@ import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
+import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
@@ -41,9 +45,12 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 
 	private Server server;
 	
+	private GameServer gameserver;
+	
 	private EventMachine eventMachine;
 	
-	public NetworkController(EventMachine em) {
+	public NetworkController(GameServer app, EventMachine em) {
+		gameserver = app;
 		eventMachine = em;
 		
 		initSerializer();
@@ -65,7 +72,10 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
+		Serializer.registerClass(InitialStateMessage.class);
+		Serializer.registerClass(PlayerInfo.class);
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
+		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
 		Serializer.registerClass(BulletPhysic.class);
 		Serializer.registerClass(PlayerInputState.class);
@@ -80,12 +90,16 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
 		Serializer.registerClass(PlayerJoinEvent.class);
 		Serializer.registerClass(PlayerQuitEvent.class);
+		Serializer.registerClass(ChooseTeamEvent.class);
 	}
 
 	@Override
 	public void messageReceived(HostedConnection con, Message m) {
 		if(m instanceof EventMessage) {
 			eventMachine.fireEvent(((EventMessage) m).getEvent());
+		}else if (m instanceof ViewDirMessage) {
+			ViewDirMessage msg = (ViewDirMessage) m;
+			gameserver.setViewDir(msg.getPlayerid(), msg.getViewDir());
 		}
 	}
 

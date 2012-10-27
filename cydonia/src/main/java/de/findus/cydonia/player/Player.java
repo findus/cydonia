@@ -67,19 +67,19 @@ public class Player {
         model.addControl(control);
 	}
 	
-	public void handleInput(InputCommand command) {
+	public void handleInput(InputCommand command, boolean value) {
 		switch (command) {
 		case MOVEFRONT:
-			inputs.setForward(true);
+			inputs.setForward(value);
 			break;
 		case MOVEBACK:
-			inputs.setBack(true);
+			inputs.setBack(value);
 			break;
 		case STRAFELEFT:
-			inputs.setLeft(true);
+			inputs.setLeft(value);
 			break;
 		case STRAFERIGHT:
-			inputs.setRight(true);
+			inputs.setRight(value);
 			break;
 
 		default:

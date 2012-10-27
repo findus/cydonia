@@ -19,14 +19,13 @@ import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
-import com.jme3.network.HostedConnection;
-import com.jme3.network.Message;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
@@ -42,6 +41,8 @@ import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
+import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
@@ -78,8 +79,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     
     private boolean senderRunning;
     
-    private ConcurrentLinkedQueue<Message> updateQueue;
-    
     private Level level;
     
     /**
@@ -104,7 +103,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         
         this.players = new ConcurrentHashMap<Integer, Player>();
         this.bullets = new ConcurrentHashMap<Long, Bullet>();
-        updateQueue = new ConcurrentLinkedQueue<Message>();
         
         Bullet.setAssetManager(assetManager);
 
@@ -132,7 +130,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         
         eventMachine.registerListener(this);
         
-        networkController = new NetworkController(eventMachine);
+        networkController = new NetworkController(this, eventMachine);
 		
         bulletAppState.setEnabled(true);
 		senderLoop = new Thread(new WorldStateSenderLoop());
@@ -268,10 +266,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			}
 			victim.setHealthpoints(hp);
 
-			HitEvent hit = new HitEvent();
-			hit.setVictimPlayerid(victimid);
-			hit.setHitpoints(20);
-			hit.setAttackerPlayerid(sourceid);
+			HitEvent hit = new HitEvent(victimid, sourceid, hitpoints, true);
 			eventMachine.fireEvent(hit);
 		}
 	}
@@ -317,6 +312,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void jump(Player p) {
 		if(p == null) return;
 		p.getControl().jump();
+		
 		JumpEvent jump = new JumpEvent(p.getId(), true);
 		eventMachine.fireEvent(jump);
 	}
@@ -327,6 +323,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		
 		PlayerJoinEvent join = new PlayerJoinEvent(playerid, true);
 		eventMachine.fireEvent(join);
+		
+		sendInitialState(playerid);
 	}
 	
 	private void quitPlayer(Player p) {
@@ -379,7 +377,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			break;
 
 		default:
-			p.handleInput(command);
+			p.handleInput(command, value);
 			break;
 		}
 	}
@@ -387,12 +385,28 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void chooseTeam(Player p, int team) {
 		if(p == null) return;
 		p.setTeam(team);
+		
+		ChooseTeamEvent event = new ChooseTeamEvent(p.getId(), team, true);
+		eventMachine.fireEvent(event);
+	}
+	
+	private void sendInitialState(int playerid) {
+		PlayerInfo[] infos = new PlayerInfo[players.size()];
+		int i=0;
+		for (Player p : players.values()) {
+			infos[i] = new PlayerInfo(p);
+			i++;
+		}
+		InitialStateMessage msg = new InitialStateMessage();
+		msg.setInfos(infos);
+		networkController.sendMessage(msg, playerid);
 	}
 
-	public void messageReceived(HostedConnection source, Message m) {
-		updateQueue.add(m);
+	public void setViewDir(int playerid, Vector3f dir) {
+		Player p = players.get(playerid);
+		if(p == null || dir == null)  return;
+		p.getControl().setViewDirection(dir);
 	}
-
 	
 	public void connectionAdded(int clientid) {
 		ConnectionInitMessage init = new ConnectionInitMessage();
