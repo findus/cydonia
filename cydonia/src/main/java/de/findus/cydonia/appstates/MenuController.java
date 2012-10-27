@@ -56,7 +56,9 @@ public class MenuController {
 	
 	public void showScorebord() {
 		gameController.getNifty().gotoScreen("scoreboardscreen");
-		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());						
+		String scores = gameController.getScores();
+		System.out.println(scores);
+		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(scores);						
 	}
 
 }

@@ -53,7 +53,7 @@
     <layer id="layer" backgroundColor="#fff0" childLayout="center">
       <panel height="50%" width="80%" align="center" valign="center" backgroundColor="#8885" childLayout="vertical">
 	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" height="5%" align="center" valign="center" />
-	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" align="left" valign="top" />
+	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" textHAlign="left" align="left" valign="top" />
       </panel>
     </layer>
   </screen>

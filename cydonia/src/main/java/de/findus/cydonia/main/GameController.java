@@ -452,6 +452,9 @@ public class GameController extends Application implements ScreenController, Phy
 	private void handlePlayerInput(Player p, InputCommand command, boolean value) {
 		if(p == null) return;
 		switch (command) {
+		case SCOREBOARD:
+			scoreboard(value);
+			break;
 		case QUITGAME:
 			quitPlayer(p);
 			break;
