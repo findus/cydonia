@@ -4,6 +4,7 @@
 package de.findus.cydonia.messages;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
@@ -21,21 +22,19 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 	public static WorldStateUpdatedMessage getUpdate(Collection<Player> playerlist, Collection<Bullet> bulletlist) {
 		WorldStateUpdatedMessage upd = new WorldStateUpdatedMessage();
 		
-		PlayerPhysic[] playerphys = new PlayerPhysic[playerlist.size()];
-		int i=0;
+		LinkedList<PlayerPhysic> plist = new LinkedList<PlayerPhysic>();
 		for (Player p : playerlist) {
 			PlayerPhysic physic = new PlayerPhysic();
 			physic.setId(p.getId());
 			physic.setTranslation(p.getControl().getPhysicsLocation());
 			physic.setOrientation(p.getViewDir());
 			
-			playerphys[i] = physic;
-			i++;
+			plist.add(physic);
 		}
+		PlayerPhysic[] playerphys = plist.toArray(new PlayerPhysic[0]);
 		upd.setPlayerPhysics(playerphys);
 		
-		BulletPhysic[] bulletphys = new BulletPhysic[bulletlist.size()];
-		i=0;
+		LinkedList<BulletPhysic> blist = new LinkedList<BulletPhysic>();
 		for (Bullet b : bulletlist) {
 			BulletPhysic physic = new BulletPhysic();
 			physic.setId(b.getId());
@@ -43,9 +42,9 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 			physic.setTranslation(b.getControl().getPhysicsLocation());
 			physic.setVelocity(b.getControl().getLinearVelocity());
 			
-			bulletphys[i] = physic;
-			i++;
+			blist.add(physic);
 		}
+		BulletPhysic[] bulletphys = blist.toArray(new BulletPhysic[0]);
 		upd.setBulletPhysics(bulletphys);
 		
 		return upd;

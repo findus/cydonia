@@ -37,8 +37,10 @@ import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
+import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
+import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.PlayerInfo;
@@ -79,6 +81,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     private boolean senderRunning;
     
     private Level level;
+    
+    private GameplayController gameplayController;
     
     /**
      * Used for moving players.
@@ -135,6 +139,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		senderLoop = new Thread(new WorldStateSenderLoop());
 		senderRunning = true;
 		senderLoop.start();
+		
+		gameplayController = new GameplayController(eventMachine);
+		gameplayController.restartRound();
     }
     
     @Override
@@ -174,7 +181,14 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     		}else if (e instanceof InputEvent) {
     			InputEvent input = (InputEvent) e;
     			handlePlayerInput(input.getPlayerid(), input.getCommand(), input.isValue());
-    		}
+    		}else if (e instanceof RestartRoundEvent) {
+				for (Player p : players.values()) {
+					if(p.isAlive()) {
+						killPlayer(p);
+					}
+				}
+				removeAllBullets();
+			}
     	}
     }
 
@@ -202,6 +216,17 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 			p.getControl().setWalkDirection(walkdirection);
 		}
+	}
+	
+	private void removeAllBullets() {
+		for (Bullet b : bullets.values()) {
+			removeBullet(b);
+		}
+	}
+	
+	private void removeBullet(Bullet b) {
+		b.getModel().removeFromParent();
+		bullets.remove(b.getId());
 	}
 
 	@Override
@@ -248,16 +273,16 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
 		Player victim = players.get(victimid);
 		Player attacker = players.get(sourceid);
-		if(victim == null || attacker == null) {
+		if(victim == null) {
 			System.out.println("cannot prozess hit. player not available.");
 			return;
 		}
-		if(victim.getTeam() != attacker.getTeam()) {
+		if(attacker == null || victim.getTeam() != attacker.getTeam()) {
 			double hp = victim.getHealthpoints();
 			hp -= hitpoints;
 			if(hp <= 0) {
 				hp = 0;
-				this.killPlayer(victimid);
+				this.killPlayer(victim);
 				Player source = players.get(sourceid);
 				if(source != null) {
 					source.setKills(source.getKills() + 1);
@@ -270,14 +295,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		}
 	}
 	
-	private void killPlayer(int id) {
-		Player p = players.get(id);
-		if(p != null) {
-			bulletAppState.getPhysicsSpace().remove(p.getControl());
-			rootNode.detachChild(p.getModel());
-			p.setAlive(false);
-			p.setDeaths(p.getDeaths() + 1);
-		}
+	private void killPlayer(Player p) {
+		if(p == null) return;
+		bulletAppState.getPhysicsSpace().remove(p.getControl());
+		rootNode.detachChild(p.getModel());
+		p.setAlive(false);
+		p.setDeaths(p.getDeaths() + 1);
 	}
 	
 	private void attack(Player p) {
@@ -318,6 +341,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		eventMachine.fireEvent(join);
 		
 		sendInitialState(playerid);
+		if(players.size() == 1) {
+			gameplayController.restartRound();
+		}
 	}
 	
 	private void quitPlayer(Player p) {
@@ -347,10 +373,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		Player p = players.get(playerid);
 		switch (command) {
 		case ATTACK:
-			if(p.isAlive()) {
-				if(value) attack(p);
-			}else {
-				if(value) respawn(p);
+			if(gameplayController.getGameState() == GameState.RUNNING) {
+				if(p.isAlive()) {
+					if(value) attack(p);
+				}else {
+					if(value) respawn(p);
+				}
 			}
 			break;
 		case JUMP:

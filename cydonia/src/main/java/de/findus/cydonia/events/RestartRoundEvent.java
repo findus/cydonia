@@ -5,18 +5,19 @@ package de.findus.cydonia.events;
 
 import com.jme3.network.serializing.Serializable;
 
+
 /**
  * @author Findus
  *
  */
 @Serializable
-public class RoundEndedEvent extends AbstractEvent {
+public class RestartRoundEvent extends AbstractEvent {
 
-	public RoundEndedEvent() {
+	public RestartRoundEvent() {
 		setNetworkEvent(false);
 	}
 	
-	public RoundEndedEvent(boolean forward) {
+	public RestartRoundEvent(boolean forward) {
 		setNetworkEvent(forward);
 	}
 }

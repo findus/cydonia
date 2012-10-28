@@ -47,6 +47,7 @@ import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
+import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.PlayerInfo;
@@ -423,13 +424,31 @@ public class GameController extends Application implements ScreenController, Phy
     			InputEvent input = (InputEvent) e;
     			Player p = players.get(input.getPlayerid());
     			handlePlayerInput(p, input.getCommand(), input.isValue());
-    		}
+    		}else if (e instanceof RestartRoundEvent) {
+				for (Player p : players.values()) {
+					if(p.isAlive()) {
+						killPlayer(p);
+					}
+				}
+				removeAllBullets();
+			}
 		}
 	}
 
 	@Override
 	public void newEvent(Event e) {
 		eventQueue.offer(e);
+	}
+	
+	private void removeAllBullets() {
+		for (Bullet b : bullets.values()) {
+			removeBullet(b);
+		}
+	}
+	
+	private void removeBullet(Bullet b) {
+		b.getModel().removeFromParent();
+		bullets.remove(b.getId());
 	}
 
 	private void clean() {
@@ -571,7 +590,7 @@ public class GameController extends Application implements ScreenController, Phy
 		System.out.println("hit - new hp: " + hp);
 		if(hp <= 0) {
 			hp = 0;
-			this.killPlayer(victimid);
+			this.killPlayer(victim);
 			Player source = this.players.get(sourceid);
 			if(source != null) {
 				source.setKills(source.getKills() + 1);
@@ -580,16 +599,14 @@ public class GameController extends Application implements ScreenController, Phy
 		victim.setHealthpoints(hp);
 	}
 	
-	private void killPlayer(int id) {
-		Player p = players.get(id);
-		if(p != null) {
-			bulletAppState.getPhysicsSpace().remove(p.getControl());
-			worldController.detachObject(p.getModel());
-			p.setAlive(false);
-			p.setDeaths(p.getDeaths() + 1);
-			if(id == player.getId()) {
-				gameOver();
-			}
+	private void killPlayer(Player p) {
+		if(p == null) return;
+		bulletAppState.getPhysicsSpace().remove(p.getControl());
+		worldController.detachObject(p.getModel());
+		p.setAlive(false);
+		p.setDeaths(p.getDeaths() + 1);
+		if(p.getId() == player.getId()) {
+			gameOver();
 		}
 	}
 	
