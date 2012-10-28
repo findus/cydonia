@@ -398,7 +398,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			break;
 
 		default:
-			p.handleInput(command, value);
+			if(gameplayController.getGameState() == GameState.RUNNING) {
+				p.handleInput(command, value);
+			}
 			break;
 		}
 	}
