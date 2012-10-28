@@ -43,6 +43,8 @@ public class Player {
 	
 	private int deaths = 0;
 	
+	private Vector3f viewDir = Vector3f.UNIT_X;
+	
 	
 	/**
 	 * Constructs a new Player and inits its physics and model.
@@ -57,7 +59,7 @@ public class Player {
 		model = assetManager.loadModel("Models/Sinbad/Sinbad.j3o");
 		model.setName("player" + id);
 		model.setLocalScale(0.2f);
-        
+		
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
         control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
         control.setJumpSpeed(10);
@@ -219,6 +221,21 @@ public class Player {
 	 */
 	public void setTeam(int team) {
 		this.team = team;
+	}
+
+	/**
+	 * @return the viewDir
+	 */
+	public Vector3f getViewDir() {
+		return viewDir.clone();
+	}
+
+	/**
+	 * @param viewDir the viewDir to set
+	 */
+	public void setViewDir(Vector3f viewDir) {
+		this.viewDir = viewDir.clone();
+		control.setViewDirection(viewDir.clone().setY(0).normalizeLocal());
 	}
 
 }

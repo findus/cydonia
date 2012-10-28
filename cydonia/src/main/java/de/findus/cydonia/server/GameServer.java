@@ -39,7 +39,6 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level1;
-import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.PlayerInfo;
@@ -287,25 +286,19 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(passedTime >= RELOAD_TIME) {
 			p.setLastShot(System.currentTimeMillis());
 			Vector3f pos = p.getControl().getPhysicsLocation();
-			Vector3f dir = p.getControl().getViewDirection();
+			Vector3f dir = p.getViewDir();
 
 			Bullet bul = Bullet.createBullet(p.getId());
-			bul.getModel().setLocalTranslation(pos.add(dir.normalize().mult(1.1f)));
+			bul.getModel().setLocalTranslation(pos.add(dir.normalize()));
 			rootNode.attachChild(bul.getModel());
-			bul.getControl().setPhysicsLocation(pos.add(dir.normalize().mult(1.1f)));
+			bul.getControl().setPhysicsLocation(pos.add(dir.normalize()));
 			bulletAppState.getPhysicsSpace().add(bul.getControl());
 			bul.getControl().setLinearVelocity(dir.normalize().mult(25));
 
 			bullets.put(bul.getId(), bul);
-
-			BulletPhysic physic = new BulletPhysic();
-			physic.setId(bul.getId());
-			physic.setTranslation(bul.getControl().getPhysicsLocation());
-			physic.setVelocity(bul.getControl().getLinearVelocity());
 			
-			AttackEvent attack = new AttackEvent();
-			attack.setPlayerid(p.getId());
-			attack.setBulletid(bul.getId());
+			AttackEvent attack = new AttackEvent(p.getId(), bul.getId(), true);
+			eventMachine.fireEvent(attack);
 		}
 	}
 	
@@ -405,7 +398,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public void setViewDir(int playerid, Vector3f dir) {
 		Player p = players.get(playerid);
 		if(p == null || dir == null)  return;
-		p.getControl().setViewDirection(dir);
+		p.setViewDir(dir);
 	}
 	
 	public void connectionAdded(int clientid) {

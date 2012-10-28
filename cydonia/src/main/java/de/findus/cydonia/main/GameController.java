@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.BulletAppState.ThreadingType;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
@@ -109,6 +110,8 @@ public class GameController extends Application implements ScreenController, Phy
     private DropDown<String> teamInput;
     
     private Player player;
+    private AudioNode throwSound;
+    
     private ConcurrentHashMap<Integer, Player> players;
     private ConcurrentHashMap<Long, Bullet> bullets;
     private ServerConnector connector;
@@ -218,6 +221,13 @@ public class GameController extends Application implements ScreenController, Phy
         eventMachine.registerListener(this);
         
         connector = new ServerConnector(this, eventMachine);
+        
+        throwSound = new AudioNode(assetManager, "de/findus/cydonia/sounds/throw_001.wav", false);
+        throwSound.setLooping(false);
+		throwSound.setPositional(true);
+		throwSound.setLocalTranslation(Vector3f.ZERO);
+		throwSound.setVolume(1);
+		worldController.attachObject(throwSound);
     }
     
     public void connect() {
@@ -348,7 +358,7 @@ public class GameController extends Application implements ScreenController, Phy
 				Player p = players.get(physic.getId());
 				if(p != null) {
 					p.setExactLoc(physic.getTranslation());
-					p.getControl().setViewDirection(physic.getOrientation());
+					p.setViewDir(physic.getOrientation());
 				}
 			}
 
@@ -479,10 +489,13 @@ public class GameController extends Application implements ScreenController, Phy
 	private void movePlayers(float tpf) {
         
 		for (Player p : players.values()) {
-			if(p.getId() == connector.getConnectionId()) {
-				p.getControl().setViewDirection(cam.getDirection());
+			if(p.getId() == player.getId()) {
+				p.setViewDir(cam.getDirection());
+				listener.setLocation(cam.getLocation());
+			    listener.setRotation(cam.getRotation());
 			}
-			Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
+			
+			Vector3f viewDir = p.getControl().getViewDirection();
 			Vector3f viewLeft = new Vector3f();
 			ROTATE90LEFT.transformVector(viewDir, viewLeft);
 
@@ -586,9 +599,13 @@ public class GameController extends Application implements ScreenController, Phy
 		p.setLastShot(System.currentTimeMillis());
 		Bullet b = new Bullet(bulletid, p.getId());
 		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation());
+		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation().add(p.getControl().getViewDirection().normalize()));
 		bullets.put(b.getId(), b);
 		bulletAppState.getPhysicsSpace().add(b.getControl());
 		worldController.attachObject(b.getModel());
+		
+		throwSound.setLocalTranslation(p.getControl().getPhysicsLocation());
+		throwSound.play();
 	}
 	
 	private void jump(Player p) {
@@ -798,7 +815,7 @@ public class GameController extends Application implements ScreenController, Phy
 			while(!Thread.interrupted()) {
 				ViewDirMessage msg = new ViewDirMessage();
 				msg.setPlayerid(player.getId());
-				msg.setViewDir(cam.getDirection());
+				msg.setViewDir(player.getViewDir());
 				
 				connector.sendMessage(msg);
 				

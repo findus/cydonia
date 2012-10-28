@@ -27,7 +27,7 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 			PlayerPhysic physic = new PlayerPhysic();
 			physic.setId(p.getId());
 			physic.setTranslation(p.getControl().getPhysicsLocation());
-			physic.setOrientation(p.getControl().getViewDirection());
+			physic.setOrientation(p.getViewDir());
 			
 			playerphys[i] = physic;
 			i++;
