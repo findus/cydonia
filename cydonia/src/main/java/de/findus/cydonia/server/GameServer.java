@@ -186,6 +186,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
+					p.setKills(0);
+					p.setDeaths(0);
 				}
 				removeAllBullets();
 			}
@@ -201,6 +203,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 
 	private void movePlayers(float tpf) {
+		if(gameplayController.getGameState() != GameState.RUNNING) {
+			return;
+		}
 		for (Player p : this.players.values()) {
 			Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
 			Vector3f viewLeft = new Vector3f();

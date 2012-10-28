@@ -430,6 +430,8 @@ public class GameController extends Application implements ScreenController, Phy
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
+					p.setKills(0);
+					p.setDeaths(0);
 				}
 				removeAllBullets();
 			}else if (e instanceof RoundEndedEvent) {
