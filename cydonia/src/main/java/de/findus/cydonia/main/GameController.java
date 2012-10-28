@@ -48,6 +48,7 @@ import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
+import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.PlayerInfo;
@@ -285,10 +286,10 @@ public class GameController extends Application implements ScreenController, Phy
     /**
      * pauses the game and opens the menu.
      */
-    public void pauseGame() {
+    public void openMenu() {
     	bulletAppState.setEnabled(false);
     	stateManager.detach(gameInputAppState);
-    	gamestate = GameState.PAUSED;
+    	gamestate = GameState.MENU;
     	menuController.actualizeScreen();
     	stopInputSender();
     }
@@ -431,6 +432,9 @@ public class GameController extends Application implements ScreenController, Phy
 					}
 				}
 				removeAllBullets();
+			}else if (e instanceof RoundEndedEvent) {
+				gamestate = GameState.ROUNDOVER;
+				menuController.actualizeScreen();
 			}
 		}
 	}
@@ -489,8 +493,8 @@ public class GameController extends Application implements ScreenController, Phy
 			break;
 		case EXIT:
 			if(gamestate == GameState.RUNNING) {
-				pauseGame();
-			}else if (gamestate == GameState.PAUSED) {
+				openMenu();
+			}else if (gamestate == GameState.MENU) {
 				resumeGame();
 			}
 			break;

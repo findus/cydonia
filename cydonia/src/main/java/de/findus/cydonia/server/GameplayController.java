@@ -71,7 +71,7 @@ public class GameplayController {
 	
 	public void endRound(boolean triggerNewRound) {
 		System.out.println("end round...");
-		gameState = GameState.PAUSED;
+		gameState = GameState.MENU;
 		RoundEndedEvent end = new RoundEndedEvent(true);
 		eventMachine.fireEvent(end);
 		

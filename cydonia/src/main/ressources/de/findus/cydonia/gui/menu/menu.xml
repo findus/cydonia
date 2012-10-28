@@ -49,11 +49,19 @@
     </layer>
   </screen>
   
+  <screen id="roundoverscreen" controller="de.findus.cydonia.main.GameController">
+    <layer id="layer" backgroundColor="#8888" childLayout="center">
+      <panel height="10%" width="90%" align="center" valign="top" backgroundColor="#8888" childLayout="vertical">
+	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Round is over. New round will start automatically in a view seconds..." height="100%" textVAlign="center" align="center" valign="center" />
+      </panel>
+    </layer>
+  </screen>
+  
   <screen id="scoreboardscreen" controller="de.findus.cydonia.main.GameController">
     <layer id="layer" backgroundColor="#fff0" childLayout="center">
       <panel height="50%" width="80%" align="center" valign="center" backgroundColor="#8885" childLayout="vertical">
 	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" height="5%" align="center" valign="center" />
-	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" textHAlign="left" align="left" valign="top" />
+	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" width="*" textHAlign="left" align="center" valign="top" />
       </panel>
     </layer>
   </screen>

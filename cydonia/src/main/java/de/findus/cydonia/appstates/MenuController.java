@@ -34,7 +34,7 @@ public class MenuController {
 			gameController.getInputManager().setCursorVisible(true);
 			break;
 
-		case PAUSED:
+		case MENU:
 			gameController.getNifty().gotoScreen("pausemenu");
 			gameController.getInputManager().setCursorVisible(true);
 			break;
@@ -46,6 +46,11 @@ public class MenuController {
 			
 		case RUNNING:
 			gameController.getNifty().gotoScreen("none");
+			gameController.getInputManager().setCursorVisible(false);
+			break;
+			
+		case ROUNDOVER:
+			gameController.getNifty().gotoScreen("roundoverscreen");
 			gameController.getInputManager().setCursorVisible(false);
 			break;
 			
