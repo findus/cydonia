@@ -52,6 +52,7 @@ public class MenuController {
 		case ROUNDOVER:
 			gameController.getNifty().gotoScreen("roundoverscreen");
 			gameController.getInputManager().setCursorVisible(false);
+			gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());
 			break;
 			
 		default:
@@ -61,9 +62,7 @@ public class MenuController {
 	
 	public void showScorebord() {
 		gameController.getNifty().gotoScreen("scoreboardscreen");
-		String scores = gameController.getScores();
-		System.out.println(scores);
-		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(scores);						
+		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());						
 	}
 
 }
