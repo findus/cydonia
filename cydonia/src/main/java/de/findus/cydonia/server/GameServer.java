@@ -39,7 +39,7 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.level.Level;
-import de.findus.cydonia.level.Level1;
+import de.findus.cydonia.level.Level2;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
@@ -117,7 +117,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-        level = new Level1();
+        level = new Level2();
         Spatial scene = null;
         //scene = assetManager.loadModel("Scenes/firstworld.j3o");
         scene = level.getScene(assetManager);
