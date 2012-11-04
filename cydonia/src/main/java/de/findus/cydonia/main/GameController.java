@@ -142,6 +142,10 @@ public class GameController extends Application implements ScreenController, Phy
                 return;
             }
         }
+        
+        // limit frame rate
+        settings.setFrameRate(100);
+        
         //re-setting settings they can have been merged from the registry.
         setSettings(settings);
         super.start();
