@@ -71,6 +71,10 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		eventMachine.registerListener(this);
 	}
 	
+	public void stop() {
+		server.close();
+	}
+	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);

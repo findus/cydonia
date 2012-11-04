@@ -94,4 +94,8 @@ public class GameplayController {
 	public GameState getGameState() {
 		return gameState;
 	}
+	
+	public void dispose() {
+		timer.cancel();
+	}
 }

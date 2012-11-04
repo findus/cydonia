@@ -63,7 +63,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 	public static void main(String[] args) {
 		GameServer gameServer = new GameServer();
-		gameServer.start(JmeContext.Type.Headless);
+		gameServer.start();
 	}
 	
 	private Thread senderLoop;
@@ -77,8 +77,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     private ConcurrentHashMap<Long, Bullet> bullets;
     
 	private BulletAppState bulletAppState;
-    
-    private boolean senderRunning;
     
     private Level level;
     
@@ -95,6 +93,30 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private EventMachine eventMachine;
 	
 	private ConcurrentLinkedQueue<Event> eventQueue;
+	
+	@Override
+	public void start() {
+		super.start(JmeContext.Type.Headless);
+	}
+	
+	@Override
+	public void stop() {
+		cleanup();
+		super.stop();
+	}
+	
+	@Override
+	public void stop(boolean waitfor) {
+		cleanup();
+		super.stop(waitfor);
+	}
+	
+	private void cleanup() {
+		networkController.stop();
+		bulletAppState.setEnabled(false);
+		senderLoop.interrupt();
+		gameplayController.dispose();
+	}
 	
     @Override
     public void initialize() {
@@ -137,7 +159,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		
         bulletAppState.setEnabled(true);
 		senderLoop = new Thread(new WorldStateSenderLoop());
-		senderRunning = true;
 		senderLoop.start();
 		
 		gameplayController = new GameplayController(eventMachine);
@@ -460,15 +481,14 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private class WorldStateSenderLoop implements Runnable {
 		@Override
 		public void run() {
-			while(senderRunning) {
+			while(!Thread.interrupted()) {
 				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(players.values(), bullets.values());
 				networkController.broadcast(worldstate);
 				
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					break;
 				}
 			}
 		}
