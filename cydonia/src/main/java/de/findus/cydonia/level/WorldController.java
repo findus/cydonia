@@ -12,6 +12,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.util.SkyFactory;
 
 /**
  * This is the central controller for the games virtual world.
@@ -53,6 +54,9 @@ public class WorldController {
 	 * @param assetManager an instance of AssetManager
 	 */
 	public void loadWorld(String levelname) {
+		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", true);
+		rootNode.attachChild(sky);
+		
 		try {
 			level = (Level) Class.forName(levelname).newInstance();
 		} catch (ClassNotFoundException e) {
