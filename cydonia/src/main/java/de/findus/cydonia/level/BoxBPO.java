@@ -38,7 +38,6 @@ public class BoxBPO {
 	public Spatial createBox(String color, boolean moveable) {
 		Box box = new Box( new Vector3f(0,0.5f,0), 0.5f, 0.5f, 0.5f);
         Geometry spatial = new Geometry("Box", box);
-        spatial.setUserData("movable", moveable);
         
         if("red".equals(color)) {
         	spatial.setMaterial(mat_red);

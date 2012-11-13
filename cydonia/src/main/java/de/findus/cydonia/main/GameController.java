@@ -44,6 +44,7 @@ import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.JumpEvent;
+import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
@@ -403,6 +404,10 @@ public class GameController extends Application implements ScreenController, Phy
 			}else if (e instanceof HitEvent) {
 				HitEvent hit = (HitEvent) e;
 				hitPlayer(hit.getAttackerPlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
+			}else if (e instanceof PickupEvent) {
+				PickupEvent pickup = (PickupEvent) e;
+				Spatial moveable = worldController.getMoveable(pickup.getMoveableid());
+				pickup(moveable);
 			}else if (e instanceof PlayerJoinEvent) {
 				PlayerJoinEvent join = (PlayerJoinEvent) e;
 				int playerid = join.getPlayerId();
@@ -633,6 +638,13 @@ public class GameController extends Application implements ScreenController, Phy
 		
 		throwSound.setLocalTranslation(p.getControl().getPhysicsLocation());
 		throwSound.play();
+	}
+	
+	private void pickup(Spatial moveable) {
+		if(moveable != null) {
+			worldController.detachMoveable(moveable);
+			bulletAppState.getPhysicsSpace().removeCollisionObject(moveable.getControl(RigidBodyControl.class));
+		}
 	}
 	
 	private void jump(Player p) {

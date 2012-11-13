@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.appstates;
 
+import static de.findus.cydonia.player.InputCommand.*;
 import static de.findus.cydonia.player.InputCommand.ATTACK;
 import static de.findus.cydonia.player.InputCommand.EXIT;
 import static de.findus.cydonia.player.InputCommand.JUMP;
@@ -68,7 +69,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(MOVEBACK.getCode(), new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
         inputManager.addMapping(ATTACK.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode());
+        inputManager.addMapping(PICKUP.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), PICKUP.getCode(), PLACE.getCode());
         
         inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addListener(this, SCOREBOARD.getCode());

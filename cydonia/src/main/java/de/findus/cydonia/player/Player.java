@@ -45,7 +45,6 @@ public class Player {
 	
 	private Vector3f viewDir = Vector3f.UNIT_X;
 	
-	
 	/**
 	 * Constructs a new Player and inits its physics and model.
 	 * @param id the id of this player. If not available set to -1 and reset later.

@@ -24,14 +24,6 @@ public class Level3 implements Level {
 	public Node getScene(AssetManager assetManager) {
 		Node levelRoot = new Node("levelRoot");
 		
-		BoxBPO boxBPO = new BoxBPO(assetManager);
-		Spatial box1;
-		for (int i = 0; i < 10; i++) {
-			box1 = boxBPO.createBox("red", true);
-			box1.setLocalTranslation(i + 0.5f, 0, 0);
-			levelRoot.attachChild(box1);
-		}
-		
 		Material mat_pflaster = new Material(assetManager, 
 				"Common/MatDefs/Misc/Unshaded.j3md");
 		Texture tex_pflaster = assetManager.loadTexture(GameController.TEXTURES_PATH + "pflaster1.jpg");

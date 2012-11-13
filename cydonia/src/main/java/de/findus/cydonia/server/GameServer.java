@@ -14,6 +14,7 @@ import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.collision.CollisionResult;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -34,6 +35,7 @@ import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.JumpEvent;
+import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
@@ -41,6 +43,7 @@ import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.level.Level;
 import de.findus.cydonia.level.Level2;
 import de.findus.cydonia.level.Level3;
+import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
@@ -69,17 +72,11 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private Thread senderLoop;
 	
-	protected Node rootNode = new Node("Root Node");
-	
-	private RigidBodyControl landscape;
-    
     private ConcurrentHashMap<Integer, Player> players;
     
     private ConcurrentHashMap<Long, Bullet> bullets;
     
 	private BulletAppState bulletAppState;
-    
-    private Level level;
     
     private GameplayController gameplayController;
     
@@ -94,6 +91,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private EventMachine eventMachine;
 	
 	private ConcurrentLinkedQueue<Event> eventQueue;
+	
+	private WorldController worldController;
 	
 	@Override
 	public void start() {
@@ -131,6 +130,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         this.bullets = new ConcurrentHashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
+        
+        worldController = new WorldController();
+        worldController.setAssetManager(assetManager);
 
     	bulletAppState = new BulletAppState();
         bulletAppState.setThreadingType(ThreadingType.PARALLEL);
@@ -140,17 +142,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-        level = new Level3();
-        Spatial scene = null;
-        //scene = assetManager.loadModel("Scenes/firstworld.j3o");
-        scene = level.getScene(assetManager);
-        
-        CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
-        landscape = new RigidBodyControl(sceneShape, 0);
-        scene.addControl(landscape);
-        
-        rootNode.attachChild(scene);
-        bulletAppState.getPhysicsSpace().add(landscape);
+        worldController.loadWorld(Level3.class.getName());
+        bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
         
         Bullet.preloadTextures();
         
@@ -183,8 +176,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         movePlayers(tpf);
         
         // update world and gui
-        rootNode.updateLogicalState(tpf);
-        rootNode.updateGeometricState();
+        worldController.updateLogicalState(tpf);
+        worldController.updateGeometricState();
 
         stateManager.render(renderManager);
         renderManager.render(tpf, context.isRenderable());
@@ -277,7 +270,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		}
 
 		if(bullet != null && other != null) {
-			rootNode.detachChild(bullet);
+			worldController.detachObject(bullet);
 			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
 			bullet.removeControl(RigidBodyControl.class);
 			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
@@ -325,7 +318,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void killPlayer(Player p) {
 		if(p == null) return;
 		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		rootNode.detachChild(p.getModel());
+		worldController.detachObject(p.getModel());
 		p.setAlive(false);
 		p.setDeaths(p.getDeaths() + 1);
 	}
@@ -340,7 +333,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 			Bullet bul = Bullet.createBullet(p.getId());
 			bul.getModel().setLocalTranslation(pos.add(dir.normalize()));
-			rootNode.attachChild(bul.getModel());
+			worldController.attachObject(bul.getModel());
 			bul.getControl().setPhysicsLocation(pos.add(dir.normalize()));
 			bulletAppState.getPhysicsSpace().add(bul.getControl());
 			bul.getControl().setLinearVelocity(dir.normalize().mult(25));
@@ -350,6 +343,27 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			AttackEvent attack = new AttackEvent(p.getId(), bul.getId(), true);
 			eventMachine.fireEvent(attack);
 		}
+	}
+	
+	private void pickup(Player p) {
+		if(p == null) return;
+		
+		CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
+		if(result != null) {
+			Spatial moveable = result.getGeometry();
+			RigidBodyControl control = moveable.getControl(RigidBodyControl.class);
+			bulletAppState.getPhysicsSpace().removeCollisionObject(control);
+			worldController.detachMoveable(moveable);
+			
+			PickupEvent pickup = new PickupEvent(p.getId(), (Long) moveable.getUserData("id"), true);
+			eventMachine.fireEvent(pickup);
+		}
+	}
+	
+	private void place(Player p) {
+		if(p == null) return;
+		
+			//TODO
 	}
 	
 	private void jump(Player p) {
@@ -376,7 +390,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void quitPlayer(Player p) {
 		if(p != null) {
 			bulletAppState.getPhysicsSpace().remove(p.getControl());
-			rootNode.detachChild(p.getModel());
+			worldController.detachObject(p.getModel());
 			players.remove(p.getId());
 		}
 
@@ -389,8 +403,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		p.setHealthpoints(100);
 		p.setAlive(true);
 		bulletAppState.getPhysicsSpace().add(p.getControl());
-		p.getControl().setPhysicsLocation(level.getSpawnPoint(p.getTeam()).getPosition());
-		rootNode.attachChild(p.getModel());
+		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
+		worldController.attachObject(p.getModel());
 
 		RespawnEvent respawn = new RespawnEvent(p.getId(), true);
 		eventMachine.fireEvent(respawn);
@@ -399,6 +413,20 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void handlePlayerInput(int playerid, InputCommand command, boolean value) {
 		Player p = players.get(playerid);
 		switch (command) {
+		case PLACE:
+			if(gameplayController.getGameState() == GameState.RUNNING) {
+				place(p);
+			}
+			break;
+		case PICKUP:
+			if(gameplayController.getGameState() == GameState.RUNNING) {
+				if(p.isAlive()) {
+					if(value) pickup(p);
+				}else {
+					if(value) respawn(p);
+				}
+			}
+			break;
 		case ATTACK:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
@@ -462,7 +490,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		ConnectionInitMessage init = new ConnectionInitMessage();
 		init.setConnectionAccepted(true);
 		init.setText("Welcome");
-		init.setLevel(level.getClass().getName());
+		init.setLevel(worldController.getLevel().getClass().getName());
 		networkController.sendMessage(init, clientid);
 		
 		//TODO: send player information

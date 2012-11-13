@@ -10,7 +10,7 @@ package de.findus.cydonia.player;
  */
 public enum InputCommand {
 
-	ATTACK("attack"), JUMP("jump"), MOVEFRONT("movefront"), MOVEBACK("moveback"), STRAFELEFT("strafeleft"), STRAFERIGHT("straferight"), JOINGAME("joingame"), QUITGAME("quitgame"),
+	PICKUP("pickup"), PLACE("place"), ATTACK("attack"), JUMP("jump"), MOVEFRONT("movefront"), MOVEBACK("moveback"), STRAFELEFT("strafeleft"), STRAFERIGHT("straferight"), JOINGAME("joingame"), QUITGAME("quitgame"),
 	SCOREBOARD("scoreboard"), EXIT("exit"), CHOOSETEAM1("chooseteam1"), CHOOSETEAM2("chooseteam2");
 	
 	private final String code;
