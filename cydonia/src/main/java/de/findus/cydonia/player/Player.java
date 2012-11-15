@@ -45,6 +45,8 @@ public class Player {
 	
 	private Vector3f viewDir = Vector3f.UNIT_X;
 	
+	private long inventory = 0;
+	
 	/**
 	 * Constructs a new Player and inits its physics and model.
 	 * @param id the id of this player. If not available set to -1 and reset later.
@@ -235,6 +237,20 @@ public class Player {
 	public void setViewDir(Vector3f viewDir) {
 		this.viewDir = viewDir.clone();
 		control.setViewDirection(viewDir.clone().setY(0).normalizeLocal());
+	}
+
+	/**
+	 * @return the inventory
+	 */
+	public long getInventory() {
+		return inventory;
+	}
+
+	/**
+	 * @param inventory the inventory to set
+	 */
+	public void setInventory(long inventory) {
+		this.inventory = inventory;
 	}
 
 }

@@ -11,9 +11,7 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.BulletAppState.ThreadingType;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
-import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
@@ -36,12 +34,12 @@ import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PickupEvent;
+import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
-import de.findus.cydonia.level.Level;
-import de.findus.cydonia.level.Level2;
+import de.findus.cydonia.level.BoxBPO;
 import de.findus.cydonia.level.Level3;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameState;
@@ -130,20 +128,16 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         this.bullets = new ConcurrentHashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
-        
-        worldController = new WorldController();
-        worldController.setAssetManager(assetManager);
 
     	bulletAppState = new BulletAppState();
         bulletAppState.setThreadingType(ThreadingType.PARALLEL);
         stateManager.attach(bulletAppState);
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
-        
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
+        worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
         worldController.loadWorld(Level3.class.getName());
-        bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
         
         Bullet.preloadTextures();
         
@@ -271,7 +265,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 		if(bullet != null && other != null) {
 			worldController.detachObject(bullet);
-			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
 			bullet.removeControl(RigidBodyControl.class);
 			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
 				int victimid = Integer.parseInt(other.getName().substring(6));
@@ -317,8 +310,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private void killPlayer(Player p) {
 		if(p == null) return;
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		worldController.detachObject(p.getModel());
+		worldController.detachPlayer(p);
 		p.setAlive(false);
 		p.setDeaths(p.getDeaths() + 1);
 	}
@@ -335,7 +327,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			bul.getModel().setLocalTranslation(pos.add(dir.normalize()));
 			worldController.attachObject(bul.getModel());
 			bul.getControl().setPhysicsLocation(pos.add(dir.normalize()));
-			bulletAppState.getPhysicsSpace().add(bul.getControl());
 			bul.getControl().setLinearVelocity(dir.normalize().mult(25));
 
 			bullets.put(bul.getId(), bul);
@@ -348,22 +339,33 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void pickup(Player p) {
 		if(p == null) return;
 		
-		CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
-		if(result != null) {
-			Spatial moveable = result.getGeometry();
-			RigidBodyControl control = moveable.getControl(RigidBodyControl.class);
-			bulletAppState.getPhysicsSpace().removeCollisionObject(control);
-			worldController.detachMoveable(moveable);
-			
-			PickupEvent pickup = new PickupEvent(p.getId(), (Long) moveable.getUserData("id"), true);
-			eventMachine.fireEvent(pickup);
+		if(p.getInventory() == 0) {
+			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
+			if(result != null) {
+				Spatial moveable = result.getGeometry();
+				worldController.detachMoveable(moveable);
+				p.setInventory((Long) moveable.getUserData("id"));
+
+				PickupEvent pickup = new PickupEvent(p.getId(), (Long) moveable.getUserData("id"), true);
+				eventMachine.fireEvent(pickup);
+			}
 		}
 	}
 	
 	private void place(Player p) {
 		if(p == null) return;
-		
-			//TODO
+
+		if(p.getInventory() != 0) {
+			BoxBPO bpo = new BoxBPO(assetManager);
+			Spatial box = bpo.createBox("red", new Vector3f(0, 5, 0), true);
+			box.setName("Moveable_" + p.getInventory());
+			box.setUserData("id", p.getInventory());
+			worldController.attachMoveable(box);
+			p.setInventory(0);
+
+			PlaceEvent place = new PlaceEvent(p.getId(), (Long) box.getUserData("id"), true);
+			eventMachine.fireEvent(place);
+		}
 	}
 	
 	private void jump(Player p) {
@@ -389,8 +391,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private void quitPlayer(Player p) {
 		if(p != null) {
-			bulletAppState.getPhysicsSpace().remove(p.getControl());
-			worldController.detachObject(p.getModel());
+			worldController.detachPlayer(p);
 			players.remove(p.getId());
 		}
 
@@ -402,9 +403,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p == null) return;
 		p.setHealthpoints(100);
 		p.setAlive(true);
-		bulletAppState.getPhysicsSpace().add(p.getControl());
 		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
-		worldController.attachObject(p.getModel());
+		worldController.attachPlayer(p);
 
 		RespawnEvent respawn = new RespawnEvent(p.getId(), true);
 		eventMachine.fireEvent(respawn);
@@ -415,7 +415,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		switch (command) {
 		case PLACE:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				place(p);
+				if(p.isAlive()) {
+					if(value) place(p);
+				}
 			}
 			break;
 		case PICKUP:

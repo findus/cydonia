@@ -45,11 +45,13 @@ import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PickupEvent;
+import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.level.BoxBPO;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.PlayerInfo;
@@ -177,9 +179,7 @@ public class GameController extends Application implements ScreenController, Phy
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
         loadStatsView();
-        worldController = new WorldController();
-        worldController.setAssetManager(assetManager);
-        viewPort.attachScene(worldController.getRootNode());
+        
         guiViewPort.attachScene(guiNode);
         
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
@@ -198,13 +198,16 @@ public class GameController extends Application implements ScreenController, Phy
     	bulletAppState = new BulletAppState();
     	bulletAppState.setEnabled(false);
         bulletAppState.setThreadingType(ThreadingType.PARALLEL);
-//        bulletAppState.setThreadingType(ThreadingType.SEQUENTIAL);
         stateManager.attach(bulletAppState);
         bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
+        bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
+        worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
+        
+        viewPort.attachScene(worldController.getRootNode());
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
 //        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
         
@@ -222,8 +225,6 @@ public class GameController extends Application implements ScreenController, Phy
         viewPort.addProcessor(bsr);
         
         cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.5f, 1000f);
-        
-        bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
         eventMachine.registerListener(this);
         
@@ -251,7 +252,6 @@ public class GameController extends Application implements ScreenController, Phy
      */
     public void startGame(String level) {
         worldController.loadWorld(level);
-    	bulletAppState.getPhysicsSpace().add(worldController.getWorldCollisionControll());
         
     	String playername = this.playerNameInput.getText();
     	int team = this.teamInput.getSelectedIndex() + 1;
@@ -374,7 +374,6 @@ public class GameController extends Application implements ScreenController, Phy
 				if(b == null) {
 					b = new Bullet(physic.getId(), physic.getSourceid());
 					bullets.put(b.getId(), b);
-					bulletAppState.getPhysicsSpace().add(b.getControl());
 					worldController.attachObject(b.getModel());
 				}
 				if(b != null) {	
@@ -406,8 +405,13 @@ public class GameController extends Application implements ScreenController, Phy
 				hitPlayer(hit.getAttackerPlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
 			}else if (e instanceof PickupEvent) {
 				PickupEvent pickup = (PickupEvent) e;
+				Player p = players.get(pickup.getPlayerid());
 				Spatial moveable = worldController.getMoveable(pickup.getMoveableid());
-				pickup(moveable);
+				pickup(p, moveable);
+			}else if (e instanceof PlaceEvent) {
+				PlaceEvent place = (PlaceEvent) e;
+				Player p = players.get(place.getPlayerid());
+				place(p);
 			}else if (e instanceof PlayerJoinEvent) {
 				PlayerJoinEvent join = (PlayerJoinEvent) e;
 				int playerid = join.getPlayerId();
@@ -486,9 +490,8 @@ public class GameController extends Application implements ScreenController, Phy
 			p.setDeaths(info.getDeaths());
 			players.put(p.getId(), p);
 			if(p.isAlive()) {
-				bulletAppState.getPhysicsSpace().add(p.getControl());
 				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
-				worldController.attachObject(p.getModel());
+				worldController.attachPlayer(p);
 			}
 		}
 	}
@@ -581,7 +584,6 @@ public class GameController extends Application implements ScreenController, Phy
 
     	if(bullet != null && other != null) {
     		worldController.detachObject(bullet);
-			bulletAppState.getPhysicsSpace().remove(bullet.getControl(RigidBodyControl.class));
 			bullet.removeControl(RigidBodyControl.class);
     		if(other.getName().startsWith("player")) {
     			// Hit Player not here. only when message from server.
@@ -616,8 +618,7 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void killPlayer(Player p) {
 		if(p == null) return;
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		worldController.detachObject(p.getModel());
+		worldController.detachPlayer(p);
 		p.setAlive(false);
 		p.setDeaths(p.getDeaths() + 1);
 		if(p.getId() == player.getId()) {
@@ -633,17 +634,31 @@ public class GameController extends Application implements ScreenController, Phy
 		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation());
 		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation().add(p.getControl().getViewDirection().normalize()));
 		bullets.put(b.getId(), b);
-		bulletAppState.getPhysicsSpace().add(b.getControl());
 		worldController.attachObject(b.getModel());
 		
 		throwSound.setLocalTranslation(p.getControl().getPhysicsLocation());
 		throwSound.play();
 	}
 	
-	private void pickup(Spatial moveable) {
+	private void pickup(Player p, Spatial moveable) {
 		if(moveable != null) {
 			worldController.detachMoveable(moveable);
-			bulletAppState.getPhysicsSpace().removeCollisionObject(moveable.getControl(RigidBodyControl.class));
+			if(p != null) {
+				p.setInventory((Long) moveable.getUserData("id"));
+			}
+		}
+	}
+	
+	private void place(Player p) {
+		if(p == null) return;
+
+		if(p.getInventory() != 0) {
+			BoxBPO bpo = new BoxBPO(assetManager);
+			Spatial box = bpo.createBox("red", new Vector3f(0, 5, 0), true);
+			box.setName("Moveable_" + p.getInventory());
+			box.setUserData("id", p.getInventory());
+			worldController.attachMoveable(box);
+			p.setInventory(0);
 		}
 	}
 	
@@ -659,8 +674,7 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void quitPlayer(Player p) {
 		if(p == null) return;
-		bulletAppState.getPhysicsSpace().remove(p.getControl());
-		worldController.detachObject(p.getModel());
+		worldController.detachPlayer(p);
 		players.remove(p.getId());
 	}
 	
@@ -668,9 +682,8 @@ public class GameController extends Application implements ScreenController, Phy
 		if(p == null) return;
 		p.setHealthpoints(100);
 		p.setAlive(true);
-		bulletAppState.getPhysicsSpace().add(p.getControl());
 		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
-		worldController.attachObject(p.getModel());
+		worldController.attachPlayer(p);
 		if(p.getId() == player.getId()) {
 			resumeGame();
 		}

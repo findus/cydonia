@@ -4,6 +4,9 @@
 package de.findus.cydonia.level;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
@@ -35,8 +38,8 @@ public class BoxBPO {
 		mat_grey.setColor("Color",ColorRGBA.Gray);
 	}
 	
-	public Spatial createBox(String color, boolean moveable) {
-		Box box = new Box( new Vector3f(0,0.5f,0), 0.5f, 0.5f, 0.5f);
+	public Spatial createBox(String color, Vector3f loc, boolean moveable) {
+		Box box = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
         Geometry spatial = new Geometry("Box", box);
         
         if("red".equals(color)) {
@@ -46,6 +49,11 @@ public class BoxBPO {
 		}else {
 			spatial.setMaterial(mat_grey);
 		}
+        
+        CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(spatial);
+        RigidBodyControl control = new RigidBodyControl(collisionShape, 0);
+        spatial.addControl(control);
+        control.setPhysicsLocation(loc);
         
         return spatial;
 	}

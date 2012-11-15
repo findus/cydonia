@@ -24,6 +24,7 @@ import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PickupEvent;
+import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
@@ -91,6 +92,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(AttackEvent.class);
 		Serializer.registerClass(HitEvent.class);
 		Serializer.registerClass(PickupEvent.class);
+		Serializer.registerClass(PlaceEvent.class);
 		Serializer.registerClass(JumpEvent.class);
 		Serializer.registerClass(RespawnEvent.class);
 		Serializer.registerClass(RestartRoundEvent.class);

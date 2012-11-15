@@ -4,7 +4,9 @@
 package de.findus.cydonia.level;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
@@ -18,6 +20,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.util.SkyFactory;
 
+import de.findus.cydonia.player.Player;
+
 /**
  * This is the central controller for the games virtual world.
  * It loads the scene and administrates the root node.
@@ -30,6 +34,8 @@ public class WorldController {
 	 * The AssetManager.
 	 */
 	protected AssetManager assetManager;
+	
+	protected PhysicsSpace physicsSpace;
 	
 	/**
 	 * Root Node of the virtual world.
@@ -51,8 +57,10 @@ public class WorldController {
 	/**
 	 * Constructs setting up ambient light.
 	 */
-	public WorldController() {
+	public WorldController(AssetManager assetManager, PhysicsSpace physicsSpace) {
 		setUpAmbientLight();
+		this.assetManager = assetManager;
+		this.physicsSpace = physicsSpace;
 	}
 	
 	/**
@@ -80,15 +88,15 @@ public class WorldController {
         worldCollisionControll = new RigidBodyControl(sceneShape, 0);
         scene.addControl(worldCollisionControll);
         rootNode.attachChild(scene);
+    	physicsSpace.add(worldCollisionControll);
         
         BoxBPO boxBPO = new BoxBPO(assetManager);
-		Spatial box1;
-		for (int i = 0; i < 10; i++) {
-			box1 = boxBPO.createBox("red", true);
-			box1.setName("Moveable_" + i);
-			box1.setUserData("id", new Long(i));
-			box1.setLocalTranslation(i + 0.5f, 0, 0);
-			moveables.attachChild(box1);
+		Spatial box;
+		for (int i = 1; i < 5; i++) {
+			box = boxBPO.createBox("red", new Vector3f(2*i, 0.5f, 0), true);
+			box.setName("Moveable_" + i);
+			box.setUserData("id", new Long(i));
+			attachMoveable(box);
 		}
 		
 		rootNode.attachChild(moveables);
@@ -100,6 +108,10 @@ public class WorldController {
 	 */
 	public void attachObject(Spatial obj) {
 		rootNode.attachChild(obj);
+		RigidBodyControl control = obj.getControl(RigidBodyControl.class);
+		if(control != null) {
+			physicsSpace.addCollisionObject(control);
+		}
 	}
 	
 	/**
@@ -107,7 +119,43 @@ public class WorldController {
 	 * @param obj the object to remove
 	 */
 	public void detachObject(Spatial obj) {
+		RigidBodyControl control = obj.getControl(RigidBodyControl.class);
+		if(control != null) {
+			physicsSpace.removeCollisionObject(control);
+		}
 		rootNode.detachChild(obj);
+	}
+	
+	public void attachPlayer(Player player) {
+		rootNode.attachChild(player.getModel());
+		CharacterControl control = player.getControl();
+		if(control != null) {
+			physicsSpace.addCollisionObject(control);
+		}
+	}
+	
+	public void detachPlayer(Player player) {
+		CharacterControl control = player.getControl();
+		if(control != null) {
+			physicsSpace.removeCollisionObject(control);
+		}
+		rootNode.detachChild(player.getModel());
+	}
+	
+	public void attachMoveable(Spatial moveable) {
+		moveables.attachChild(moveable);
+		RigidBodyControl control = moveable.getControl(RigidBodyControl.class);
+		if(control != null) {
+			physicsSpace.addCollisionObject(control);
+		}
+	}
+	
+	public void detachMoveable(Spatial moveable) {
+		RigidBodyControl control = moveable.getControl(RigidBodyControl.class);
+		if(control != null) {
+			physicsSpace.removeCollisionObject(control);
+		}
+		moveables.detachChild(moveable);
 	}
 	
 	/**
@@ -124,16 +172,6 @@ public class WorldController {
 	 */
 	public void updateGeometricState() {
 		rootNode.updateGeometricState();
-	}
-	
-	/**
-	 * Returns the physics control object of the scene.
-	 * Called by <code>GameController</code> to attach physics controller to the PhysicsSpace.
-	 * DO NOT USE OTHER THAN THAT.
-	 * @return the physics controller
-	 */
-	public RigidBodyControl getWorldCollisionControll() {
-		return this.worldCollisionControll;
 	}
 	
 	/**
@@ -154,16 +192,8 @@ public class WorldController {
         rootNode.setShadowMode(ShadowMode.Off);
     }
 
-	public void setAssetManager(AssetManager assetManager) {
-		this.assetManager = assetManager;
-	}
-
 	public Level getLevel() {
 		return level;
-	}
-	
-	public void detachMoveable(Spatial moveable) {
-		moveables.detachChild(moveable);
 	}
 	
 	public Spatial getMoveable(long id) {

@@ -68,7 +68,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(MOVEFRONT.getCode(), new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping(MOVEBACK.getCode(), new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
-        inputManager.addMapping(ATTACK.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping(PLACE.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping(PICKUP.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), PICKUP.getCode(), PLACE.getCode());
         
