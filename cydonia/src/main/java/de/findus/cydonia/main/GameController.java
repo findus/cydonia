@@ -411,7 +411,8 @@ public class GameController extends Application implements ScreenController, Phy
 			}else if (e instanceof PlaceEvent) {
 				PlaceEvent place = (PlaceEvent) e;
 				Player p = players.get(place.getPlayerid());
-				place(p);
+				Vector3f loc = place.getLocation();
+				place(p, loc);
 			}else if (e instanceof PlayerJoinEvent) {
 				PlayerJoinEvent join = (PlayerJoinEvent) e;
 				int playerid = join.getPlayerId();
@@ -649,12 +650,12 @@ public class GameController extends Application implements ScreenController, Phy
 		}
 	}
 	
-	private void place(Player p) {
+	private void place(Player p, Vector3f loc) {
 		if(p == null) return;
 
 		if(p.getInventory() != 0) {
 			BoxBPO bpo = new BoxBPO(assetManager);
-			Spatial box = bpo.createBox("red", new Vector3f(0, 5, 0), true);
+			Spatial box = bpo.createBox("red", loc, true);
 			box.setName("Moveable_" + p.getInventory());
 			box.setUserData("id", p.getInventory());
 			worldController.attachMoveable(box);

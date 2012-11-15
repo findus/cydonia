@@ -92,11 +92,12 @@ public class WorldController {
         
         BoxBPO boxBPO = new BoxBPO(assetManager);
 		Spatial box;
-		for (int i = 1; i < 5; i++) {
+		for (int i = 1; i <= 20; i++) {
 			box = boxBPO.createBox("red", new Vector3f(2*i, 0.5f, 0), true);
 			box.setName("Moveable_" + i);
 			box.setUserData("id", new Long(i));
 			attachMoveable(box);
+			System.out.println(box.getLocalTranslation());
 		}
 		
 		rootNode.attachChild(moveables);

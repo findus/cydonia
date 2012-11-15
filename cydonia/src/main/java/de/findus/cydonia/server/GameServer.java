@@ -356,15 +356,20 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p == null) return;
 
 		if(p.getInventory() != 0) {
-			BoxBPO bpo = new BoxBPO(assetManager);
-			Spatial box = bpo.createBox("red", new Vector3f(0, 5, 0), true);
-			box.setName("Moveable_" + p.getInventory());
-			box.setUserData("id", p.getInventory());
-			worldController.attachMoveable(box);
-			p.setInventory(0);
+			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
+			if(result != null) {
+				Vector3f contactnormal = result.getContactNormal();
+				Vector3f loc = result.getGeometry().getLocalTranslation().add(contactnormal);
+				BoxBPO bpo = new BoxBPO(assetManager);
+				Spatial box = bpo.createBox("red", loc, true);
+				box.setName("Moveable_" + p.getInventory());
+				box.setUserData("id", p.getInventory());
+				worldController.attachMoveable(box);
+				p.setInventory(0);
 
-			PlaceEvent place = new PlaceEvent(p.getId(), (Long) box.getUserData("id"), true);
-			eventMachine.fireEvent(place);
+				PlaceEvent place = new PlaceEvent(p.getId(), (Long) box.getUserData("id"), loc, true);
+				eventMachine.fireEvent(place);
+			}
 		}
 	}
 	

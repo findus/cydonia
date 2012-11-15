@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.events;
 
+import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
 /**
@@ -15,6 +16,8 @@ public class PlaceEvent extends AbstractEvent {
 	private int playerid;
 
 	private long moveableid;
+	
+	private Vector3f location;
 
 	/**
 	 * 
@@ -29,10 +32,11 @@ public class PlaceEvent extends AbstractEvent {
 	 * @param moveableid
 	 * @param forward
 	 */
-	public PlaceEvent(int playerid, long moveableid, boolean forward) {
+	public PlaceEvent(int playerid, long moveableid, Vector3f loc, boolean forward) {
 		super(forward);
 		this.setPlayerid(playerid);
 		this.setMoveableid(moveableid);
+		this.setLocation(loc);
 		this.network = forward;
 	}
 
@@ -62,6 +66,20 @@ public class PlaceEvent extends AbstractEvent {
 	 */
 	public void setMoveableid(long moveableid) {
 		this.moveableid = moveableid;
+	}
+
+	/**
+	 * @return the location
+	 */
+	public Vector3f getLocation() {
+		return location;
+	}
+
+	/**
+	 * @param location the location to set
+	 */
+	public void setLocation(Vector3f location) {
+		this.location = location;
 	}
 
 }
