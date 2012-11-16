@@ -71,6 +71,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		gameServer.start();
 	}
 	
+	private ServerConfigFrame configFrame;
+	
 	private Thread senderLoop;
 	
     private ConcurrentHashMap<Integer, Player> players;
@@ -101,15 +103,10 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 	
 	@Override
-	public void stop() {
-		cleanup();
-		super.stop();
-	}
-	
-	@Override
 	public void stop(boolean waitfor) {
 		cleanup();
 		super.stop(waitfor);
+		System.exit(0);
 	}
 	
 	private void cleanup() {
@@ -117,12 +114,18 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		bulletAppState.setEnabled(false);
 		senderLoop.interrupt();
 		gameplayController.dispose();
+		configFrame.setVisible(false);
+		configFrame.dispose();
 	}
 	
     @Override
     public void initialize() {
         super.initialize();
 
+        configFrame = new ServerConfigFrame(this);
+        configFrame.pack();
+        configFrame.setVisible(true);
+        
         eventQueue = new ConcurrentLinkedQueue<Event>();
         
         eventMachine = new EventMachine();

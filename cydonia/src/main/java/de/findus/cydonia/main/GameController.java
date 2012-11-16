@@ -156,8 +156,9 @@ public class GameController extends Application implements ScreenController, Phy
     }
     
     @Override
-    public void stop() {
-    	super.stop();
+    public void stop(boolean waitfor) {
+    	super.stop(waitfor);
+    	System.exit(0);
     }
 
     @Override

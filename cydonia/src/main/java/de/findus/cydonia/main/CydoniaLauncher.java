@@ -53,20 +53,21 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 		
 		this.setPreferredSize(new Dimension(100, 100));
 		this.setSize(200, 100);
+		this.setLocationByPlatform(true);
 	}
 	
 	private void startServer() {
-		server = new GameServer();
-		server.start();
-		serverbtn.setText("Stop Server");
-		serverbtn.setActionCommand("server_stop");
-	}
-	
-	private void stopServer() {
-		server.stop(true);
-//		server.destroy();
-		serverbtn.setText("Start Server");
-		serverbtn.setActionCommand("server_start");
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				server = new GameServer();
+				server.start();
+			}
+		}).start();
+		
+		this.setVisible(false);
+		this.dispose();
 	}
 	
 	private void startClient() {
@@ -78,6 +79,9 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 				controller.start();
 			}
 		}).start();
+		
+		this.setVisible(false);
+		this.dispose();
 	}
 
 
@@ -85,8 +89,6 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 	public void actionPerformed(ActionEvent e) {
 		if("server_start".equals(e.getActionCommand())) {
 			this.startServer();
-		}else if("server_stop".equals(e.getActionCommand())) {
-			this.stopServer();
 		}else if("client_start".equals(e.getActionCommand())) {
 			this.startClient();
 		}
