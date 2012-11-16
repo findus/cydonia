@@ -13,7 +13,9 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class InitialStateMessage extends AbstractMessage {
 
-	private PlayerInfo[] infos;
+	private PlayerInfo[] players;
+	
+	private MoveableInfo[] moveables;
 
 	
 	public InitialStateMessage() {
@@ -21,16 +23,30 @@ public class InitialStateMessage extends AbstractMessage {
 	}
 	
 	/**
-	 * @return the infos
+	 * @return the players
 	 */
-	public PlayerInfo[] getInfos() {
-		return infos;
+	public PlayerInfo[] getPlayers() {
+		return players;
 	}
 
 	/**
-	 * @param infos the infos to set
+	 * @param players the players to set
 	 */
-	public void setInfos(PlayerInfo[] infos) {
-		this.infos = infos;
+	public void setPlayers(PlayerInfo[] infos) {
+		this.players = infos;
+	}
+
+	/**
+	 * @return the moveablesNode
+	 */
+	public MoveableInfo[] getMoveables() {
+		return moveables;
+	}
+
+	/**
+	 * @param moveablesNode the moveablesNode to set
+	 */
+	public void setMoveables(MoveableInfo[] moveables) {
+		this.moveables = moveables;
 	}
 }

@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.server;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -41,10 +42,12 @@ import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.level.BoxBPO;
 import de.findus.cydonia.level.Level3;
+import de.findus.cydonia.level.Moveable;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
@@ -342,11 +345,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p.getInventory() == 0) {
 			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
 			if(result != null) {
-				Spatial moveable = result.getGeometry();
-				worldController.detachMoveable(moveable);
-				p.setInventory((Long) moveable.getUserData("id"));
+				Spatial g = result.getGeometry();
+				Moveable m = worldController.getMoveable((Long) g.getUserData("id"));
+				worldController.detachMoveable(m);
+				p.setInventory(m.getId());
 
-				PickupEvent pickup = new PickupEvent(p.getId(), (Long) moveable.getUserData("id"), true);
+				PickupEvent pickup = new PickupEvent(p.getId(), m.getId(), true);
 				eventMachine.fireEvent(pickup);
 			}
 		}
@@ -355,20 +359,20 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void place(Player p) {
 		if(p == null) return;
 
-		if(p.getInventory() != 0) {
+		if(p.getInventory() > 0) {
+			Moveable m = worldController.getMoveable(p.getInventory());
+			if(m != null) {
 			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
 			if(result != null) {
 				Vector3f contactnormal = result.getContactNormal();
 				Vector3f loc = result.getGeometry().getLocalTranslation().add(contactnormal);
-				BoxBPO bpo = new BoxBPO(assetManager);
-				Spatial box = bpo.createBox("red", loc, true);
-				box.setName("Moveable_" + p.getInventory());
-				box.setUserData("id", p.getInventory());
-				worldController.attachMoveable(box);
+				m.getControl().setPhysicsLocation(loc);
+				worldController.attachMoveable(m);
 				p.setInventory(0);
 
-				PlaceEvent place = new PlaceEvent(p.getId(), (Long) box.getUserData("id"), loc, true);
+				PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
 				eventMachine.fireEvent(place);
+			}
 			}
 		}
 	}
@@ -476,14 +480,24 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 	
 	private void sendInitialState(int playerid) {
-		PlayerInfo[] infos = new PlayerInfo[players.size()];
+		PlayerInfo[] playerinfos = new PlayerInfo[players.size()];
 		int i=0;
 		for (Player p : players.values()) {
-			infos[i] = new PlayerInfo(p);
+			playerinfos[i] = new PlayerInfo(p);
 			i++;
 		}
+		
+		Collection<Moveable> list = worldController.getAllMoveables();
+		MoveableInfo[] moveableinfos = new MoveableInfo[list.size()];
+		int j=0;
+		for (Moveable m : list) {
+			moveableinfos[j] = new MoveableInfo(m);
+			j++;
+		}
+		
 		InitialStateMessage msg = new InitialStateMessage();
-		msg.setInfos(infos);
+		msg.setPlayers(playerinfos);
+		msg.setMoveables(moveableinfos);
 		networkController.sendMessage(msg, playerid);
 	}
 
@@ -499,9 +513,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		init.setText("Welcome");
 		init.setLevel(worldController.getLevel().getClass().getName());
 		networkController.sendMessage(init, clientid);
-		
-		//TODO: send player information
-		// id, name, team, alive, hitpoints
 	}
 
 	public void connectionRemoved(int clientid) {

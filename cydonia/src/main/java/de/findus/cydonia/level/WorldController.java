@@ -3,6 +3,9 @@
  */
 package de.findus.cydonia.level;
 
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -42,7 +45,9 @@ public class WorldController {
 	 */
 	protected Node rootNode = new Node("Root Node");
 	
-	protected Node moveables = new Node("Movables");
+	protected Node moveablesNode = new Node("Movables");
+	
+	protected ConcurrentHashMap<Long, Moveable> moveables;
 	
 	/**
 	 * Physics control object of the scene.
@@ -58,9 +63,12 @@ public class WorldController {
 	 * Constructs setting up ambient light.
 	 */
 	public WorldController(AssetManager assetManager, PhysicsSpace physicsSpace) {
-		setUpAmbientLight();
 		this.assetManager = assetManager;
 		this.physicsSpace = physicsSpace;
+		
+		setUpAmbientLight();
+		
+		this.moveables = new ConcurrentHashMap<Long, Moveable>();
 	}
 	
 	/**
@@ -90,17 +98,14 @@ public class WorldController {
         rootNode.attachChild(scene);
     	physicsSpace.add(worldCollisionControll);
         
-        BoxBPO boxBPO = new BoxBPO(assetManager);
-		Spatial box;
 		for (int i = 1; i <= 20; i++) {
-			box = boxBPO.createBox("red", new Vector3f(2*i, 0.5f, 0), true);
-			box.setName("Moveable_" + i);
-			box.setUserData("id", new Long(i));
-			attachMoveable(box);
-			System.out.println(box.getLocalTranslation());
+			Moveable m = new Moveable(i, assetManager);
+			this.moveables.put(m.getId(), m);
+			m.getControl().setPhysicsLocation(new Vector3f(2*i, 0.5f, 0));
+			attachMoveable(m);
 		}
 		
-		rootNode.attachChild(moveables);
+		rootNode.attachChild(moveablesNode);
 	}
 	
 	/**
@@ -143,20 +148,14 @@ public class WorldController {
 		rootNode.detachChild(player.getModel());
 	}
 	
-	public void attachMoveable(Spatial moveable) {
-		moveables.attachChild(moveable);
-		RigidBodyControl control = moveable.getControl(RigidBodyControl.class);
-		if(control != null) {
-			physicsSpace.addCollisionObject(control);
-		}
+	public void attachMoveable(Moveable moveable) {
+		moveablesNode.attachChild(moveable.getModel());
+		physicsSpace.addCollisionObject(moveable.getControl());
 	}
 	
-	public void detachMoveable(Spatial moveable) {
-		RigidBodyControl control = moveable.getControl(RigidBodyControl.class);
-		if(control != null) {
-			physicsSpace.removeCollisionObject(control);
-		}
-		moveables.detachChild(moveable);
+	public void detachMoveable(Moveable moveable) {
+		moveablesNode.detachChild(moveable.getModel());
+		physicsSpace.removeCollisionObject(moveable.getControl());
 	}
 	
 	/**
@@ -197,14 +196,18 @@ public class WorldController {
 		return level;
 	}
 	
-	public Spatial getMoveable(long id) {
-		return moveables.getChild("Moveable_" + id);
+	public Moveable getMoveable(long id) {
+		return moveables.get(id);
+	}
+	
+	public Collection<Moveable> getAllMoveables() {
+		return moveables.values();
 	}
 	
 	public CollisionResult pickMovable(Vector3f source, Vector3f direction) {
 		CollisionResults results = new CollisionResults();
 		Ray ray = new Ray(source, direction);
-		moveables.collideWith(ray, results);
+		moveablesNode.collideWith(ray, results);
 		return results.getClosestCollision();
 	}
 

@@ -51,9 +51,10 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
-import de.findus.cydonia.level.BoxBPO;
+import de.findus.cydonia.level.Moveable;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
@@ -406,7 +407,7 @@ public class GameController extends Application implements ScreenController, Phy
 			}else if (e instanceof PickupEvent) {
 				PickupEvent pickup = (PickupEvent) e;
 				Player p = players.get(pickup.getPlayerid());
-				Spatial moveable = worldController.getMoveable(pickup.getMoveableid());
+				Moveable moveable = worldController.getMoveable(pickup.getMoveableid());
 				pickup(p, moveable);
 			}else if (e instanceof PlaceEvent) {
 				PlaceEvent place = (PlaceEvent) e;
@@ -479,8 +480,8 @@ public class GameController extends Application implements ScreenController, Phy
 		latestWorldState = update;
 	}
 	
-	public void setInitialState(PlayerInfo[] infos) {
-		for (PlayerInfo info : infos) {
+	public void setInitialState(PlayerInfo[] pinfos, MoveableInfo[] minfos) {
+		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
 			Player p = new Player(info.getPlayerid(), assetManager);
 			p.setName(info.getName());
@@ -493,6 +494,15 @@ public class GameController extends Application implements ScreenController, Phy
 			if(p.isAlive()) {
 				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
 				worldController.attachPlayer(p);
+			}
+		}
+		for (MoveableInfo info : minfos) {
+			Moveable m = worldController.getMoveable(info.getId());
+			if(m != null) {
+				m.getControl().setPhysicsLocation(info.getLocation());
+				if(!info.isInWorld()) {
+					worldController.detachMoveable(m);
+				}
 			}
 		}
 	}
@@ -641,11 +651,11 @@ public class GameController extends Application implements ScreenController, Phy
 		throwSound.play();
 	}
 	
-	private void pickup(Player p, Spatial moveable) {
+	private void pickup(Player p, Moveable moveable) {
 		if(moveable != null) {
 			worldController.detachMoveable(moveable);
 			if(p != null) {
-				p.setInventory((Long) moveable.getUserData("id"));
+				p.setInventory((Long) moveable.getId());
 			}
 		}
 	}
@@ -654,11 +664,9 @@ public class GameController extends Application implements ScreenController, Phy
 		if(p == null) return;
 
 		if(p.getInventory() != 0) {
-			BoxBPO bpo = new BoxBPO(assetManager);
-			Spatial box = bpo.createBox("red", loc, true);
-			box.setName("Moveable_" + p.getInventory());
-			box.setUserData("id", p.getInventory());
-			worldController.attachMoveable(box);
+			Moveable m = worldController.getMoveable(p.getInventory());
+			m.getControl().setPhysicsLocation(loc);
+			worldController.attachMoveable(m);
 			p.setInventory(0);
 		}
 	}

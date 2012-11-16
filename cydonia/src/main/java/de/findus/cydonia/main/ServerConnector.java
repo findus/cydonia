@@ -32,6 +32,7 @@ import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
@@ -91,6 +92,7 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 		Serializer.registerClass(ConnectionInitMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);
 		Serializer.registerClass(PlayerInfo.class);
+		Serializer.registerClass(MoveableInfo.class);
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
@@ -155,7 +157,8 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 				eventMachine.fireEvent(denied);
 			}
 		}else if (m instanceof InitialStateMessage) {
-			gameController.setInitialState(((InitialStateMessage) m).getInfos());
+			InitialStateMessage iniState = (InitialStateMessage) m;
+			gameController.setInitialState(iniState.getPlayers(), iniState.getMoveables());
 		}
 	}
 
