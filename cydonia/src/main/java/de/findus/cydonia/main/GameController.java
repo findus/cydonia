@@ -450,6 +450,7 @@ public class GameController extends Application implements ScreenController, Phy
 					p.setDeaths(0);
 				}
 				removeAllBullets();
+				worldController.resetWorld();
 			}else if (e instanceof RoundEndedEvent) {
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
 				if(roundEnded.getWinnerid() >= 0) {

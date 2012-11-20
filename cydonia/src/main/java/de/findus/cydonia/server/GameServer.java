@@ -205,9 +205,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					}
 					p.setKills(0);
 					p.setDeaths(0);
-					respawn(p);
 				}
 				removeAllBullets();
+				worldController.resetWorld();
+				for (Player p : players.values()) {
+					respawn(p);
+				}
 				bulletAppState.setEnabled(true);
 			}else if (e instanceof RoundEndedEvent) {
 				bulletAppState.setEnabled(false);

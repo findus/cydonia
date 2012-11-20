@@ -99,9 +99,9 @@ public class WorldController {
     	physicsSpace.add(worldCollisionControll);
         
 		for (int i = 1; i <= 20; i++) {
-			Moveable m = new Moveable(i, assetManager);
+			Moveable m = new Moveable(i, new Vector3f(2*i, 0.5f, 0), assetManager);
 			this.moveables.put(m.getId(), m);
-			m.getControl().setPhysicsLocation(new Vector3f(2*i, 0.5f, 0));
+			m.getControl().setPhysicsLocation(m.getOrigin());
 			attachMoveable(m);
 		}
 		
@@ -111,6 +111,14 @@ public class WorldController {
 		physicsSpace.addCollisionObject(ta.getControl());
 		
 		rootNode.attachChild(moveablesNode);
+	}
+	
+	public void resetWorld() {
+		for (Moveable m : moveables.values()) {
+			detachMoveable(m);
+			m.getControl().setPhysicsLocation(m.getOrigin());
+			attachMoveable(m);
+		}
 	}
 	
 	/**

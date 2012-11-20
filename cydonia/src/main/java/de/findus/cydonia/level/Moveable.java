@@ -22,12 +22,16 @@ public class Moveable {
 
 	private long id;
 	
+	private Vector3f origin;
+	
 	private Spatial model;
 	
 	private RigidBodyControl control;
 	
-	public Moveable(long id, AssetManager assetManager) {
+	public Moveable(long id, Vector3f origin, AssetManager assetManager) {
 		this.id = id;
+		
+		this.origin = origin;
 		
 		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		mat_red.setColor("Color", ColorRGBA.Red);
@@ -54,6 +58,20 @@ public class Moveable {
 	 */
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the origin
+	 */
+	public Vector3f getOrigin() {
+		return origin;
+	}
+
+	/**
+	 * @param origin the origin to set
+	 */
+	public void setOrigin(Vector3f origin) {
+		this.origin = origin;
 	}
 
 	/**
