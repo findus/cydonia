@@ -40,6 +40,8 @@ import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
+import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.events.TargetReachedEvent;
 import de.findus.cydonia.level.BoxBPO;
 import de.findus.cydonia.level.Level3;
 import de.findus.cydonia.level.Moveable;
@@ -203,8 +205,19 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					}
 					p.setKills(0);
 					p.setDeaths(0);
+					respawn(p);
 				}
 				removeAllBullets();
+				bulletAppState.setEnabled(true);
+			}else if (e instanceof RoundEndedEvent) {
+				bulletAppState.setEnabled(false);
+				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
+				if(roundEnded.getWinnerid() > 0) {
+					Player p = players.get(roundEnded.getWinnerid());
+					if(p != null) {
+						p.setKills(p.getKills() + 1);
+					}
+				}
 			}
     	}
     }
@@ -253,11 +266,17 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public void collision(PhysicsCollisionEvent e) {
 		Spatial bullet = null;
 		Spatial other = null;
-
+		Spatial target = null;
+		
 		if(e.getNodeA() != null) {
 			Boolean sticky = e.getNodeA().getUserData("Sticky");
 			if (sticky != null && sticky.booleanValue() == true) {
 				bullet = e.getNodeA();
+				other = e.getNodeB();
+			}
+			
+			if("TargetArea".equals(e.getNodeA().getName())) {
+				target = e.getNodeA();
 				other = e.getNodeB();
 			}
 		}
@@ -265,6 +284,11 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			Boolean sticky = e.getNodeB().getUserData("Sticky");
 			if (sticky != null && sticky.booleanValue() == true) {
 				bullet = e.getNodeB();
+				other = e.getNodeA();
+			}
+			
+			if("TargetArea".equals(e.getNodeB().getName())) {
+				target = e.getNodeB();
 				other = e.getNodeA();
 			}
 		}
@@ -285,6 +309,13 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 						other.getParent().attachChild(bullet);
 					}
 				}
+			}
+		}
+		
+		if(target != null && other != null) {
+			if(other.getName().startsWith("player")) {
+				TargetReachedEvent tr = new TargetReachedEvent(Integer.parseInt(other.getName().substring(6)), false);
+				eventMachine.fireEvent(tr);
 			}
 		}
 	}

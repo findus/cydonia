@@ -18,42 +18,23 @@ import com.jme3.scene.shape.Box;
  * @author Findus
  *
  */
-public class Moveable {
+public class TargetArea {
 
-	private long id;
-	
 	private Spatial model;
 	
 	private RigidBodyControl control;
 	
-	public Moveable(long id, AssetManager assetManager) {
-		this.id = id;
-		
+	public TargetArea(AssetManager assetManager) {
 		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-		mat_red.setColor("Color", ColorRGBA.Red);
+		mat_red.setColor("Color", ColorRGBA.Yellow);
 		
-		Box box = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
-        model = new Geometry("Moveable_" + id, box);
+		Box box = new Box(Vector3f.ZERO, 1.0f, 0.5f, 1.0f);
+        model = new Geometry("TargetArea", box);
         model.setMaterial(mat_red);
-		model.setUserData("id", id);
         
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
         model.addControl(control);
-	}
-
-	/**
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id) {
-		this.id = id;
 	}
 
 	/**
@@ -64,23 +45,11 @@ public class Moveable {
 	}
 
 	/**
-	 * @param model the model to set
-	 */
-	public void setModel(Spatial model) {
-		this.model = model;
-	}
-
-	/**
 	 * @return the control
 	 */
 	public RigidBodyControl getControl() {
 		return control;
 	}
-
-	/**
-	 * @param control the control to set
-	 */
-	public void setControl(RigidBodyControl control) {
-		this.control = control;
-	}
+	
+	
 }
