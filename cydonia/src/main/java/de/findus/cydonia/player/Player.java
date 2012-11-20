@@ -19,6 +19,8 @@ public class Player {
 	
 	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.35f, 0);
 	
+	private AssetManager assetManager;
+	
 	private int id;
 	
 	private String name;
@@ -55,11 +57,9 @@ public class Player {
 	public Player(int id, AssetManager assetManager) {
 		this.id = id;
 		
-		inputs = new PlayerInputState();
+		this.assetManager = assetManager;
 		
-		model = assetManager.loadModel("Models/Sinbad/Sinbad.j3o");
-		model.setName("player" + id);
-		model.setLocalScale(0.2f);
+		inputs = new PlayerInputState();
 		
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
         control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
@@ -67,7 +67,7 @@ public class Player {
         control.setFallSpeed(20);
         control.setGravity(20);
         
-        model.addControl(control);
+        loadModel();
 	}
 	
 	public void handleInput(InputCommand command, boolean value) {
@@ -88,6 +88,19 @@ public class Player {
 		default:
 			break;
 		}
+	}
+	
+	public void loadModel() {
+		if(this.team == 1) {
+			model = assetManager.loadModel("de/findus/cydonia/models/blue/Sinbad.mesh.xml");
+		}else if(this.team == 2) {
+			model = assetManager.loadModel("de/findus/cydonia/models/red/Sinbad.mesh.xml");
+		}else {
+			model = assetManager.loadModel("de/findus/cydonia/models/green/Sinbad.mesh.xml");
+		}
+		model.setName("player" + id);
+		model.setLocalScale(0.2f);
+		model.addControl(this.control);
 	}
 	
 	/**
@@ -222,6 +235,7 @@ public class Player {
 	 */
 	public void setTeam(int team) {
 		this.team = team;
+		this.loadModel();
 	}
 
 	/**
