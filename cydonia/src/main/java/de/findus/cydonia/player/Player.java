@@ -7,6 +7,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Spatial;
 
 /**
@@ -101,6 +102,7 @@ public class Player {
 		model.setName("player" + id);
 		model.setLocalScale(0.2f);
 		model.addControl(this.control);
+		model.setShadowMode(ShadowMode.Cast);
 	}
 	
 	/**

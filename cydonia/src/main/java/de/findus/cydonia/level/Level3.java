@@ -6,6 +6,7 @@ package de.findus.cydonia.level;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Quad;
@@ -33,6 +34,7 @@ public class Level3 implements Level {
 		floor1.setMaterial(mat_pflaster);
 		floor1.rotate((float) (-Math.PI/2), 0, 0);
 		floor1.move(-50, 0, 50);
+		floor1.setShadowMode(ShadowMode.Receive);
 		levelRoot.attachChild(floor1);
 
 		return levelRoot;

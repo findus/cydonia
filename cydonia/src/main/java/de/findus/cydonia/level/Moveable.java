@@ -10,6 +10,7 @@ import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
@@ -33,13 +34,20 @@ public class Moveable {
 		
 		this.origin = origin;
 		
+		Material mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+	    mat_lit.setBoolean("UseMaterialColors",true);    
+	    mat_lit.setColor("Specular",ColorRGBA.White);
+	    mat_lit.setColor("Diffuse",ColorRGBA.Red);
+	    mat_lit.setFloat("Shininess", 5f);
+	    
 		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		mat_red.setColor("Color", ColorRGBA.Red);
 		
 		Box box = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
         model = new Geometry("Moveable_" + id, box);
-        model.setMaterial(mat_red);
+        model.setMaterial(mat_lit);
 		model.setUserData("id", id);
+		model.setShadowMode(ShadowMode.CastAndReceive);
         
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
