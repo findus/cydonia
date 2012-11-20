@@ -6,12 +6,9 @@ package de.findus.cydonia.server;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.findus.cydonia.events.Event;
-import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
-import de.findus.cydonia.events.TargetReachedEvent;
+import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.main.GameState;
 
 /**

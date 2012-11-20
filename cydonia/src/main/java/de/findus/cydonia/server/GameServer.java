@@ -41,8 +41,6 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
-import de.findus.cydonia.events.TargetReachedEvent;
-import de.findus.cydonia.level.BoxBPO;
 import de.findus.cydonia.level.Level3;
 import de.findus.cydonia.level.Moveable;
 import de.findus.cydonia.level.WorldController;
