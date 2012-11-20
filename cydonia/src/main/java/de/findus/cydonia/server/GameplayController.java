@@ -54,7 +54,7 @@ public class GameplayController implements EventListener {
 		endRoundTask = new TimerTask() {
 			@Override
 			public void run() {
-				endRound(0, true);
+				endRound(-1, true);
 			}
 		};
 		timer.schedule(endRoundTask, ROUNDTIME * 1000);
@@ -69,7 +69,7 @@ public class GameplayController implements EventListener {
 		endRoundTask.cancel();
 		
 		gameState = GameState.ROUNDOVER;
-		RoundEndedEvent end = new RoundEndedEvent(0, true);
+		RoundEndedEvent end = new RoundEndedEvent(winnerid, true);
 		eventMachine.fireEvent(end);
 		
 		if(triggerNewRound) {

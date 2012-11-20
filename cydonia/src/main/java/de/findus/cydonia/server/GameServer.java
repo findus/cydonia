@@ -212,7 +212,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			}else if (e instanceof RoundEndedEvent) {
 				bulletAppState.setEnabled(false);
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
-				if(roundEnded.getWinnerid() > 0) {
+				if(roundEnded.getWinnerid() >= 0) {
 					Player p = players.get(roundEnded.getWinnerid());
 					if(p != null) {
 						p.setKills(p.getKills() + 1);
