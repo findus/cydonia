@@ -314,8 +314,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		
 		if(target != null && other != null) {
 			if(other.getName().startsWith("player")) {
-				TargetReachedEvent tr = new TargetReachedEvent(Integer.parseInt(other.getName().substring(6)), false);
-				eventMachine.fireEvent(tr);
+				gameplayController.targetReached(Integer.parseInt(other.getName().substring(6)));
 			}
 		}
 	}

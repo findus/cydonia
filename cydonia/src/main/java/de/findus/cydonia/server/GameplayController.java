@@ -18,7 +18,7 @@ import de.findus.cydonia.main.GameState;
  * @author Findus
  *
  */
-public class GameplayController implements EventListener {
+public class GameplayController {
 
 	/**
 	 * Duration of one round in seconds.
@@ -42,7 +42,6 @@ public class GameplayController implements EventListener {
 	
 	public GameplayController(EventMachine em) {
 		eventMachine = em;
-		em.registerListener(this);
 		timer = new Timer();
 	}
 	
@@ -98,10 +97,8 @@ public class GameplayController implements EventListener {
 		timer.cancel();
 	}
 
-	@Override
-	public void newEvent(Event e) {
-		if(e instanceof TargetReachedEvent) {
-			int playerid = ((TargetReachedEvent) e).getPlayerid();
+	public void targetReached(int playerid) {
+		if(gameState == GameState.RUNNING) {
 			this.endRound(playerid, true);
 		}
 	}
