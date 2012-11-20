@@ -28,7 +28,7 @@ public class TargetArea {
 		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		mat_red.setColor("Color", ColorRGBA.Yellow);
 		
-		Box box = new Box(Vector3f.ZERO, 1.0f, 0.5f, 1.0f);
+		Box box = new Box(Vector3f.ZERO, 1.5f, 0.5f, 1.5f);
         model = new Geometry("TargetArea", box);
         model.setMaterial(mat_red);
         

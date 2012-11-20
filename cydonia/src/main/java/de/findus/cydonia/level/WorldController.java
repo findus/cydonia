@@ -106,7 +106,7 @@ public class WorldController {
 		}
 		
 		TargetArea ta = new TargetArea(assetManager);
-		ta.getControl().setPhysicsLocation(new Vector3f(0, 2, 0));
+		ta.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
 		rootNode.attachChild(ta.getModel());
 		physicsSpace.addCollisionObject(ta.getControl());
 		
