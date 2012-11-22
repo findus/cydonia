@@ -237,8 +237,8 @@ public class GameController extends Application implements ScreenController, Phy
         fog.setFogDensity(1.5f);
 //        fpp.addFilter(fog);
         
-        SSAOFilter ssaoFilter = new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f);
-//        fpp.addFilter(ssaoFilter);
+        SSAOFilter ssaoFilter = new SSAOFilter();
+        fpp.addFilter(ssaoFilter);
         
         FXAAFilter fxaaFilter = new FXAAFilter();
         fpp.addFilter(fxaaFilter);
@@ -262,7 +262,7 @@ public class GameController extends Application implements ScreenController, Phy
     public void connect() {
     	gamestate = GameState.LOADING;
     	menuController.actualizeScreen();
-    	String serveraddress = this.serverAddressInput.getText();
+    	String serveraddress = this.serverAddressInput.getRealText();
     	connector.connectToServer(serveraddress, 6173);
     }
     
@@ -274,7 +274,7 @@ public class GameController extends Application implements ScreenController, Phy
     public void startGame(String level) {
         worldController.loadWorld(level);
         
-    	String playername = this.playerNameInput.getText();
+    	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
     	player = new Player(connector.getConnectionId(), assetManager);
     	player.setName(playername);
