@@ -39,8 +39,8 @@ public class MenuController {
 			gameController.getInputManager().setCursorVisible(true);
 			break;
 			
-		case DEAD:
-			gameController.getNifty().gotoScreen("deadscreen");
+		case SPECTATE:
+			gameController.getNifty().gotoScreen("spectatescreen");
 			gameController.getInputManager().setCursorVisible(false);
 			break;
 			

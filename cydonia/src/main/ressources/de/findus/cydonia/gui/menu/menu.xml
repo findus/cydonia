@@ -41,10 +41,10 @@
     </layer>
   </screen>
   
-  <screen id="deadscreen" controller="de.findus.cydonia.main.GameController">
-    <layer id="layer" backgroundColor="#8888" childLayout="center">
+  <screen id="spectatescreen" controller="de.findus.cydonia.main.GameController">
+    <layer id="layer" backgroundColor="#0000" childLayout="center">
       <panel height="20%" width="90%" align="center" valign="center" backgroundColor="#8888" childLayout="vertical">
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="You died. Press 'Fire' to respawn." align="center" valign="center" />
+	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="You will join the game next round." align="center" valign="center" />
       </panel>
     </layer>
   </screen>

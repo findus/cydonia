@@ -293,7 +293,7 @@ public class GameController extends Application implements ScreenController, Phy
     	eventMachine.fireEvent(chooseteam);
     	
     	bulletAppState.setEnabled(true);
-    	gamestate = GameState.DEAD;
+    	gamestate = GameState.SPECTATE;
     	stateManager.attach(gameInputAppState);
     	menuController.actualizeScreen();
     }
@@ -328,7 +328,7 @@ public class GameController extends Application implements ScreenController, Phy
     
     public void gameOver() {
 //    	stateManager.detach(gameInputAppState);
-    	gamestate = GameState.DEAD;
+    	gamestate = GameState.SPECTATE;
     	menuController.actualizeScreen();
     	stopInputSender();
     }
@@ -751,7 +751,7 @@ public class GameController extends Application implements ScreenController, Phy
 	}
 	
 	public void scoreboard(boolean show) {
-		if(gamestate == GameState.RUNNING || gamestate == GameState.DEAD || gamestate == GameState.SPECTATE) {
+		if(gamestate == GameState.RUNNING || gamestate == GameState.SPECTATE) {
 			if(show) {
 				menuController.showScorebord();
 			}else {

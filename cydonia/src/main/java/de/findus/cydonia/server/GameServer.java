@@ -458,26 +458,26 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		switch (command) {
 		case PLACE:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				if(p.isAlive()) {
-					if(value) place(p);
+				if(value && p.isAlive()) {
+					place(p);
 				}
 			}
 			break;
 		case PICKUP:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				if(p.isAlive()) {
+				if(value && p.isAlive()) {
 					if(value) pickup(p);
-				}else {
-					if(value) respawn(p);
 				}
 			}
 			break;
 		case ATTACK:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				if(p.isAlive()) {
-					if(value) attack(p);
-				}else {
-					if(value) respawn(p);
+				if(value) {
+					if(p.isAlive()) {
+						attack(p);
+					}else {
+						respawn(p);
+					}
 				}
 			}
 			break;
