@@ -14,10 +14,12 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
-import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.light.LightList;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Ray;
+import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
@@ -77,7 +79,7 @@ public class WorldController {
 	 * @param assetManager an instance of AssetManager
 	 */
 	public void loadWorld(String levelname) {
-		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", true);
+		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
 		rootNode.attachChild(sky);
 		
 		try {
@@ -199,6 +201,8 @@ public class WorldController {
 	}
 	
 	private void setUpAmbientLight() {
+		rootNode.setShadowMode(ShadowMode.Off);
+		
 //        AmbientLight al = new AmbientLight();
 //        al.setColor(ColorRGBA.White.mult(1.3f));
 //        rootNode.addLight(al);
@@ -207,9 +211,11 @@ public class WorldController {
         dl.setColor(ColorRGBA.White);
         dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         rootNode.addLight(dl);
-        
-        rootNode.setShadowMode(ShadowMode.Off);
     }
+	
+	public LightList getLights() {
+		return rootNode.getLocalLightList();
+	}
 
 	public Level getLevel() {
 		return level;

@@ -13,6 +13,8 @@ import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
@@ -21,6 +23,7 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.FXAAFilter;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.post.ssao.SSAOFilter;
 import com.jme3.renderer.RenderManager;
@@ -28,8 +31,9 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
-import com.jme3.shadow.BasicShadowRenderer;
-import com.jme3.shadow.PssmShadowRenderer;
+import com.jme3.shadow.CompareMode;
+import com.jme3.shadow.DirectionalLightShadowRenderer;
+import com.jme3.shadow.EdgeFilteringMode;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
 
@@ -215,13 +219,15 @@ public class GameController extends Application implements ScreenController, Phy
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
 //        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
         
-        BasicShadowRenderer bsr = new BasicShadowRenderer(assetManager, 256);
-        bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-//        viewPort.addProcessor(bsr);
-        
-        PssmShadowRenderer pssmRenderer = new PssmShadowRenderer(assetManager, 1024, 3);
-        pssmRenderer.setDirection(new Vector3f(-1f,-1f,-1f).normalizeLocal()); // light direction
-        viewPort.addProcessor(pssmRenderer);
+        for(Light l : worldController.getLights()) {
+        	if(l instanceof DirectionalLight) {
+        		DirectionalLightShadowRenderer shadowRenderer = new DirectionalLightShadowRenderer(assetManager, 1024, 3);
+        		shadowRenderer.setLight((DirectionalLight) l);
+        		shadowRenderer.setEdgeFilteringMode(EdgeFilteringMode.PCF8);
+        		shadowRenderer.setShadowCompareMode(CompareMode.Hardware);
+        		viewPort.addProcessor(shadowRenderer);
+        	}
+        }
         
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
         
@@ -234,7 +240,10 @@ public class GameController extends Application implements ScreenController, Phy
         SSAOFilter ssaoFilter = new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f);
 //        fpp.addFilter(ssaoFilter);
         
-//        viewPort.addProcessor(fpp);
+        FXAAFilter fxaaFilter = new FXAAFilter();
+        fpp.addFilter(fxaaFilter);
+        
+        viewPort.addProcessor(fpp);
         
         cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.5f, 1000f);
         

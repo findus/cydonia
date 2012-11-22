@@ -14,6 +14,7 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.util.TangentBinormalGenerator;
 
 /**
  * @author Findus
@@ -48,6 +49,7 @@ public class Moveable {
         model.setMaterial(mat_lit);
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
+		TangentBinormalGenerator.generate(model);
         
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
