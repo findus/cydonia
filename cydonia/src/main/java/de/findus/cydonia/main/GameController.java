@@ -303,10 +303,10 @@ public class GameController extends Application implements ScreenController, Phy
      */
     public void resumeGame() {
     	gamestate = GameState.RUNNING;
-    	menuController.actualizeScreen();
     	stateManager.attach(gameInputAppState);
     	bulletAppState.setEnabled(true);
     	startInputSender();
+    	menuController.actualizeScreen();
     }
     
     /**

@@ -9,7 +9,6 @@
       <panel width="50%" align="center" valign="center" backgroundColor="#555f" childLayout="vertical">
 	      <effect>
 	          <onStartScreen name="move" mode="in" direction="top" length="500" startDelay="0" inherit="true"/>
-	          <onEndScreen name="move" mode="out" direction="top" length="200" startDelay="0" inherit="true"/>
 	      </effect>
 	      <control name="textfield" id="playername" text="Player name" width="100%" align="center" valign="center"/>
 	      <control name="dropDown" id="team" width="100%" align="center" valign="center">
@@ -27,7 +26,7 @@
       <panel height="25%" width="30%" align="center" valign="center" backgroundColor="#555f" childLayout="vertical">
 	      <effect>
 	          <onStartScreen name="move" mode="in" direction="top" length="1000" startDelay="0" inherit="true"/>
-	          <onEndScreen name="move" mode="out" direction="top" length="1000" startDelay="0" inherit="true"/>
+	          <onEndScreen name="move" mode="out" direction="top" length="500" startDelay="0" inherit="true"/>
 	      </effect>
 	      <panel id="startgame" height="40%" width="80%" align="center" valign="top" backgroundColor="#f60f" childLayout="center" visibleToMouse="true">
 	        <interact onClick="resumeGame()"/>
