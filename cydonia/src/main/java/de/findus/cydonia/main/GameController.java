@@ -467,6 +467,7 @@ public class GameController extends Application implements ScreenController, Phy
 					}
 					p.setKills(0);
 					p.setDeaths(0);
+					p.setInventory(-1);
 				}
 				removeAllBullets();
 				worldController.resetWorld();
@@ -691,11 +692,11 @@ public class GameController extends Application implements ScreenController, Phy
 	private void place(Player p, Vector3f loc) {
 		if(p == null) return;
 
-		if(p.getInventory() != 0) {
+		if(p.getInventory() >= 0) {
 			Moveable m = worldController.getMoveable(p.getInventory());
 			m.getControl().setPhysicsLocation(loc);
 			worldController.attachMoveable(m);
-			p.setInventory(0);
+			p.setInventory(-1);
 		}
 	}
 	

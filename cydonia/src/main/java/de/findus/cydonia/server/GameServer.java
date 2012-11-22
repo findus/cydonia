@@ -203,6 +203,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					}
 					p.setKills(0);
 					p.setDeaths(0);
+					p.setInventory(-1);
 				}
 				removeAllBullets();
 				worldController.resetWorld();
@@ -376,7 +377,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void pickup(Player p) {
 		if(p == null) return;
 		
-		if(p.getInventory() == 0) {
+		if(p.getInventory() < 0) {
 			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
 			if(result != null) {
 				Spatial g = result.getGeometry();
@@ -393,7 +394,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void place(Player p) {
 		if(p == null) return;
 
-		if(p.getInventory() > 0) {
+		if(p.getInventory() >= 0) {
 			Moveable m = worldController.getMoveable(p.getInventory());
 			if(m != null) {
 			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
@@ -402,7 +403,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 				Vector3f loc = result.getGeometry().getLocalTranslation().add(contactnormal);
 				m.getControl().setPhysicsLocation(loc);
 				worldController.attachMoveable(m);
-				p.setInventory(0);
+				p.setInventory(-1);
 
 				PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
 				eventMachine.fireEvent(place);
