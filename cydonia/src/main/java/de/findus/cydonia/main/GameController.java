@@ -1,10 +1,16 @@
 package de.findus.cydonia.main;
 
+import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.swing.SwingUtilities;
 
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
+import com.jme3.asset.AssetNotFoundException;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.BulletAppState.ThreadingType;
@@ -59,6 +65,7 @@ import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Moveable;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
@@ -148,7 +155,11 @@ public class GameController extends Application implements ScreenController, Phy
 
         // show settings dialog
         if (showSettings) {
-            if (!JmeSystem.showSettingsDialog(settings, loadSettings)) {
+        	
+        	/* *********************************************** */
+        	/* show own settings dialog instead of JMESystem's */
+        	/* *********************************************** */
+            if (!this.showSettingsDialog(settings, loadSettings)) {
                 return;
             }
         }
@@ -161,6 +172,66 @@ public class GameController extends Application implements ScreenController, Phy
         super.start();
     }
     
+    /**
+     * Shows settings dialog.
+     * Copied from JmeDesktopSystem, because couldn't change the used dialog other way.
+     * 
+     * @param sourceSettings
+     * @param loadFromRegistry
+     * @return
+     */
+    private boolean showSettingsDialog(AppSettings sourceSettings, final boolean loadFromRegistry) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Cannot run from EDT");
+        }
+
+        final AppSettings settings = new AppSettings(false);
+        settings.copyFrom(sourceSettings);
+        String iconPath = sourceSettings.getSettingsDialogImage();
+        final URL iconUrl = JmeSystem.class.getResource(iconPath.startsWith("/") ? iconPath : "/" + iconPath);
+        if (iconUrl == null) {
+            throw new AssetNotFoundException(sourceSettings.getSettingsDialogImage());
+        }
+
+        final AtomicBoolean done = new AtomicBoolean();
+        final AtomicInteger result = new AtomicInteger();
+        final Object lock = new Object();
+
+        final SelectionListener selectionListener = new SelectionListener() {
+
+            public void onSelection(int selection) {
+                synchronized (lock) {
+                    done.set(true);
+                    result.set(selection);
+                    lock.notifyAll();
+                }
+            }
+        };
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                synchronized (lock) {
+                    ExtendedSettingsDialog dialog = new ExtendedSettingsDialog(settings, iconUrl, loadFromRegistry);
+                    dialog.setSelectionListener(selectionListener);
+                    dialog.showDialog();
+                }
+            }
+        });
+
+        synchronized (lock) {
+            while (!done.get()) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+
+        sourceSettings.copyFrom(settings);
+
+        return result.get() == ExtendedSettingsDialog.APPROVE_SELECTION;
+    }
+    
     @Override
     public void stop(boolean waitfor) {
     	super.stop(waitfor);
@@ -170,6 +241,8 @@ public class GameController extends Application implements ScreenController, Phy
     @Override
     public void initialize() {
         super.initialize();
+        
+        setPauseOnLostFocus(false);
         
         eventMachine = new EventMachine();
         
