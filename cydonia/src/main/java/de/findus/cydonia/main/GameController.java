@@ -241,7 +241,7 @@ public class GameController extends Application implements ScreenController, Phy
         fpp.addFilter(ssaoFilter);
         
         FXAAFilter fxaaFilter = new FXAAFilter();
-        fpp.addFilter(fxaaFilter);
+//        fpp.addFilter(fxaaFilter);
         
         viewPort.addProcessor(fpp);
         
@@ -465,8 +465,6 @@ public class GameController extends Application implements ScreenController, Phy
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
-					p.setKills(0);
-					p.setDeaths(0);
 					p.setInventory(-1);
 				}
 				removeAllBullets();
@@ -476,7 +474,7 @@ public class GameController extends Application implements ScreenController, Phy
 				if(roundEnded.getWinnerid() >= 0) {
 					Player p = players.get(roundEnded.getWinnerid());
 					if(p != null) {
-						p.setKills(p.getKills() + 1);
+						p.setScores(p.getScores() + 1);
 					}
 				}
 				gamestate = GameState.ROUNDOVER;
@@ -517,8 +515,7 @@ public class GameController extends Application implements ScreenController, Phy
 			p.setTeam(info.getTeam());
 			p.setAlive(info.isAlive());
 			p.setHealthpoints(info.getHealthpoints());
-			p.setKills(info.getKills());
-			p.setDeaths(info.getDeaths());
+			p.setScores(info.getScores());
 			players.put(p.getId(), p);
 			if(p.isAlive()) {
 				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
@@ -650,7 +647,7 @@ public class GameController extends Application implements ScreenController, Phy
 			this.killPlayer(victim);
 			Player source = this.players.get(sourceid);
 			if(source != null) {
-				source.setKills(source.getKills() + 1);
+				source.setScores(source.getScores() + 1);
 			}
 		}
 		victim.setHealthpoints(hp);
@@ -660,7 +657,6 @@ public class GameController extends Application implements ScreenController, Phy
 		if(p == null) return;
 		worldController.detachPlayer(p);
 		p.setAlive(false);
-		p.setDeaths(p.getDeaths() + 1);
 		if(p.getId() == player.getId()) {
 			gameOver();
 		}
@@ -737,16 +733,16 @@ public class GameController extends Application implements ScreenController, Phy
 		StringBuilder sb_team2 = new StringBuilder();
 		for (Player p : players.values()) {
 			if(p.getTeam() == 1) {
-				sb_team1.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+				sb_team1.append("\n" + p.getName() + "\t\t" + p.getScores());
 			}else if(p.getTeam() == 2) {
-				sb_team2.append("\n" + p.getName() + "\t\t" + p.getKills() + "\t\t" + p.getDeaths());
+				sb_team2.append("\n" + p.getName() + "\t\t" + p.getScores());
 			}
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("Team 1 \t\t Kills \t\t Deaths");
+		sb.append("Team 1 \t\t Scores");
 		sb.append(sb_team1);
 		sb.append("\n\n\n\n");
-		sb.append("Team 2 \t\t Kills \t\t Deaths");
+		sb.append("Team 2 \t\t Scores");
 		sb.append(sb_team2);
 		return sb.toString();
 	}

@@ -42,9 +42,7 @@ public class Player {
 	
 	private long lastShot = 0;
 	
-	private int kills = 0;
-	
-	private int deaths = 0;
+	private int scores = 0;
 	
 	private Vector3f viewDir = Vector3f.UNIT_X;
 	
@@ -209,20 +207,12 @@ public class Player {
 		this.lastShot = time;
 	}
 
-	public int getKills() {
-		return kills;
+	public int getScores() {
+		return scores;
 	}
 
-	public void setKills(int kills) {
-		this.kills = kills;
-	}
-
-	public int getDeaths() {
-		return deaths;
-	}
-
-	public void setDeaths(int deaths) {
-		this.deaths = deaths;
+	public void setScores(int scores) {
+		this.scores = scores;
 	}
 
 	/**

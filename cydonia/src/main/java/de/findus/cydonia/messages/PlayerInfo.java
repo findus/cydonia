@@ -25,9 +25,7 @@ public class PlayerInfo {
 	
 	private double healthpoints;
 	
-	private int kills;
-	
-	private int deaths;
+	private int scores;
 	
 	public PlayerInfo() {
 		
@@ -39,8 +37,7 @@ public class PlayerInfo {
 		this.team = team;
 		this.alive = alive;
 		this.healthpoints = healthpoints;
-		this.kills = kills;
-		this.deaths = deaths;
+		this.scores = kills;
 	}
 	
 	public PlayerInfo(Player p) {
@@ -49,8 +46,7 @@ public class PlayerInfo {
 		this.team = p.getTeam();
 		this.alive = p.isAlive();
 		this.healthpoints = p.getHealthpoints();
-		this.kills = p.getKills();
-		this.deaths = p.getDeaths();
+		this.scores = p.getScores();
 	}
 	
 	/**
@@ -124,30 +120,16 @@ public class PlayerInfo {
 	}
 
 	/**
-	 * @return the kills
+	 * @return the scores
 	 */
-	public int getKills() {
-		return kills;
+	public int getScores() {
+		return scores;
 	}
 
 	/**
-	 * @param kills the kills to set
+	 * @param scores the scores to set
 	 */
-	public void setKills(int kills) {
-		this.kills = kills;
-	}
-
-	/**
-	 * @return the deaths
-	 */
-	public int getDeaths() {
-		return deaths;
-	}
-
-	/**
-	 * @param deaths the deaths to set
-	 */
-	public void setDeaths(int deaths) {
-		this.deaths = deaths;
+	public void setScores(int scores) {
+		this.scores = scores;
 	}
 }

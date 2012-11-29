@@ -201,8 +201,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
-					p.setKills(0);
-					p.setDeaths(0);
 					p.setInventory(-1);
 				}
 				removeAllBullets();
@@ -217,7 +215,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 				if(roundEnded.getWinnerid() >= 0) {
 					Player p = players.get(roundEnded.getWinnerid());
 					if(p != null) {
-						p.setKills(p.getKills() + 1);
+						p.setScores(p.getScores() + 1);
 					}
 				}
 			}
@@ -336,7 +334,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 				this.killPlayer(victim);
 				Player source = players.get(sourceid);
 				if(source != null) {
-					source.setKills(source.getKills() + 1);
+					source.setScores(source.getScores() + 1);
 				}
 			}
 			victim.setHealthpoints(hp);
@@ -350,7 +348,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p == null) return;
 		worldController.detachPlayer(p);
 		p.setAlive(false);
-		p.setDeaths(p.getDeaths() + 1);
 	}
 	
 	private void attack(Player p) {
