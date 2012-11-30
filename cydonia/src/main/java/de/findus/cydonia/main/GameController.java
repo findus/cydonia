@@ -290,7 +290,7 @@ public class GameController extends Application implements ScreenController, Phy
         bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
-        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+//        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
         worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
         
