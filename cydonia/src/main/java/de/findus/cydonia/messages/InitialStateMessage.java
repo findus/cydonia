@@ -6,6 +6,8 @@ package de.findus.cydonia.messages;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
+import de.findus.cydonia.main.GameConfig;
+
 /**
  * @author Findus
  *
@@ -16,6 +18,8 @@ public class InitialStateMessage extends AbstractMessage {
 	private PlayerInfo[] players;
 	
 	private MoveableInfo[] moveables;
+	
+	private GameConfig config;
 
 	
 	public InitialStateMessage() {
@@ -48,5 +52,19 @@ public class InitialStateMessage extends AbstractMessage {
 	 */
 	public void setMoveables(MoveableInfo[] moveables) {
 		this.moveables = moveables;
+	}
+
+	/**
+	 * @return the config
+	 */
+	public GameConfig getConfig() {
+		return config;
+	}
+
+	/**
+	 * @param config the config to set
+	 */
+	public void setconfig(GameConfig config) {
+		this.config = config;
 	}
 }

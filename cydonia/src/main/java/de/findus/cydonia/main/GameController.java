@@ -104,6 +104,8 @@ public class GameController extends Application implements ScreenController, Phy
     
     protected GameState gamestate;
     
+    protected GameConfig gameConfig;
+    
     protected WorldController worldController;
     
     protected MenuController menuController;
@@ -142,6 +144,8 @@ public class GameController extends Application implements ScreenController, Phy
     private ConcurrentLinkedQueue<Event> eventQueue;
     
     private WorldStateUpdatedMessage latestWorldState;
+    
+    private long roundStartTime;
     
     @Override
     public void start() {
@@ -243,6 +247,8 @@ public class GameController extends Application implements ScreenController, Phy
         super.initialize();
         
         setPauseOnLostFocus(false);
+        
+        gameConfig = new GameConfig(true);
         
         eventMachine = new EventMachine();
         
@@ -433,6 +439,7 @@ public class GameController extends Application implements ScreenController, Phy
         handleEvents();
         useLatestWorldstate();
         movePlayers(tpf);
+        menuController.updateHUD();
         
         // update world and gui
         worldController.updateLogicalState(tpf);
@@ -542,6 +549,7 @@ public class GameController extends Application implements ScreenController, Phy
 				}
 				removeAllBullets();
 				worldController.resetWorld();
+				this.roundStartTime = System.currentTimeMillis();
 			}else if (e instanceof RoundEndedEvent) {
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
 				if(roundEnded.getWinnerid() >= 0) {
@@ -580,7 +588,9 @@ public class GameController extends Application implements ScreenController, Phy
 		latestWorldState = update;
 	}
 	
-	public void setInitialState(PlayerInfo[] pinfos, MoveableInfo[] minfos) {
+	public void setInitialState(GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos) {
+		gameConfig.copyFrom(config);
+		
 		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
 			Player p = new Player(info.getPlayerid(), assetManager);
@@ -801,6 +811,11 @@ public class GameController extends Application implements ScreenController, Phy
 		p.setTeam(team);
 	}
 	
+	public long getRemainingTime() {
+		long passedTime = System.currentTimeMillis() - roundStartTime;
+		return gameConfig.getLong("mp_roundtime") * 1000 - passedTime;
+	}
+
 	public String getScores() {
 		StringBuilder sb_team1 = new StringBuilder();
 		StringBuilder sb_team2 = new StringBuilder();

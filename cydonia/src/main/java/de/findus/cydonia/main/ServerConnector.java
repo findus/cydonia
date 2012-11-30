@@ -91,6 +91,7 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);
+		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
@@ -158,7 +159,7 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 			}
 		}else if (m instanceof InitialStateMessage) {
 			InitialStateMessage iniState = (InitialStateMessage) m;
-			gameController.setInitialState(iniState.getPlayers(), iniState.getMoveables());
+			gameController.setInitialState(iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables());
 		}
 	}
 

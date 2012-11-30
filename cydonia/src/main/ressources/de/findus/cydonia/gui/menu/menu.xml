@@ -70,4 +70,12 @@
       </panel>
     </layer>
   </screen>
+  
+  <screen id="hudscreen" controller="de.findus.cydonia.main.GameController">
+    <layer id="layer" backgroundColor="#fff0" childLayout="center">
+      <panel height="5%" width="10%" align="center" valign="top" backgroundColor="#fff0" childLayout="vertical">
+	        <text id="time" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" size="100" color="#000f" text="0:00" align="center" valign="center" />
+      </panel>
+    </layer>
+  </screen>
 </nifty>

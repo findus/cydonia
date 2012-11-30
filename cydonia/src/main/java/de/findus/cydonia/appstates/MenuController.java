@@ -3,7 +3,10 @@
  */
 package de.findus.cydonia.appstates;
 
+import java.text.SimpleDateFormat;
+
 import de.findus.cydonia.main.GameController;
+import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 
 /**
@@ -14,6 +17,8 @@ import de.lessvoid.nifty.elements.render.TextRenderer;
  */
 public class MenuController {
 
+	private static final SimpleDateFormat timeFormat = new SimpleDateFormat("mm:ss");
+	
 	/**
 	 * Path to the menu description xml files.
 	 */
@@ -21,10 +26,15 @@ public class MenuController {
 	
 	private GameController gameController;
 	
+	private Element timeText;
+	
 	public MenuController(GameController game) {
 		this.gameController = game;
+		
 		gameController.getNifty().registerScreenController(gameController);
 		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
+		
+		this.timeText = gameController.getNifty().getScreen("hudscreen").findElementByName("time");
 	}
 	
 	public void actualizeScreen() {
@@ -45,7 +55,7 @@ public class MenuController {
 			break;
 			
 		case RUNNING:
-			gameController.getNifty().gotoScreen("none");
+			gameController.getNifty().gotoScreen("hudscreen");
 			gameController.getInputManager().setCursorVisible(false);
 			break;
 			
@@ -63,6 +73,10 @@ public class MenuController {
 	public void showScorebord() {
 		gameController.getNifty().gotoScreen("scoreboardscreen");
 		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());						
+	}
+
+	public void updateHUD() {
+		this.timeText.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
 	}
 
 }

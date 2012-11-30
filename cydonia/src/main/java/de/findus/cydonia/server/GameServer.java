@@ -44,6 +44,7 @@ import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Level3;
 import de.findus.cydonia.level.Moveable;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.main.GameConfig;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
@@ -82,6 +83,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private BulletAppState bulletAppState;
     
     private GameplayController gameplayController;
+    
+    private GameConfig gameConfig;
     
     /**
      * Used for moving players.
@@ -122,6 +125,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     public void initialize() {
         super.initialize();
 
+        gameConfig = new GameConfig(true);
+        
         configFrame = new ServerConfigFrame(this);
         configFrame.pack();
         configFrame.setVisible(true);
@@ -155,7 +160,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		senderLoop = new Thread(new WorldStateSenderLoop());
 		senderLoop.start();
 		
-		gameplayController = new GameplayController(eventMachine);
+		gameplayController = new GameplayController(eventMachine, gameConfig);
 		gameplayController.restartRound();
     }
     
@@ -530,6 +535,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		InitialStateMessage msg = new InitialStateMessage();
 		msg.setPlayers(playerinfos);
 		msg.setMoveables(moveableinfos);
+		msg.setconfig(gameConfig);
 		networkController.sendMessage(msg, playerid);
 	}
 

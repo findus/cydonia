@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.main.GameConfig;
 import de.findus.cydonia.main.GameState;
 
 /**
@@ -16,11 +17,6 @@ import de.findus.cydonia.main.GameState;
  *
  */
 public class GameplayController {
-
-	/**
-	 * Duration of one round in seconds.
-	 */
-	private static final long ROUNDTIME = 3 * 60;
 	
 	/**
 	 * Delay before new round is startet after the last round ended.
@@ -28,6 +24,8 @@ public class GameplayController {
 	private static final long RESTARTDELAY = 10;
 
 	private EventMachine eventMachine;
+	
+	private GameConfig gameConfig;
 	
 	private Timer timer;
 	
@@ -37,8 +35,10 @@ public class GameplayController {
 	
 	private TimerTask restartRoundTask;
 	
-	public GameplayController(EventMachine em) {
-		eventMachine = em;
+	public GameplayController(EventMachine em, GameConfig gameConfig) {
+		this.eventMachine = em;
+		this.gameConfig = gameConfig;
+		
 		timer = new Timer();
 	}
 	
@@ -53,7 +53,7 @@ public class GameplayController {
 				endRound(-1, true);
 			}
 		};
-		timer.schedule(endRoundTask, ROUNDTIME * 1000);
+		timer.schedule(endRoundTask, gameConfig.getLong("mp_roundtime") * 1000);
 		gameState = GameState.RUNNING;
 		RestartRoundEvent start = new RestartRoundEvent(true);
 		eventMachine.fireEvent(start);
