@@ -77,7 +77,9 @@
 	        <text id="time" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#000f" text="0:00" align="center" valign="top" />
       </panel>
       <panel width="98%" align="center" valign="bottom" backgroundColor="#fff0" childLayout="center" padding="10px">
-      	<image id="inventory" filename="de/findus/cydonia/gui/menu/Inventory.png" align="right" valign="center"/>
+      	<panel align="right" valign="center" backgroundColor="#8888" childLayout="center">
+      		<image id="inventory" filename="de/findus/cydonia/gui/menu/Inventory.png"/>
+      	</panel>
       </panel>
     </layer>
   </screen>
