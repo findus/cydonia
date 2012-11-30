@@ -73,8 +73,11 @@
   
   <screen id="hudscreen" controller="de.findus.cydonia.main.GameController">
     <layer id="layer" backgroundColor="#fff0" childLayout="center">
-      <panel height="5%" width="10%" align="center" valign="top" backgroundColor="#fff0" childLayout="vertical">
-	        <text id="time" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" size="100" color="#000f" text="0:00" align="center" valign="center" />
+      <panel width="100%" align="center" valign="top" backgroundColor="#fff0" childLayout="center" padding="10px">
+	        <text id="time" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#000f" text="0:00" align="center" valign="top" />
+      </panel>
+      <panel width="98%" align="center" valign="bottom" backgroundColor="#fff0" childLayout="center" padding="10px">
+      	<image id="inventory" filename="de/findus/cydonia/gui/menu/Inventory.png" align="right" valign="center"/>
       </panel>
     </layer>
   </screen>

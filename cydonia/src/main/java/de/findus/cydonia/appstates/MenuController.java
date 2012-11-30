@@ -27,6 +27,7 @@ public class MenuController {
 	private GameController gameController;
 	
 	private Element timeText;
+	private Element	inventoryImage;
 	
 	public MenuController(GameController game) {
 		this.gameController = game;
@@ -35,6 +36,7 @@ public class MenuController {
 		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
 		
 		this.timeText = gameController.getNifty().getScreen("hudscreen").findElementByName("time");
+		this.inventoryImage = gameController.getNifty().getScreen("hudscreen").findElementByName("inventory");
 	}
 	
 	public void actualizeScreen() {
@@ -77,6 +79,9 @@ public class MenuController {
 
 	public void updateHUD() {
 		this.timeText.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
+		if(gameController.getPlayer() != null) {
+			this.inventoryImage.setVisible(gameController.getPlayer().getInventory() >= 0);
+		}
 	}
 
 }
