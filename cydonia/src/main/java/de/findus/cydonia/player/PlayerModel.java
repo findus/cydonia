@@ -3,25 +3,14 @@
  */
 package de.findus.cydonia.player;
 
-import com.jme3.asset.AssetManager;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.ShadowMode;
-import com.jme3.scene.Spatial;
 
 /**
  * @author Findus
  *
  */
-public class Player {
-	
-	public static float MAX_STEP_HEIGHT = 0.2f; //Controller oder View
-	
-	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.35f, 0); //Controller oder View
-	
-	private AssetManager assetManager; //view
-	
+public class PlayerModel {
+
 	private int id; //model
 	
 	private String name; //model
@@ -34,10 +23,6 @@ public class Player {
 	
 	private Vector3f exactLoc = new Vector3f(); //model
 	
-	private CharacterControl control; //view
-	
-	private Spatial model; //view
-	
 	private double healthpoints = 100; //model
 	
 	private long lastShot = 0; //model
@@ -49,75 +34,19 @@ public class Player {
 	private long inventory = 0; //model
 	
 	/**
-	 * Constructs a new Player and inits its physics and model.
+	 * Constructs a new Player.
 	 * @param id the id of this player. If not available set to -1 and reset later.
-	 * @param assetManager the used instance of AssetManager 
 	 */
-	public Player(int id, AssetManager assetManager) {
+	public PlayerModel(int id) {
 		this.id = id;
-		
-		this.assetManager = assetManager;
-		
 		inputs = new PlayerInputState();
-		
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
-        control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
-        control.setJumpSpeed(10);
-        control.setFallSpeed(20);
-        control.setGravity(20);
-        
-        loadModel();
 	}
 	
-	//controler
-	public void handleInput(InputCommand command, boolean value) {
-		switch (command) {
-		case MOVEFRONT:
-			inputs.setForward(value);
-			break;
-		case MOVEBACK:
-			inputs.setBack(value);
-			break;
-		case STRAFELEFT:
-			inputs.setLeft(value);
-			break;
-		case STRAFERIGHT:
-			inputs.setRight(value);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	//view
-	public void loadModel() {
-		if(this.team == 1) {
-			model = assetManager.loadModel("de/findus/cydonia/models/blue/Sinbad.mesh.xml");
-		}else if(this.team == 2) {
-			model = assetManager.loadModel("de/findus/cydonia/models/red/Sinbad.mesh.xml");
-		}else {
-			model = assetManager.loadModel("de/findus/cydonia/models/green/Sinbad.mesh.xml");
-		}
-		model.setName("player" + id);
-		model.setLocalScale(0.2f);
-		model.addControl(this.control);
-		model.setShadowMode(ShadowMode.Cast);
-	}
-	
-	/**
-	 * Returns the model for visualization of this player.
-	 * @return model of this player
-	 */
-	public Spatial getModel() { //view
-		return model;
-	}
-
 	/**
 	 * Returns the InputState oject.
 	 * @return input state
 	 */
-	public PlayerInputState getInputState() {//model
+	public PlayerInputState getInputState() {
 		return this.inputs;
 	}
 	
@@ -125,22 +54,10 @@ public class Player {
 	 * Sets the InputState object.
 	 * @param pis input state
 	 */
-	public void setInputState(PlayerInputState pis) {//model und controler
+	public void setInputState(PlayerInputState pis) {
 		this.inputs = pis;
 	}
-
-	/**
-	 * Returns the physics control object.
-	 * @return physics control
-	 */
-	public CharacterControl getControl() { //view
-		return control;
-	}
 	
-	public Vector3f getEyePosition() { //view oder model
-		return control.getPhysicsLocation().add(RELATIVE_EYE_POSITION);
-	}
-
 	/**
 	 * Returns the id of this Player. The value -1 indicates the real id was not available at contruction time.
 	 * @return the id
@@ -229,7 +146,6 @@ public class Player {
 	 */
 	public void setTeam(int team) {
 		this.team = team;
-		this.loadModel();
 	}
 
 	/**
@@ -242,9 +158,8 @@ public class Player {
 	/**
 	 * @param viewDir the viewDir to set
 	 */
-	public void setViewDir(Vector3f viewDir) {//controler
+	public void setViewDir(Vector3f viewDir) {
 		this.viewDir = viewDir.clone();
-		control.setViewDirection(viewDir.clone().setY(0).normalizeLocal());
 	}
 
 	/**
@@ -260,5 +175,4 @@ public class Player {
 	public void setInventory(long inventory) {
 		this.inventory = inventory;
 	}
-
 }
