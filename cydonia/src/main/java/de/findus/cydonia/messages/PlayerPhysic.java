@@ -15,7 +15,7 @@ public class PlayerPhysic {
 	private int id;
 	private Vector3f translation;
 	private Vector3f orientation;
-
+	
 	public int getId() {
 		return id;
 	}

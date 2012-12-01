@@ -13,12 +13,7 @@ import com.jme3.network.serializing.Serializable;
 public class PlayerInputState {
 
 	private boolean left, right, forward, back, attack;
-	/**
-	 * 
-	 */
-	public PlayerInputState() {
-		// TODO Auto-generated constructor stub
-	}
+
 	public boolean isLeft() {
 		return left;
 	}

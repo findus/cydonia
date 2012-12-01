@@ -198,9 +198,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     			connectionAdded(((ConnectionAddedEvent) e).getClientid());
     		}else if(e instanceof ConnectionRemovedEvent) {
     			connectionRemoved(((ConnectionRemovedEvent) e).getClientid());
-    		}else if (e instanceof InputEvent) {
-    			InputEvent input = (InputEvent) e;
-    			handlePlayerInput(input.getPlayerid(), input.getCommand(), input.isValue());
     		}else if (e instanceof RestartRoundEvent) {
 				for (Player p : players.values()) {
 					if(p.isAlive()) {
@@ -456,7 +453,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		eventMachine.fireEvent(respawn);
 	}
 	
-	private void handlePlayerInput(int playerid, InputCommand command, boolean value) {
+	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {
 		Player p = players.get(playerid);
 		switch (command) {
 		case PLACE:
@@ -503,6 +500,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		default:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				p.handleInput(command, value);
+				InputEvent event = new InputEvent(p.getId(), command, value, true);
+				eventMachine.fireEvent(event);
 			}
 			break;
 		}

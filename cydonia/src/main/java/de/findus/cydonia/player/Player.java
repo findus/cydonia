@@ -3,18 +3,23 @@
  */
 package de.findus.cydonia.player;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimEventListener;
+import com.jme3.animation.LoopMode;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
 /**
  * @author Findus
  *
  */
-public class Player {
+public class Player implements AnimEventListener{
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
 	
@@ -38,6 +43,12 @@ public class Player {
 	
 	private Spatial model;
 	
+	private AnimChannel basechannel;
+	
+	private AnimChannel topchannel;
+
+	private AnimControl animcontrol;
+	
 	private double healthpoints = 100;
 	
 	private long lastShot = 0;
@@ -47,7 +58,7 @@ public class Player {
 	private Vector3f viewDir = Vector3f.UNIT_X;
 	
 	private long inventory = 0;
-	
+
 	/**
 	 * Constructs a new Player and inits its physics and model.
 	 * @param id the id of this player. If not available set to -1 and reset later.
@@ -87,20 +98,55 @@ public class Player {
 		default:
 			break;
 		}
+		
+		updateAnimationState();
 	}
 	
+	public void updateAnimationState() {
+		// Update Animation
+		if(inputs.isForward() || inputs.isBack() || inputs.isLeft() || inputs.isRight()) {
+			basechannel.setAnim("RunBase");
+			basechannel.setLoopMode(LoopMode.Loop);
+			topchannel.setAnim("RunTop");
+			topchannel.setLoopMode(LoopMode.Loop);
+		}else {
+			basechannel.setAnim("IdleBase");
+			basechannel.setLoopMode(LoopMode.DontLoop);
+			topchannel.setAnim("IdleTop");
+			topchannel.setLoopMode(LoopMode.DontLoop);
+		}
+	}
+	
+	@Override
+	public void onAnimCycleDone(AnimControl control, AnimChannel channel,
+			String animName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onAnimChange(AnimControl control, AnimChannel channel,
+			String animName) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public void loadModel() {
 		if(this.team == 1) {
-			model = assetManager.loadModel("de/findus/cydonia/models/blue/Sinbad.mesh.xml");
+			model = (Node) assetManager.loadModel("de/findus/cydonia/models/blue/Sinbad.mesh.xml");
 		}else if(this.team == 2) {
-			model = assetManager.loadModel("de/findus/cydonia/models/red/Sinbad.mesh.xml");
+			model = (Node) assetManager.loadModel("de/findus/cydonia/models/red/Sinbad.mesh.xml");
 		}else {
-			model = assetManager.loadModel("de/findus/cydonia/models/green/Sinbad.mesh.xml");
+			model = (Node) assetManager.loadModel("de/findus/cydonia/models/green/Sinbad.mesh.xml");
 		}
 		model.setName("player" + id);
 		model.setLocalScale(0.2f);
 		model.addControl(this.control);
 		model.setShadowMode(ShadowMode.Cast);
+		
+		animcontrol = model.getControl(AnimControl.class);
+        basechannel = animcontrol.createChannel();
+        topchannel = animcontrol.createChannel();
 	}
 	
 	/**

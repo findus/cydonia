@@ -35,6 +35,7 @@ import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -91,6 +92,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(BulletPhysic.class);
 		Serializer.registerClass(PlayerInputState.class);
 		Serializer.registerClass(EventMessage.class);
+		Serializer.registerClass(InputMessage.class);
 		
 		Serializer.registerClass(InputEvent.class);
 		Serializer.registerClass(AttackEvent.class);
@@ -114,6 +116,9 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		}else if (m instanceof ViewDirMessage) {
 			ViewDirMessage msg = (ViewDirMessage) m;
 			gameserver.setViewDir(msg.getPlayerid(), msg.getViewDir());
+		}else if (m instanceof InputMessage) {
+			InputMessage msg = (InputMessage) m;
+			gameserver.handlePlayerInput(msg.getPlayerid(), msg.getCommand(), msg.isValue());
 		}
 	}
 

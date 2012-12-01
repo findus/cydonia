@@ -3,12 +3,13 @@
  */
 package de.findus.cydonia.appstates;
 
-import static de.findus.cydonia.player.InputCommand.*;
 import static de.findus.cydonia.player.InputCommand.ATTACK;
 import static de.findus.cydonia.player.InputCommand.EXIT;
 import static de.findus.cydonia.player.InputCommand.JUMP;
 import static de.findus.cydonia.player.InputCommand.MOVEBACK;
 import static de.findus.cydonia.player.InputCommand.MOVEFRONT;
+import static de.findus.cydonia.player.InputCommand.PICKUP;
+import static de.findus.cydonia.player.InputCommand.PLACE;
 import static de.findus.cydonia.player.InputCommand.SCOREBOARD;
 import static de.findus.cydonia.player.InputCommand.STRAFELEFT;
 import static de.findus.cydonia.player.InputCommand.STRAFERIGHT;
@@ -25,9 +26,9 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 
-import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.main.GameController;
+import de.findus.cydonia.main.ServerConnector;
+import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.player.InputCommand;
 
 /**
@@ -40,7 +41,7 @@ import de.findus.cydonia.player.InputCommand;
 public class GameInputAppState extends AbstractAppState implements ActionListener{
 
 	private GameController gameController;
-	private EventMachine eventMachine;
+	private ServerConnector serverConnector;
 	private InputManager inputManager;
 	private FlyByCamera flyCam;
 	private BitmapText crosshair;
@@ -49,9 +50,9 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	 * Constructor.
 	 * @param app the game controller
 	 */
-	public GameInputAppState(GameController app, EventMachine em) {
+	public GameInputAppState(GameController app, ServerConnector scon) {
 		this.gameController = app;
-		this.eventMachine = em;
+		this.serverConnector = scon;
 		this.inputManager = app.getInputManager();
 		flyCam = new FlyByCamera(app.getCamera());
 	}
@@ -95,8 +96,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
     public void onAction(String name, boolean isPressed, float tpf) {
 		InputCommand command = InputCommand.parseInputCommand(name);
 		if(command != null) {
-			InputEvent event = new InputEvent(gameController.getPlayer().getId(), command, isPressed, true);
-			eventMachine.fireEvent(event);
+			InputMessage msg = new InputMessage(gameController.getPlayer().getId(), command, isPressed);
+			serverConnector.sendMessage(msg);
 		}
 	}
 	

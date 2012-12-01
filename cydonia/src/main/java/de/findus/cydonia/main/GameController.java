@@ -67,6 +67,7 @@ import de.findus.cydonia.level.Moveable;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -279,7 +280,9 @@ public class GameController extends Application implements ScreenController, Phy
     	menuController = new MenuController(this);
     	menuController.actualizeScreen();
     	
-    	gameInputAppState = new GameInputAppState(this, eventMachine);
+    	connector = new ServerConnector(this, eventMachine);
+    	
+    	gameInputAppState = new GameInputAppState(this, connector);
     	
 
     	bulletAppState = new BulletAppState();
@@ -328,8 +331,6 @@ public class GameController extends Application implements ScreenController, Phy
         
         eventMachine.registerListener(this);
         
-        connector = new ServerConnector(this, eventMachine);
-        
         throwSound = new AudioNode(assetManager, "de/findus/cydonia/sounds/throw_001.wav", false);
         throwSound.setLooping(false);
 		throwSound.setPositional(true);
@@ -360,16 +361,16 @@ public class GameController extends Application implements ScreenController, Phy
     	player.setTeam(team);
     	players.put(player.getId(), player);
     	
-        InputEvent join = new InputEvent(player.getId(), InputCommand.JOINGAME, true, true);
-    	eventMachine.fireEvent(join);
+        InputMessage join = new InputMessage(player.getId(), InputCommand.JOINGAME, true);
+    	connector.sendMessage(join);
         
-    	InputEvent chooseteam = null;
+    	InputMessage chooseteam = null;
     	if(team == 1) {
-    		chooseteam = new InputEvent(player.getId(), InputCommand.CHOOSETEAM1, true, true);
+    		chooseteam = new InputMessage(player.getId(), InputCommand.CHOOSETEAM1, true);
     	}else if(team == 2) {
-    		chooseteam = new InputEvent(player.getId(), InputCommand.CHOOSETEAM2, true, true);
+    		chooseteam = new InputMessage(player.getId(), InputCommand.CHOOSETEAM2, true);
     	}
-    	eventMachine.fireEvent(chooseteam);
+    	connector.sendMessage(chooseteam);
     	
     	bulletAppState.setEnabled(true);
     	gamestate = GameState.SPECTATE;
