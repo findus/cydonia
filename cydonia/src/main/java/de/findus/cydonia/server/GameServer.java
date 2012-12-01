@@ -53,6 +53,7 @@ import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerInputState;
 
 /**
  * @author Findus
@@ -214,9 +215,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			}else if (e instanceof RoundEndedEvent) {
 				bulletAppState.setEnabled(false);
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
-				if(roundEnded.getWinnerid() >= 0) {
-					Player p = players.get(roundEnded.getWinnerid());
-					if(p != null) {
+				for (Player p : players.values()) {
+					p.setInputState(new PlayerInputState());
+					if(p.getId() == roundEnded.getWinnerid()) {
 						p.setScores(p.getScores() + 1);
 					}
 				}

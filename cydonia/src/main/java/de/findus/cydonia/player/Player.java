@@ -171,6 +171,7 @@ public class Player implements AnimEventListener{
 	 */
 	public void setInputState(PlayerInputState pis) {
 		this.inputs = pis;
+		updateAnimationState();
 	}
 
 	/**

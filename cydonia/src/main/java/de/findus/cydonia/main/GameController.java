@@ -75,6 +75,7 @@ import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.controls.DropDown;
 import de.lessvoid.nifty.controls.TextField;
@@ -553,9 +554,9 @@ public class GameController extends Application implements ScreenController, Phy
 				this.roundStartTime = System.currentTimeMillis();
 			}else if (e instanceof RoundEndedEvent) {
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
-				if(roundEnded.getWinnerid() >= 0) {
-					Player p = players.get(roundEnded.getWinnerid());
-					if(p != null) {
+				for (Player p : players.values()) {
+					p.setInputState(new PlayerInputState());
+					if(p.getId() == roundEnded.getWinnerid()) {
 						p.setScores(p.getScores() + 1);
 					}
 				}
