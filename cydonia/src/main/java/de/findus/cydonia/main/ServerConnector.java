@@ -15,8 +15,6 @@ import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
-import de.findus.cydonia.events.Event;
-import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
@@ -45,7 +43,7 @@ import de.findus.cydonia.player.PlayerInputState;
  * @author Findus
  *
  */
-public class ServerConnector implements MessageListener<Client>, EventListener {
+public class ServerConnector implements MessageListener<Client> {
 	
 	private GameController gameController;
 	
@@ -62,7 +60,6 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 		gameController = app;
 		eventMachine = em;
 		initSerializer();
-		eventMachine.registerListener(this);
 	}
 	
 	/**
@@ -162,15 +159,6 @@ public class ServerConnector implements MessageListener<Client>, EventListener {
 		}else if (m instanceof InitialStateMessage) {
 			InitialStateMessage iniState = (InitialStateMessage) m;
 			gameController.setInitialState(iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables());
-		}
-	}
-
-	@Override
-	public void newEvent(Event e) {
-		if(e.isNetworkEvent() && client.isConnected()) {
-			EventMessage msg = new EventMessage();
-			msg.setEvent(e);
-			client.send(msg);
 		}
 	}
 }
