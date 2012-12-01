@@ -31,6 +31,7 @@ import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
+import de.findus.cydonia.messages.JoinMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -88,6 +89,7 @@ public class ServerConnector implements MessageListener<Client> {
 	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
+		Serializer.registerClass(JoinMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);
 		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);

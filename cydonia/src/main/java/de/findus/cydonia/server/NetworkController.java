@@ -36,6 +36,7 @@ import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
+import de.findus.cydonia.messages.JoinMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -82,6 +83,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 	
 	private void initSerializer() {
 		Serializer.registerClass(ConnectionInitMessage.class);
+		Serializer.registerClass(JoinMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);
 		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);
@@ -119,6 +121,9 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		}else if (m instanceof InputMessage) {
 			InputMessage msg = (InputMessage) m;
 			gameserver.handlePlayerInput(msg.getPlayerid(), msg.getCommand(), msg.isValue());
+		}else if (m instanceof JoinMessage) {
+			JoinMessage msg = (JoinMessage) m;
+			gameserver.joinPlayer(msg.getPlayerid(), msg.getPlayername());
 		}
 	}
 

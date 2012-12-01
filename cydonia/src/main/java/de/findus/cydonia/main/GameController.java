@@ -68,6 +68,7 @@ import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.InputMessage;
+import de.findus.cydonia.messages.JoinMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -362,7 +363,7 @@ public class GameController extends Application implements ScreenController, Phy
     	player.setTeam(team);
     	players.put(player.getId(), player);
     	
-        InputMessage join = new InputMessage(player.getId(), InputCommand.JOINGAME, true);
+        JoinMessage join = new JoinMessage(player.getId(), player.getName());
     	connector.sendMessage(join);
         
     	InputMessage chooseteam = null;
@@ -520,7 +521,7 @@ public class GameController extends Application implements ScreenController, Phy
 				PlayerJoinEvent join = (PlayerJoinEvent) e;
 				int playerid = join.getPlayerId();
 				if(player.getId() != playerid) {
-					joinPlayer(playerid);
+					joinPlayer(playerid, join.getPlayername());
 				}
 			}else if (e instanceof ChooseTeamEvent) {
 				ChooseTeamEvent choose = (ChooseTeamEvent) e;
@@ -786,8 +787,9 @@ public class GameController extends Application implements ScreenController, Phy
 		p.getControl().jump();
 	}
 	
-	private void joinPlayer(int playerid) {
+	private void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
+		p.setName(playername);
 		players.put(playerid, p);
 	}
 	

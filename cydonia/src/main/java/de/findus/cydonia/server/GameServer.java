@@ -420,11 +420,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		eventMachine.fireEvent(jump);
 	}
 	
-	private void joinPlayer(int playerid) {
+	public void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
+		p.setName(playername);
 		players.put(playerid, p);
 		
-		PlayerJoinEvent join = new PlayerJoinEvent(playerid, true);
+		PlayerJoinEvent join = new PlayerJoinEvent(playerid, playername, true);
 		eventMachine.fireEvent(join);
 		
 		sendInitialState(playerid);
@@ -484,9 +485,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			break;
 		case JUMP:
 			jump(p);
-			break;
-		case JOINGAME:
-			joinPlayer(playerid);
 			break;
 		case CHOOSETEAM1:
 			chooseTeam(p, 1);
