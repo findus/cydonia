@@ -14,6 +14,7 @@ import javax.swing.JFrame;
  * @author Findus
  *
  */
+@SuppressWarnings("serial")
 public class ServerConfigFrame extends JFrame implements ActionListener {
 
 	
