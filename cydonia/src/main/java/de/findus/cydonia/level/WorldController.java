@@ -14,6 +14,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightList;
 import com.jme3.math.ColorRGBA;
@@ -203,14 +204,14 @@ public class WorldController {
 	private void setUpAmbientLight() {
 		rootNode.setShadowMode(ShadowMode.Off);
 		
-//        AmbientLight al = new AmbientLight();
-//        al.setColor(ColorRGBA.White.mult(1.3f));
-//        rootNode.addLight(al);
+        AmbientLight al = new AmbientLight();
+        al.setColor(ColorRGBA.White.mult(0.3f));
+        rootNode.addLight(al);
         
-        DirectionalLight dl = new DirectionalLight();
-        dl.setColor(ColorRGBA.White);
-        dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-        rootNode.addLight(dl);
+        DirectionalLight dl1 = new DirectionalLight();
+        dl1.setColor(new ColorRGBA(1.0f, 0.6f, 0.0f, 1.0f).mult(0.7f));
+        dl1.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+        rootNode.addLight(dl1);
     }
 	
 	public LightList getLights() {

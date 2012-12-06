@@ -309,14 +309,14 @@ public class GameController extends Application implements ScreenController, Phy
         		shadowRenderer.setLight((DirectionalLight) l);
         		shadowRenderer.setEdgeFilteringMode(EdgeFilteringMode.PCF8);
         		shadowRenderer.setShadowCompareMode(CompareMode.Hardware);
-        		viewPort.addProcessor(shadowRenderer);
+//        		viewPort.addProcessor(shadowRenderer);
         	}
         }
         
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
         
         FogFilter fog=new FogFilter();
-        fog.setFogColor(new ColorRGBA(0.9f, 0.9f, 0.9f, 1.0f));
+        fog.setFogColor(new ColorRGBA(0.9f, 0.9f, 0.9f, 0.5f));
         fog.setFogDistance(100);
         fog.setFogDensity(1.5f);
 //        fpp.addFilter(fog);
@@ -325,7 +325,7 @@ public class GameController extends Application implements ScreenController, Phy
         fpp.addFilter(ssaoFilter);
         
         FXAAFilter fxaaFilter = new FXAAFilter();
-//        fpp.addFilter(fxaaFilter);
+        fpp.addFilter(fxaaFilter);
         
         viewPort.addProcessor(fpp);
         

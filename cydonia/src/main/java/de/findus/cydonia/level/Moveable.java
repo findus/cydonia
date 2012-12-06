@@ -39,10 +39,8 @@ public class Moveable {
 	    mat_lit.setBoolean("UseMaterialColors",true);    
 	    mat_lit.setColor("Specular",ColorRGBA.White);
 	    mat_lit.setColor("Diffuse",ColorRGBA.Red);
+	    mat_lit.setColor("Ambient", ColorRGBA.Red);
 	    mat_lit.setFloat("Shininess", 5f);
-	    
-		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-		mat_red.setColor("Color", ColorRGBA.Red);
 		
 		Box box = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
         model = new Geometry("Moveable_" + id, box);
