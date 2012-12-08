@@ -47,6 +47,7 @@ public class Moveable {
         model.setMaterial(mat_lit);
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
+		model.setUserData("PlaceableSurface", true);
 		TangentBinormalGenerator.generate(model);
         
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);

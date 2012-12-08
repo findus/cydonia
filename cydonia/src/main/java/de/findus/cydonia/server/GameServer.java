@@ -397,10 +397,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p.getInventory() >= 0) {
 			Moveable m = worldController.getMoveable(p.getInventory());
 			if(m != null) {
-			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
-			if(result != null) {
+			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
+			if(result != null && isPlaceableSurface(result.getGeometry())) {
 				Vector3f contactnormal = result.getContactNormal();
-				Vector3f loc = result.getGeometry().getLocalTranslation().add(contactnormal);
+				Vector3f contactpos = result.getContactPoint();
+				
+				Vector3f loc = contactpos.add(contactnormal.mult(0.5f));
 				m.getControl().setPhysicsLocation(loc);
 				worldController.attachMoveable(m);
 				p.setInventory(-1);
@@ -554,6 +556,13 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public void connectionRemoved(int clientid) {
 		Player p = players.get(clientid);
 		quitPlayer(p);
+	}
+	
+	private boolean isPlaceableSurface(Spatial obj) {
+		if(obj.getUserData("PlaceableSurface") != null) {
+			return ((Boolean)obj.getUserData("PlaceableSurface")).booleanValue();
+		}
+		return false;
 	}
 	
 	/**

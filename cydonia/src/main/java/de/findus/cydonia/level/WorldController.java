@@ -47,6 +47,8 @@ public class WorldController {
 	 */
 	protected Node rootNode = new Node("Root Node");
 	
+	protected Node worldNode = new Node("World");
+	
 	protected Node moveablesNode = new Node("Movables");
 	
 	protected ConcurrentHashMap<Long, Moveable> moveables;
@@ -97,7 +99,7 @@ public class WorldController {
         CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
         worldCollisionControll = new RigidBodyControl(sceneShape, 0);
         scene.addControl(worldCollisionControll);
-        rootNode.attachChild(scene);
+        worldNode.attachChild(scene);
     	physicsSpace.add(worldCollisionControll);
         
     	for (int j = 1; j < 10; j++) {
@@ -111,10 +113,12 @@ public class WorldController {
 
 		TargetArea ta = new TargetArea(assetManager);
 		ta.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-		rootNode.attachChild(ta.getModel());
+		worldNode.attachChild(ta.getModel());
 		physicsSpace.addCollisionObject(ta.getControl());
 		
-		rootNode.attachChild(moveablesNode);
+		worldNode.attachChild(moveablesNode);
+		
+		rootNode.attachChild(worldNode);
 	}
 	
 	public void resetWorld() {
@@ -130,7 +134,7 @@ public class WorldController {
 	 * @param obj the object to attach
 	 */
 	public void attachObject(Spatial obj) {
-		rootNode.attachChild(obj);
+		worldNode.attachChild(obj);
 		RigidBodyControl control = obj.getControl(RigidBodyControl.class);
 		if(control != null) {
 			physicsSpace.addCollisionObject(control);
@@ -146,7 +150,7 @@ public class WorldController {
 		if(control != null) {
 			physicsSpace.removeCollisionObject(control);
 		}
-		rootNode.detachChild(obj);
+		worldNode.detachChild(obj);
 	}
 	
 	public void attachPlayer(Player player) {
@@ -234,6 +238,13 @@ public class WorldController {
 		CollisionResults results = new CollisionResults();
 		Ray ray = new Ray(source, direction);
 		moveablesNode.collideWith(ray, results);
+		return results.getClosestCollision();
+	}
+	
+	public CollisionResult pickWorld(Vector3f source, Vector3f direction) {
+		CollisionResults results = new CollisionResults();
+		Ray ray = new Ray(source, direction);
+		worldNode.collideWith(ray, results);
 		return results.getClosestCollision();
 	}
 
