@@ -247,5 +247,12 @@ public class WorldController {
 		worldNode.collideWith(ray, results);
 		return results.getClosestCollision();
 	}
+	
+	public boolean isPlaceableSurface(Spatial obj) {
+		if(obj.getUserData("PlaceableSurface") != null) {
+			return ((Boolean)obj.getUserData("PlaceableSurface")).booleanValue();
+		}
+		return false;
+	}
 
 }
