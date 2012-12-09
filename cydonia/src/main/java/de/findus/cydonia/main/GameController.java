@@ -386,7 +386,6 @@ public class GameController extends Application implements ScreenController, Phy
     public void resumeGame() {
     	gamestate = GameState.RUNNING;
     	stateManager.attach(gameInputAppState);
-    	bulletAppState.setEnabled(true);
     	startInputSender();
     	menuController.actualizeScreen();
     }
@@ -395,7 +394,6 @@ public class GameController extends Application implements ScreenController, Phy
      * pauses the game and opens the menu.
      */
     public void openMenu() {
-    	bulletAppState.setEnabled(false);
     	stateManager.detach(gameInputAppState);
     	gamestate = GameState.MENU;
     	menuController.actualizeScreen();
@@ -541,8 +539,11 @@ public class GameController extends Application implements ScreenController, Phy
 				jump(p);
 			}else if (e instanceof InputEvent) {
     			InputEvent input = (InputEvent) e;
-    			Player p = players.get(input.getPlayerid());
-    			handlePlayerInput(p, input.getCommand(), input.isValue());
+    			// only use inputs from other players, not our own inputs, that are sent back to us from the server
+    			if(player.getId() != input.getPlayerid()) {
+    				Player p = players.get(input.getPlayerid());
+    				p.handleInput(input.getCommand(), input.isValue());
+    			}
     		}else if (e instanceof RestartRoundEvent) {
 				for (Player p : players.values()) {
 					if(p.isAlive()) {
@@ -619,17 +620,23 @@ public class GameController extends Application implements ScreenController, Phy
 		}
 	}
 	
-	private void handlePlayerInput(Player p, InputCommand command, boolean value) {
-		if(p == null) return;
+	public void handlePlayerInput(InputCommand command, boolean value) {
+		// send input to server if necessary
+		if(InputCommand.forwarded.contains(command)) {
+			InputMessage msg = new InputMessage(player.getId(), command, value);
+			connector.sendMessage(msg);
+		}
+		
 		switch (command) {
 		case SCOREBOARD:
-			scoreboard(value);
-			break;
-		case QUITGAME:
-			quitPlayer(p);
+			if(value) {
+				menuController.showScoreboard();
+			} else {
+				menuController.hideScoreboard();
+			}
 			break;
 		case EXIT:
-			if(gamestate == GameState.RUNNING) {
+			if(gamestate == GameState.RUNNING || gamestate == GameState.SPECTATE || gamestate == GameState.ROUNDOVER) {
 				openMenu();
 			}else if (gamestate == GameState.MENU) {
 				resumeGame();
@@ -637,7 +644,7 @@ public class GameController extends Application implements ScreenController, Phy
 			break;
 
 		default:
-			p.handleInput(command, value);
+			player.handleInput(command, value);
 			break;
 		}
 	}
@@ -840,12 +847,10 @@ public class GameController extends Application implements ScreenController, Phy
 	}
 	
 	public void scoreboard(boolean show) {
-		if(gamestate == GameState.RUNNING || gamestate == GameState.SPECTATE) {
-			if(show) {
-				menuController.showScorebord();
-			}else {
-				menuController.actualizeScreen();
-			}
+		if(show) {
+			menuController.showScoreboard();
+		}else {
+			menuController.hideScoreboard();
 		}
 	}
 	
@@ -978,7 +983,9 @@ public class GameController extends Application implements ScreenController, Phy
 	 * Stops the input sender loop.
 	 */
 	public void stopInputSender() {
-		inputSender.interrupt();
+		if(inputSender != null) {
+			inputSender.interrupt();
+		}
 	}
     
     /**

@@ -28,7 +28,6 @@ import com.jme3.input.controls.MouseButtonTrigger;
 
 import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.main.ServerConnector;
-import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.player.InputCommand;
 
 /**
@@ -41,7 +40,6 @@ import de.findus.cydonia.player.InputCommand;
 public class GameInputAppState extends AbstractAppState implements ActionListener{
 
 	private GameController gameController;
-	private ServerConnector serverConnector;
 	private InputManager inputManager;
 	private FlyByCamera flyCam;
 	private BitmapText crosshair;
@@ -52,7 +50,6 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	 */
 	public GameInputAppState(GameController app, ServerConnector scon) {
 		this.gameController = app;
-		this.serverConnector = scon;
 		this.inputManager = app.getInputManager();
 		flyCam = new FlyByCamera(app.getCamera());
 	}
@@ -96,8 +93,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
     public void onAction(String name, boolean isPressed, float tpf) {
 		InputCommand command = InputCommand.parseInputCommand(name);
 		if(command != null) {
-			InputMessage msg = new InputMessage(gameController.getPlayer().getId(), command, isPressed);
-			serverConnector.sendMessage(msg);
+			gameController.handlePlayerInput(command, isPressed);
 		}
 	}
 	

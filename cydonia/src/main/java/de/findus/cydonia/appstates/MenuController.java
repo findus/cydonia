@@ -26,8 +26,14 @@ public class MenuController {
 	
 	private GameController gameController;
 	
-	private Element timeText;
-	private Element	inventoryImage;
+	private Element timetext;
+	private Element	inventoryimg;
+	private Element scoreboardlayer;
+	private Element scorestext;
+	private Element messagelayer;
+	private Element messagetext;
+	private Element hudlayer;
+	
 	
 	public MenuController(GameController game) {
 		this.gameController = game;
@@ -35,8 +41,13 @@ public class MenuController {
 		gameController.getNifty().registerScreenController(gameController);
 		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
 		
-		this.timeText = gameController.getNifty().getScreen("hudscreen").findElementByName("time");
-		this.inventoryImage = gameController.getNifty().getScreen("hudscreen").findElementByName("inventory");
+		this.timetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("timetext");
+		this.inventoryimg = gameController.getNifty().getScreen("ingamescreen").findElementByName("inventoryimg");
+		this.scoreboardlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("scoreboardlayer");
+		this.scorestext = gameController.getNifty().getScreen("ingamescreen").findElementByName("scorestext");
+		this.messagelayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("messagelayer");
+		this.messagetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("messagetext");
+		this.hudlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("hudlayer");
 	}
 	
 	public void actualizeScreen() {
@@ -52,19 +63,24 @@ public class MenuController {
 			break;
 			
 		case SPECTATE:
-			gameController.getNifty().gotoScreen("spectatescreen");
+			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
+			hideHUD();
+			showMessage("You will join the game next round. Please be patient...");
 			break;
 			
 		case RUNNING:
-			gameController.getNifty().gotoScreen("hudscreen");
+			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
+			hideMessage();
+			showHUD();
 			break;
 			
 		case ROUNDOVER:
-			gameController.getNifty().gotoScreen("roundoverscreen");
+			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
-			gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());
+			hideHUD();
+			showMessage("Round is over. New round will start automatically in a view seconds...");
 			break;
 			
 		default:
@@ -72,16 +88,36 @@ public class MenuController {
 		}
 	}
 	
-	public void showScorebord() {
-		gameController.getNifty().gotoScreen("scoreboardscreen");
-		gameController.getNifty().getCurrentScreen().findElementByName("scores").getRenderer(TextRenderer.class).setText(gameController.getScores());						
+	public void showScoreboard() {
+		scorestext.getRenderer(TextRenderer.class).setText(gameController.getScores());
+		scoreboardlayer.setVisible(true);
+	}
+	
+	public void hideScoreboard() {
+		scoreboardlayer.setVisible(false);
+	}
+	
+	public void showMessage(String msg) {
+		messagetext.getRenderer(TextRenderer.class).setText(msg);
+		messagelayer.setVisible(true);
+	}
+	
+	public void hideMessage() {
+		messagelayer.setVisible(false);
+	}
+	
+	public void showHUD() {
+		hudlayer.setVisible(true);
+	}
+	
+	public void hideHUD() {
+		hudlayer.setVisible(false);
 	}
 
 	public void updateHUD() {
-		this.timeText.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
+		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
 		if(gameController.getPlayer() != null) {
-			this.inventoryImage.setVisible(gameController.getPlayer().getInventory() >= 0);
+			this.inventoryimg.setVisible(gameController.getPlayer().getInventory() >= 0);
 		}
 	}
-
 }

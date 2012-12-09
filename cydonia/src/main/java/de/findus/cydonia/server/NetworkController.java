@@ -120,7 +120,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 			gameserver.setViewDir(msg.getPlayerid(), msg.getViewDir());
 		}else if (m instanceof InputMessage) {
 			InputMessage msg = (InputMessage) m;
-			gameserver.handlePlayerInput(msg.getPlayerid(), msg.getCommand(), msg.isValue());
+			gameserver.handlePlayerInput(con.getId(), msg.getCommand(), msg.isValue());
 		}else if (m instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) m;
 			gameserver.joinPlayer(msg.getPlayerid(), msg.getPlayername());

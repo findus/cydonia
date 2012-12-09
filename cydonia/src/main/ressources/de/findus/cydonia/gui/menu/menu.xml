@@ -40,46 +40,26 @@
     </layer>
   </screen>
   
-  <screen id="spectatescreen" controller="de.findus.cydonia.main.GameController">
-    <layer id="layer" backgroundColor="#0000" childLayout="center">
-      <panel height="20%" width="90%" align="center" valign="center" backgroundColor="#8888" childLayout="vertical">
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="You will join the game next round." align="center" valign="center" />
-      </panel>
-    </layer>
-  </screen>
-  
-  <screen id="roundoverscreen" controller="de.findus.cydonia.main.GameController">
-    <layer id="message" backgroundColor="#8888" childLayout="center">
-      <panel height="10%" width="90%" align="center" valign="top" backgroundColor="#8888" childLayout="vertical">
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Round is over. New round will start automatically in a view seconds..." height="100%" textVAlign="center" align="center" valign="center" />
-      </panel>
-    </layer>
-    <layer id="scoreboard" backgroundColor="#fff0" childLayout="center">
-      <panel height="50%" width="80%" align="center" valign="center" backgroundColor="#8888" childLayout="vertical">
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" height="5%" align="center" valign="center" />
-	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" width="*" textHAlign="left" align="center" valign="top" />
-      </panel>
-    </layer>
-  </screen>
-  
-  <screen id="scoreboardscreen" controller="de.findus.cydonia.main.GameController">
-    <layer id="layer" backgroundColor="#fff0" childLayout="center">
-      <panel height="50%" width="80%" align="center" valign="center" backgroundColor="#8888" childLayout="vertical">
-	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" height="5%" align="center" valign="center" />
-	        <text id="scores" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" width="*" textHAlign="left" align="center" valign="top" />
-      </panel>
-    </layer>
-  </screen>
-  
-  <screen id="hudscreen" controller="de.findus.cydonia.main.GameController">
-    <layer id="layer" backgroundColor="#fff0" childLayout="center">
+  <screen id="ingamescreen" controller="de.findus.cydonia.main.GameController">
+    <layer id="hudlayer" backgroundColor="#fff0" childLayout="center" visible="false">
       <panel width="100%" align="center" valign="top" backgroundColor="#fff0" childLayout="center" padding="10px">
-	        <text id="time" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#000f" text="0:00" align="center" valign="top" />
+	        <text id="timetext" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#000f" text="0:00" align="center" valign="top" />
       </panel>
       <panel width="98%" align="center" valign="bottom" backgroundColor="#fff0" childLayout="center" padding="10px">
       	<panel align="right" valign="center" backgroundColor="#8888" childLayout="center">
-      		<image id="inventory" filename="de/findus/cydonia/gui/menu/Inventory.png"/>
+      		<image id="inventoryimg" filename="de/findus/cydonia/gui/menu/Inventory.png"/>
       	</panel>
+      </panel>
+    </layer>
+    <layer id="scoreboardlayer" backgroundColor="#fff0" childLayout="center" visible="false">
+      <panel height="50%" width="80%" align="center" valign="center" backgroundColor="#8888" childLayout="vertical">
+	        <text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard" height="5%" align="center" valign="center" />
+	        <text id="scorestext" font="aurulent-sans-16.fnt" color="#000f" text="Scores not available" height="*" width="*" textHAlign="left" align="center" valign="top" />
+      </panel>
+    </layer>
+    <layer id="messagelayer" backgroundColor="#8888" childLayout="center" visible="false">
+      <panel height="10%" width="90%" align="center" valign="top" backgroundColor="#8888" childLayout="vertical">
+	        <text id="messagetext" font="aurulent-sans-16.fnt" color="#000f" text="Round is over. New round will start automatically in a view seconds..." height="100%" textVAlign="center" align="center" valign="center" />
       </panel>
     </layer>
   </screen>
