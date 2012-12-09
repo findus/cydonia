@@ -18,13 +18,13 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.input.FlyByCamera;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.math.Vector3f;
 
 import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.main.ServerConnector;
@@ -41,7 +41,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 
 	private GameController gameController;
 	private InputManager inputManager;
-	private FlyByCamera flyCam;
+	private FirstPersonCamera camController;
 	private BitmapText crosshair;
 	
 	/**
@@ -51,7 +51,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	public GameInputAppState(GameController app, ServerConnector scon) {
 		this.gameController = app;
 		this.inputManager = app.getInputManager();
-		flyCam = new FlyByCamera(app.getCamera());
+		camController = new FirstPersonCamera(app.getCamera(), Vector3f.UNIT_Y);
 	}
 	
 	private void mapDefaultKeys() {
@@ -75,8 +75,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         
         mapDefaultKeys();
         
-        flyCam.registerWithInput(inputManager);
-        flyCam.setEnabled(true);
+        camController.registerWithInput(inputManager);
+        camController.setEnabled(true);
         
         crosshair = getCrosshair();
         gameController.getGuiNode().attachChild(crosshair);
@@ -86,7 +86,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
     public void stateDetached(AppStateManager stateManager) {
     	gameController.getGuiNode().detachChild(crosshair);
     	inputManager.removeListener(this);
-    	flyCam.setEnabled(false);
+    	camController.setEnabled(false);
     }
 
 	@Override
