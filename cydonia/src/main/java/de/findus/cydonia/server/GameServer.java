@@ -227,9 +227,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 	@Override
 	public void newEvent(Event e) {
-		if(e instanceof PlayerJoinEvent) {
-			System.out.println("test");
-		}
 		eventQueue.offer(e);
 	}
 
@@ -431,9 +428,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		eventMachine.fireEvent(join);
 		
 		sendInitialState(playerid);
-		if(players.size() == 1) {
-			gameplayController.restartRound();
-		}
+		
 	}
 	
 	private void quitPlayer(Player p) {
@@ -514,6 +509,10 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		
 		ChooseTeamEvent event = new ChooseTeamEvent(p.getId(), team, true);
 		eventMachine.fireEvent(event);
+		
+		if(players.size() == 1) {
+			gameplayController.restartRound();
+		}
 	}
 	
 	private void sendInitialState(int playerid) {
