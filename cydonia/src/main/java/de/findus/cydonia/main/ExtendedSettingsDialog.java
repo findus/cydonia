@@ -68,11 +68,12 @@ public class ExtendedSettingsDialog extends JDialog{
 	    // UI components
 	    private JCheckBox vsyncBox = null;
 	    private JCheckBox fullscreenBox = null;
-	    private JComboBox displayResCombo = null;
-	    private JComboBox colorDepthCombo = null;
-	    private JComboBox displayFreqCombo = null;
+	    private JComboBox<String> displayResCombo = null;
+	    private JComboBox<String> colorDepthCombo = null;
+	    private JComboBox<String> displayFreqCombo = null;
 //	    private JComboBox rendererCombo = null;
-	    private JComboBox antialiasCombo = null;
+	    private JComboBox<String> antialiasCombo = null;
+	    private JComboBox<String> shadowCombo = null;
 	    private JLabel icon = null;
 	    private int selection = 0;
 	    private SelectionListener selectionListener = null;
@@ -256,12 +257,14 @@ public class ExtendedSettingsDialog extends JDialog{
 
 	        displayResCombo = setUpResolutionChooser();
 	        displayResCombo.addKeyListener(aListener);
-	        colorDepthCombo = new JComboBox();
+	        colorDepthCombo = new JComboBox<String>();
 	        colorDepthCombo.addKeyListener(aListener);
-	        displayFreqCombo = new JComboBox();
+	        displayFreqCombo = new JComboBox<String>();
 	        displayFreqCombo.addKeyListener(aListener);
-	        antialiasCombo = new JComboBox();
+	        antialiasCombo = new JComboBox<String>();
 	        antialiasCombo.addKeyListener(aListener);
+	        shadowCombo = new JComboBox<String>();
+	        shadowCombo.addKeyListener(aListener);
 	        fullscreenBox = new JCheckBox("Fullscreen?");
 	        fullscreenBox.setSelected(source.isFullscreen());
 	        fullscreenBox.addActionListener(new ActionListener() {
@@ -279,13 +282,20 @@ public class ExtendedSettingsDialog extends JDialog{
 
 	        updateResolutionChoices();
 	        updateAntialiasChoices();
+	        updateShadowChoices();
 	        displayResCombo.setSelectedItem(source.getWidth() + " x " + source.getHeight());
 	        colorDepthCombo.setSelectedItem(source.getBitsPerPixel() + " bpp");
 
+	        optionsPanel.add(new JLabel("Resolution:"));
 	        optionsPanel.add(displayResCombo);
+	        optionsPanel.add(new JLabel("Color depth:"));
 	        optionsPanel.add(colorDepthCombo);
+	        optionsPanel.add(new JLabel("Frequency:"));
 	        optionsPanel.add(displayFreqCombo);
+	        optionsPanel.add(new JLabel("Antialiasing:"));
 	        optionsPanel.add(antialiasCombo);
+	        optionsPanel.add(new JLabel("Shadowlevel:"));
+	        optionsPanel.add(shadowCombo);
 	        optionsPanel.add(fullscreenBox);
 	        optionsPanel.add(vsyncBox);
 //	        optionsPanel.add(rendererCombo);
@@ -386,6 +396,14 @@ public class ExtendedSettingsDialog extends JDialog{
 	        } else {
 	            multisample = Integer.parseInt(aaString.substring(0, aaString.indexOf('x')));
 	        }
+	        
+	        String shadowsString = (String) shadowCombo.getSelectedItem();
+	        int shadows = -1;
+	        if (shadowsString.equals("Disabled")) {
+	            shadows = 0;
+	        } else {
+	            shadows = Integer.parseInt(shadowsString);
+	        }
 
 	        // FIXME: Does not work in Linux
 	        /*
@@ -419,6 +437,7 @@ public class ExtendedSettingsDialog extends JDialog{
 	            source.setVSync(vsync);
 	            //source.setRenderer(renderer);
 	            source.setSamples(multisample);
+	            source.putInteger("shadowLevel", shadows);
 
 	            String appTitle = source.getTitle();
 
@@ -445,9 +464,9 @@ public class ExtendedSettingsDialog extends JDialog{
 	     * 
 	     * @return the combo box of display modes.
 	     */
-	    private JComboBox setUpResolutionChooser() {
+	    private JComboBox<String> setUpResolutionChooser() {
 	        String[] res = getResolutions(modes);
-	        JComboBox resolutionBox = new JComboBox(res);
+	        JComboBox<String> resolutionBox = new JComboBox<String>(res);
 
 	        resolutionBox.setSelectedItem(source.getWidth() + " x "
 	                + source.getHeight());
@@ -468,9 +487,9 @@ public class ExtendedSettingsDialog extends JDialog{
 	     * 
 	     * @return the list of renderers.
 	     */
-	    private JComboBox setUpRendererChooser() {
-	        String modes[] = {"NULL", "JOGL-OpenGL1", "LWJGL-OpenGL2", "LWJGL-OpenGL3", "LWJGL-OpenGL3.1"};
-	        JComboBox nameBox = new JComboBox(modes);
+	    private JComboBox<String> setUpRendererChooser() {
+	        String[] modes = {"NULL", "JOGL-OpenGL1", "LWJGL-OpenGL2", "LWJGL-OpenGL3", "LWJGL-OpenGL3.1"};
+	        JComboBox<String> nameBox = new JComboBox<String>(modes);
 	        nameBox.setSelectedItem(source.getRenderer());
 	        return nameBox;
 	    }
@@ -496,11 +515,11 @@ public class ExtendedSettingsDialog extends JDialog{
 
 	        // grab available depths
 	        String[] depths = getDepths(resolution, modes);
-	        colorDepthCombo.setModel(new DefaultComboBoxModel(depths));
+	        colorDepthCombo.setModel(new DefaultComboBoxModel<String>(depths));
 	        colorDepthCombo.setSelectedItem(colorDepth);
 	        // grab available frequencies
 	        String[] freqs = getFrequencies(resolution, modes);
-	        displayFreqCombo.setModel(new DefaultComboBoxModel(freqs));
+	        displayFreqCombo.setModel(new DefaultComboBoxModel<String>(freqs));
 	        // Try to reset freq
 	        displayFreqCombo.setSelectedItem(displayFreq);
 	    }
@@ -513,15 +532,15 @@ public class ExtendedSettingsDialog extends JDialog{
 	     */
 	    private void updateResolutionChoices() {
 	        if (!fullscreenBox.isSelected()) {
-	            displayResCombo.setModel(new DefaultComboBoxModel(
+	            displayResCombo.setModel(new DefaultComboBoxModel<String>(
 	                    windowedResolutions));
-	            colorDepthCombo.setModel(new DefaultComboBoxModel(new String[]{
+	            colorDepthCombo.setModel(new DefaultComboBoxModel<String>(new String[]{
 	                        "24 bpp", "16 bpp"}));
-	            displayFreqCombo.setModel(new DefaultComboBoxModel(
+	            displayFreqCombo.setModel(new DefaultComboBoxModel<String>(
 	                    new String[]{"n/a"}));
 	            displayFreqCombo.setEnabled(false);
 	        } else {
-	            displayResCombo.setModel(new DefaultComboBoxModel(
+	            displayResCombo.setModel(new DefaultComboBoxModel<String>(
 	                    getResolutions(modes)));
 	            displayFreqCombo.setEnabled(true);
 	            updateDisplayChoices();
@@ -532,8 +551,14 @@ public class ExtendedSettingsDialog extends JDialog{
 	        // maybe in the future will add support for determining this info
 	        // through pbuffer
 	        String[] choices = new String[]{"Disabled", "2x", "4x", "6x", "8x", "16x"};
-	        antialiasCombo.setModel(new DefaultComboBoxModel(choices));
+	        antialiasCombo.setModel(new DefaultComboBoxModel<String>(choices));
 	        antialiasCombo.setSelectedItem(choices[Math.min(source.getSamples()/2,5)]);
+	    }
+	    
+	    private void updateShadowChoices() {
+	        String[] choices = new String[]{"Disabled", "1", "2", "3"};
+	        shadowCombo.setModel(new DefaultComboBoxModel<String>(choices));
+	        shadowCombo.setSelectedItem(choices[source.get("shadowLevel") != null ? (Integer)source.get("shadowLevel") : 0]);
 	    }
 
 	    //

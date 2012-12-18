@@ -302,14 +302,16 @@ public class GameController extends Application implements ScreenController, Phy
         viewPort.attachScene(worldController.getRootNode());
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
 //        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
-        
-        for(Light l : worldController.getLights()) {
-        	if(l instanceof DirectionalLight) {
-        		DirectionalLightShadowRenderer shadowRenderer = new DirectionalLightShadowRenderer(assetManager, 1024, 3);
-        		shadowRenderer.setLight((DirectionalLight) l);
-        		shadowRenderer.setEdgeFilteringMode(EdgeFilteringMode.PCF8);
-        		shadowRenderer.setShadowCompareMode(CompareMode.Hardware);
-//        		viewPort.addProcessor(shadowRenderer);
+
+        if(settings.getInteger("shadowLevel") > 0) {
+        	for(Light l : worldController.getLights()) {
+        		if(l instanceof DirectionalLight) {
+        			DirectionalLightShadowRenderer shadowRenderer = new DirectionalLightShadowRenderer(assetManager, 1024, settings.getInteger("shadowLevel"));
+        			shadowRenderer.setLight((DirectionalLight) l);
+        			shadowRenderer.setEdgeFilteringMode(EdgeFilteringMode.PCF8);
+        			shadowRenderer.setShadowCompareMode(CompareMode.Hardware);
+        			viewPort.addProcessor(shadowRenderer);
+        		}
         	}
         }
         
@@ -324,8 +326,8 @@ public class GameController extends Application implements ScreenController, Phy
         SSAOFilter ssaoFilter = new SSAOFilter();
         fpp.addFilter(ssaoFilter);
         
-        FXAAFilter fxaaFilter = new FXAAFilter();
-        fpp.addFilter(fxaaFilter);
+//        FXAAFilter fxaaFilter = new FXAAFilter();
+//        fpp.addFilter(fxaaFilter);
         
         viewPort.addProcessor(fpp);
         
