@@ -413,7 +413,6 @@ public class GameController extends Application implements ScreenController, Phy
     }
     
     public void gameOver() {
-//    	stateManager.detach(gameInputAppState);
     	gamestate = GameState.SPECTATE;
     	menuController.actualizeScreen();
     	stopInputSender();

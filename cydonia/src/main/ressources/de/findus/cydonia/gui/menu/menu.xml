@@ -17,6 +17,9 @@
 	      <control name="button" label="Connect" width="40%" align="center">
 	      	<interact onClick="connect()" />
 	      </control>
+	      <control name="button" label="Quit" width="40%" align="center">
+	      	<interact onClick="stopGame()" />
+	      </control>
       </panel>
     </layer>
   </screen>

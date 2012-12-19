@@ -121,7 +121,9 @@ public class ServerConnector implements MessageListener<Client> {
 	 * Closes the connection to the server.
 	 */
 	public void disconnectFromServer() {
-		this.client.close();
+		if(client != null) {
+			this.client.close();
+		}
 	}
 	
 	/**
