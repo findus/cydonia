@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -22,6 +23,8 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 	private GameServer server;
 	
 	private JButton serverbtn;
+	
+	private JCheckBox closeCB;
 
 	/**
 	 * Starts the game.
@@ -35,6 +38,8 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 	
 	
 	public CydoniaLauncher() {
+		setTitle("Cydonia Launcher");
+		
 		serverbtn = new JButton("Start Server");
 		serverbtn.setActionCommand("server_start");
 		serverbtn.addActionListener(this);
@@ -43,16 +48,20 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 		clientbtn.setActionCommand("client_start");
 		clientbtn.addActionListener(this);
 		
+		closeCB = new JCheckBox("close after choosing one option");
+		closeCB.setSelected(true);
+		
 		JPanel cpane = new JPanel(new BorderLayout());
-		cpane.add(serverbtn, BorderLayout.NORTH);
-		cpane.add(clientbtn, BorderLayout.SOUTH);
+		cpane.add(serverbtn, BorderLayout.WEST);
+		cpane.add(clientbtn, BorderLayout.EAST);
+		cpane.add(closeCB, BorderLayout.SOUTH);
 		
 		this.add(cpane);
 		
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
-		this.setPreferredSize(new Dimension(100, 100));
-		this.setSize(200, 100);
+		this.setPreferredSize(new Dimension(250, 100));
+		this.setSize(250, 100);
 		this.setLocationByPlatform(true);
 	}
 	
@@ -66,8 +75,7 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 			}
 		}).start();
 		
-		this.setVisible(false);
-		this.dispose();
+		closeIfUserWants();
 	}
 	
 	private void startClient() {
@@ -80,8 +88,7 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 			}
 		}).start();
 		
-		this.setVisible(false);
-		this.dispose();
+		closeIfUserWants();
 	}
 
 
@@ -91,6 +98,13 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 			this.startServer();
 		}else if("client_start".equals(e.getActionCommand())) {
 			this.startClient();
+		}
+	}
+	
+	private void closeIfUserWants() {
+		if(closeCB.isSelected()) {
+			this.setVisible(false);
+			this.dispose();
 		}
 	}
 }
