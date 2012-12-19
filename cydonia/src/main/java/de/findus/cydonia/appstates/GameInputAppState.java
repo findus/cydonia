@@ -4,7 +4,6 @@
 package de.findus.cydonia.appstates;
 
 import static de.findus.cydonia.player.InputCommand.ATTACK;
-import static de.findus.cydonia.player.InputCommand.EXIT;
 import static de.findus.cydonia.player.InputCommand.JUMP;
 import static de.findus.cydonia.player.InputCommand.MOVEBACK;
 import static de.findus.cydonia.player.InputCommand.MOVEFRONT;
@@ -27,7 +26,6 @@ import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 
 import de.findus.cydonia.main.GameController;
-import de.findus.cydonia.main.ServerConnector;
 import de.findus.cydonia.player.InputCommand;
 
 /**
@@ -48,17 +46,12 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	 * Constructor.
 	 * @param app the game controller
 	 */
-	public GameInputAppState(GameController app, ServerConnector scon) {
+	public GameInputAppState(GameController app) {
 		this.gameController = app;
 		this.inputManager = app.getInputManager();
 		camController = new FirstPersonCamera(app.getCamera(), Vector3f.UNIT_Y);
 	}
 	
-	private void mapDefaultKeys() {
-        inputManager.addMapping(EXIT.getCode(), new KeyTrigger(KeyInput.KEY_ESCAPE));
-        inputManager.addListener(this, EXIT.getCode());
-	}
-
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
 		inputManager.addMapping(STRAFELEFT.getCode(), new KeyTrigger(KeyInput.KEY_A));
@@ -72,8 +65,6 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         
         inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addListener(this, SCOREBOARD.getCode());
-        
-        mapDefaultKeys();
         
         camController.registerWithInput(inputManager);
         camController.setEnabled(true);

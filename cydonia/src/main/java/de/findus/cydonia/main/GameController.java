@@ -43,6 +43,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
 
 import de.findus.cydonia.appstates.GameInputAppState;
+import de.findus.cydonia.appstates.GeneralInputAppState;
 import de.findus.cydonia.appstates.MenuController;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.events.AttackEvent;
@@ -285,8 +286,10 @@ public class GameController extends Application implements ScreenController, Phy
     	
     	connector = new ServerConnector(this, eventMachine);
     	
-    	gameInputAppState = new GameInputAppState(this, connector);
+    	gameInputAppState = new GameInputAppState(this);
     	
+    	GeneralInputAppState generalInputAppState = new GeneralInputAppState(this);
+    	stateManager.attach(generalInputAppState);
 
     	bulletAppState = new BulletAppState();
     	bulletAppState.setEnabled(false);
@@ -639,10 +642,12 @@ public class GameController extends Application implements ScreenController, Phy
 			}
 			break;
 		case EXIT:
-			if(gamestate == GameState.RUNNING || gamestate == GameState.SPECTATE || gamestate == GameState.ROUNDOVER) {
-				openMenu();
-			}else if (gamestate == GameState.MENU) {
-				resumeGame();
+			if(value) {
+				if(gamestate == GameState.RUNNING || gamestate == GameState.SPECTATE || gamestate == GameState.ROUNDOVER) {
+					openMenu();
+				}else if (gamestate == GameState.MENU) {
+					resumeGame();
+				}
 			}
 			break;
 

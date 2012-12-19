@@ -1,0 +1,61 @@
+/**
+ * 
+ */
+package de.findus.cydonia.appstates;
+
+import static de.findus.cydonia.player.InputCommand.EXIT;
+
+import com.jme3.app.state.AbstractAppState;
+import com.jme3.app.state.AppStateManager;
+import com.jme3.input.InputManager;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
+
+import de.findus.cydonia.main.GameController;
+import de.findus.cydonia.player.InputCommand;
+
+/**
+ * This Appstate controls user inputs and maps them to commands.
+ * Should be attached when game is running.
+ * 
+ * @author Findus
+ *
+ */
+public class GeneralInputAppState extends AbstractAppState implements ActionListener{
+
+	private GameController gameController;
+	private InputManager inputManager;
+	
+	/**
+	 * Constructor.
+	 * @param app the game controller
+	 */
+	public GeneralInputAppState(GameController app) {
+		this.gameController = app;
+		this.inputManager = app.getInputManager();
+	}
+	
+	private void mapDefaultKeys() {
+        inputManager.addMapping(EXIT.getCode(), new KeyTrigger(KeyInput.KEY_ESCAPE));
+        inputManager.addListener(this, EXIT.getCode());
+	}
+
+	@Override
+	public void stateAttached(AppStateManager stateManager) {
+        mapDefaultKeys();
+    }
+
+	@Override
+    public void stateDetached(AppStateManager stateManager) {
+    	inputManager.removeListener(this);
+    }
+
+	@Override
+    public void onAction(String name, boolean isPressed, float tpf) {
+		InputCommand command = InputCommand.parseInputCommand(name);
+		if(command != null) {
+			gameController.handlePlayerInput(command, isPressed);
+		}
+	}
+}
