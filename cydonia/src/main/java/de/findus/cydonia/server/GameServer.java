@@ -21,6 +21,7 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.bullet.Bullet;
@@ -60,6 +61,8 @@ import de.findus.cydonia.player.PlayerInputState;
  *
  */
 public class GameServer extends Application implements EventListener, PhysicsCollisionListener {
+	
+	public static final String APPTITLE = "Cydonia Server";
 	
 	public static float PLAYER_SPEED = 5f;
 	public static float PHYSICS_ACCURACY = (1f / 192);
@@ -103,6 +106,10 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	@Override
 	public void start() {
+		if (settings == null){
+            settings = new AppSettings(true);
+            settings.setTitle(APPTITLE);
+        }
 		super.start(JmeContext.Type.Headless);
 	}
 	

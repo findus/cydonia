@@ -29,7 +29,6 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
-import com.jme3.post.filters.FXAAFilter;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.post.ssao.SSAOFilter;
 import com.jme3.renderer.RenderManager;
@@ -92,6 +91,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 public class GameController extends Application implements ScreenController, PhysicsCollisionListener, EventListener{
 	
 	public static final String TEXTURES_PATH = "de/findus/cydonia/textures/";
+	public static final String APPTITLE = "Cydonia Client";
 	
 	/**
 	 * The time in seconds it should take to compensate a deviation from the accurate (=server defined) physical location of an object. 
@@ -158,6 +158,7 @@ public class GameController extends Application implements ScreenController, Phy
         if (settings == null) {
             setSettings(new AppSettings(true));
             loadSettings = true;
+            settings.setTitle(APPTITLE);
         }
 
         // show settings dialog

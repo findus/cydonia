@@ -120,7 +120,7 @@ public class ExtendedSettingsDialog extends JDialog{
 //	        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 	        setModal(true);
 
-	        AppSettings registrySettings = new AppSettings(true);
+	        AppSettings registrySettings = new AppSettings(false);
 
 	        String appTitle;
 	        if(source.getTitle()!=null){
