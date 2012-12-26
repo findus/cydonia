@@ -12,8 +12,10 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.util.TangentBinormalGenerator;
 
 /**
@@ -30,27 +32,41 @@ public class Moveable {
 	
 	private RigidBodyControl control;
 	
-	public Moveable(long id, Vector3f origin, AssetManager assetManager) {
+	public Moveable(long id, Vector3f origin, AssetManager assetManager, String type) {
 		this.id = id;
 		
 		this.origin = origin;
 		
+		Mesh mesh = null;
+		ColorRGBA color = null;
+	    if(type.equals("sphere")) {
+	    	mesh = new Sphere(16, 16, 0.5f);
+	    	color = ColorRGBA.Red;
+	    }else if(type.equals("cube")) {
+	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
+	    	color = ColorRGBA.Blue;
+	    }else {
+	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
+	    	color = ColorRGBA.Gray;
+	    }
+		
+		
 		Material mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
 	    mat_lit.setBoolean("UseMaterialColors",true);    
 	    mat_lit.setColor("Specular",ColorRGBA.White);
-	    mat_lit.setColor("Diffuse",ColorRGBA.Red);
-	    mat_lit.setColor("Ambient", ColorRGBA.Red);
+	    mat_lit.setColor("Diffuse", color);
+	    mat_lit.setColor("Ambient", color);
 	    mat_lit.setFloat("Shininess", 5f);
 		
-		Box box = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
-        model = new Geometry("Moveable_" + id, box);
+	    
+        model = new Geometry("Moveable_" + id, mesh);
         model.setMaterial(mat_lit);
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
 		model.setUserData("PlaceableSurface", true);
 		TangentBinormalGenerator.generate(model);
         
-        CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
+        CollisionShape collisionShape = CollisionShapeFactory.createMeshShape(model);
         control = new RigidBodyControl(collisionShape, 0);
         model.addControl(control);
 	}

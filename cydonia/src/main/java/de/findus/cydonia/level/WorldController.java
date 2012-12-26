@@ -104,7 +104,11 @@ public class WorldController {
         
     	for (int j = 1; j < 10; j++) {
     		for (int i = 1; i <= 20; i++) {
-    			Moveable m = new Moveable(i+(20*j), new Vector3f(2*i, 0.5f, 2*j), assetManager);
+    			String type = "cube";
+    			if(i%2 == 0) {
+    				type = "sphere";
+    			}
+    			Moveable m = new Moveable(i+(20*j), new Vector3f(2*i, 0.5f, 2*j), assetManager, type);
     			this.moveables.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachMoveable(m);
