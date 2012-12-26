@@ -105,7 +105,7 @@ public class WorldController {
     	for (int j = 1; j < 10; j++) {
     		for (int i = 1; i <= 20; i++) {
     			String type = "cube";
-    			if(i%2 == 0) {
+    			if(i%3 == 0) {
     				type = "sphere";
     			}
     			Moveable m = new Moveable(i+(20*j), new Vector3f(2*i, 0.5f, 2*j), assetManager, type);
@@ -217,7 +217,7 @@ public class WorldController {
         rootNode.addLight(al);
         
         DirectionalLight dl1 = new DirectionalLight();
-        dl1.setColor(new ColorRGBA(1.0f, 0.6f, 0.0f, 1.0f).mult(0.7f));
+        dl1.setColor(new ColorRGBA(1.0f, 0.9f, 0.3f, 1.0f).mult(0.7f));
         dl1.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         rootNode.addLight(dl1);
     }

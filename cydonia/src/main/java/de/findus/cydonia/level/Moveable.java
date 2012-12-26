@@ -40,7 +40,7 @@ public class Moveable {
 		Mesh mesh = null;
 		ColorRGBA color = null;
 	    if(type.equals("sphere")) {
-	    	mesh = new Sphere(16, 16, 0.5f);
+	    	mesh = new Sphere(10, 10, 0.5f);
 	    	color = ColorRGBA.Red;
 	    }else if(type.equals("cube")) {
 	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
