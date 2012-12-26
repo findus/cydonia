@@ -31,6 +31,7 @@ public class TargetArea {
 		Box box = new Box(Vector3f.ZERO, 1.5f, 0.5f, 1.5f);
         model = new Geometry("TargetArea", box);
         model.setMaterial(mat_red);
+        model.setUserData("PlaceableSurface", true);
         
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
