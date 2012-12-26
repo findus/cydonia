@@ -68,6 +68,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public static float PHYSICS_ACCURACY = (1f / 192);
 	
 	private static final int RELOAD_TIME = 500;
+
+	private static final float MAX_PICK_RANGE = 10;
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -383,7 +385,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		
 		if(p.getInventory() < 0) {
 			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
-			if(result != null) {
+			if(result != null && result.getDistance() <= MAX_PICK_RANGE) {
 				Spatial g = result.getGeometry();
 				Moveable m = worldController.getMoveable((Long) g.getUserData("id"));
 				worldController.detachMoveable(m);
