@@ -151,6 +151,8 @@ public class GameController extends Application implements ScreenController, Phy
     
     private long roundStartTime;
     
+    private int lastScorerId;
+    
     @Override
     public void start() {
         // set some default settings in-case
@@ -327,8 +329,8 @@ public class GameController extends Application implements ScreenController, Phy
         fog.setFogDensity(1.5f);
 //        fpp.addFilter(fog);
         
-        SSAOFilter ssaoFilter = new SSAOFilter();
-        fpp.addFilter(ssaoFilter);
+//        SSAOFilter ssaoFilter = new SSAOFilter();
+//        fpp.addFilter(ssaoFilter);
         
 //        FXAAFilter fxaaFilter = new FXAAFilter();
 //        fpp.addFilter(fxaaFilter);
@@ -567,6 +569,7 @@ public class GameController extends Application implements ScreenController, Phy
 						p.setScores(p.getScores() + 1);
 					}
 				}
+				lastScorerId = roundEnded.getWinnerid();
 				gamestate = GameState.ROUNDOVER;
 				menuController.actualizeScreen();
 			}
@@ -832,6 +835,10 @@ public class GameController extends Application implements ScreenController, Phy
 	public long getRemainingTime() {
 		long passedTime = System.currentTimeMillis() - roundStartTime;
 		return gameConfig.getLong("mp_roundtime") * 1000 - passedTime;
+	}
+	
+	public Player getLastScorer() {
+		return players.get(lastScorerId);
 	}
 
 	public String getScores() {

@@ -6,6 +6,7 @@ package de.findus.cydonia.appstates;
 import java.text.SimpleDateFormat;
 
 import de.findus.cydonia.main.GameController;
+import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 
@@ -80,7 +81,12 @@ public class MenuController {
 			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
 			hideHUD();
-			showMessage("Round is over. New round will start automatically in a view seconds...");
+			String message = "Round is over. New round will start automatically in a view seconds...";
+			Player scorer = gameController.getLastScorer();
+			if(scorer != null) {
+				message += "\n\n\n" + scorer.getName() + " scored.";
+			}
+			showMessage(message);
 			break;
 			
 		default:
