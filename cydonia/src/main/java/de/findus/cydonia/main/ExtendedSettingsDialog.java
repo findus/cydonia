@@ -68,12 +68,12 @@ public class ExtendedSettingsDialog extends JDialog{
 	    // UI components
 	    private JCheckBox vsyncBox = null;
 	    private JCheckBox fullscreenBox = null;
-	    private JComboBox<String> displayResCombo = null;
-	    private JComboBox<String> colorDepthCombo = null;
-	    private JComboBox<String> displayFreqCombo = null;
+	    private JComboBox displayResCombo = null;
+	    private JComboBox colorDepthCombo = null;
+	    private JComboBox displayFreqCombo = null;
 //	    private JComboBox rendererCombo = null;
-	    private JComboBox<String> antialiasCombo = null;
-	    private JComboBox<String> shadowCombo = null;
+	    private JComboBox antialiasCombo = null;
+	    private JComboBox shadowCombo = null;
 	    private JLabel icon = null;
 	    private int selection = 0;
 	    private SelectionListener selectionListener = null;
@@ -464,9 +464,9 @@ public class ExtendedSettingsDialog extends JDialog{
 	     * 
 	     * @return the combo box of display modes.
 	     */
-	    private JComboBox<String> setUpResolutionChooser() {
+	    private JComboBox setUpResolutionChooser() {
 	        String[] res = getResolutions(modes);
-	        JComboBox<String> resolutionBox = new JComboBox<String>(res);
+	        JComboBox resolutionBox = new JComboBox(res);
 
 	        resolutionBox.setSelectedItem(source.getWidth() + " x "
 	                + source.getHeight());
@@ -487,9 +487,9 @@ public class ExtendedSettingsDialog extends JDialog{
 	     * 
 	     * @return the list of renderers.
 	     */
-	    private JComboBox<String> setUpRendererChooser() {
+	    private JComboBox setUpRendererChooser() {
 	        String[] modes = {"NULL", "JOGL-OpenGL1", "LWJGL-OpenGL2", "LWJGL-OpenGL3", "LWJGL-OpenGL3.1"};
-	        JComboBox<String> nameBox = new JComboBox<String>(modes);
+	        JComboBox nameBox = new JComboBox(modes);
 	        nameBox.setSelectedItem(source.getRenderer());
 	        return nameBox;
 	    }
@@ -515,11 +515,11 @@ public class ExtendedSettingsDialog extends JDialog{
 
 	        // grab available depths
 	        String[] depths = getDepths(resolution, modes);
-	        colorDepthCombo.setModel(new DefaultComboBoxModel<String>(depths));
+	        colorDepthCombo.setModel(new DefaultComboBoxModel(depths));
 	        colorDepthCombo.setSelectedItem(colorDepth);
 	        // grab available frequencies
 	        String[] freqs = getFrequencies(resolution, modes);
-	        displayFreqCombo.setModel(new DefaultComboBoxModel<String>(freqs));
+	        displayFreqCombo.setModel(new DefaultComboBoxModel(freqs));
 	        // Try to reset freq
 	        displayFreqCombo.setSelectedItem(displayFreq);
 	    }
@@ -532,15 +532,15 @@ public class ExtendedSettingsDialog extends JDialog{
 	     */
 	    private void updateResolutionChoices() {
 	        if (!fullscreenBox.isSelected()) {
-	            displayResCombo.setModel(new DefaultComboBoxModel<String>(
+	            displayResCombo.setModel(new DefaultComboBoxModel(
 	                    windowedResolutions));
-	            colorDepthCombo.setModel(new DefaultComboBoxModel<String>(new String[]{
+	            colorDepthCombo.setModel(new DefaultComboBoxModel(new String[]{
 	                        "24 bpp", "16 bpp"}));
-	            displayFreqCombo.setModel(new DefaultComboBoxModel<String>(
+	            displayFreqCombo.setModel(new DefaultComboBoxModel(
 	                    new String[]{"n/a"}));
 	            displayFreqCombo.setEnabled(false);
 	        } else {
-	            displayResCombo.setModel(new DefaultComboBoxModel<String>(
+	            displayResCombo.setModel(new DefaultComboBoxModel(
 	                    getResolutions(modes)));
 	            displayFreqCombo.setEnabled(true);
 	            updateDisplayChoices();
@@ -551,13 +551,13 @@ public class ExtendedSettingsDialog extends JDialog{
 	        // maybe in the future will add support for determining this info
 	        // through pbuffer
 	        String[] choices = new String[]{"Disabled", "2x", "4x", "6x", "8x", "16x"};
-	        antialiasCombo.setModel(new DefaultComboBoxModel<String>(choices));
+	        antialiasCombo.setModel(new DefaultComboBoxModel(choices));
 	        antialiasCombo.setSelectedItem(choices[Math.min(source.getSamples()/2,5)]);
 	    }
 	    
 	    private void updateShadowChoices() {
 	        String[] choices = new String[]{"Disabled", "1", "2", "3"};
-	        shadowCombo.setModel(new DefaultComboBoxModel<String>(choices));
+	        shadowCombo.setModel(new DefaultComboBoxModel(choices));
 	        shadowCombo.setSelectedItem(choices[source.get("shadowLevel") != null ? (Integer)source.get("shadowLevel") : 0]);
 	    }
 
