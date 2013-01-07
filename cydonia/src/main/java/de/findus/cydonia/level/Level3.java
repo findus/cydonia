@@ -4,7 +4,9 @@
 package de.findus.cydonia.level;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -40,7 +42,13 @@ public class Level3 implements Level {
 		levelRoot.attachChild(floor1);
 		
 		
-		Material mat_wall = assetManager.loadMaterial("Textures/Terrain/BrickWall/BrickWall.j3m");
+//		Material mat_wall = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+		Material mat_wall = assetManager.loadMaterial("Textures/BumpMapTest/Tangent.j3m");
+//	    mat_wall.setFloat("Shininess", 2f);
+//	    mat_wall.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/BrickWall/BrickWall.jpg"));
+//	    mat_wall.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/BrickWall/BrickWall_normal.jpg"));
+//	    mat_wall.setTexture("ParallaxMap", assetManager.loadTexture("Textures/Terrain/BrickWall/BrickWall_height.jpg"));
+		
 		
 		Box box1 = new Box(25, 1.5f, 0.25f);
 		Geometry wall1 = new Geometry("Wall1", box1);
@@ -74,7 +82,7 @@ public class Level3 implements Level {
 		wall4.setShadowMode(ShadowMode.CastAndReceive);
 		wall4.setUserData("PlaceableSurface", true);
 		levelRoot.attachChild(wall4);
-
+		
 		return levelRoot;
 	}
 

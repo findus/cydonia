@@ -108,7 +108,15 @@ public class WorldController {
     			if(i%3 == 0) {
     				type = "sphere";
     			}
-    			Moveable m = new Moveable(i+(20*j), new Vector3f(2*i, 0.5f, 2*j), assetManager, type);
+    			int team = 0;
+    			if(i%10 == 0) {
+    				if(j%2 == 0) {
+    					team = 1;
+    				}else {
+    					team = 2;
+    				}
+    			}
+    			Moveable m = new Moveable(i+(20*j), new Vector3f(2*i, 0.5f, 2*j), assetManager, type, team);
     			this.moveables.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachMoveable(m);

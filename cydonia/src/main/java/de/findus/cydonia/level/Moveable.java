@@ -26,27 +26,37 @@ public class Moveable {
 
 	private long id;
 	
+	private int team;
+	
+	private String type;
+	
 	private Vector3f origin;
 	
 	private Spatial model;
 	
 	private RigidBodyControl control;
 	
-	public Moveable(long id, Vector3f origin, AssetManager assetManager, String type) {
+	public Moveable(long id, Vector3f origin, AssetManager assetManager, String type, int team) {
 		this.id = id;
-		
+		this.team = team;
+		this.type = type;
 		this.origin = origin;
 		
 		Mesh mesh = null;
-		ColorRGBA color = null;
-	    if(type.equals("sphere")) {
+	    if(this.type.equals("sphere")) {
 	    	mesh = new Sphere(10, 10, 0.5f);
-	    	color = ColorRGBA.Red;
-	    }else if(type.equals("cube")) {
+	    }else if(this.type.equals("cube")) {
 	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
-	    	color = ColorRGBA.Blue;
 	    }else {
 	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
+	    }
+	    
+	    ColorRGBA color = null;
+	    if(this.team == 1) {
+	    	color = ColorRGBA.Blue;
+	    }else if(this.team == 2) {
+	    	color = ColorRGBA.Red;
+	    }else {
 	    	color = ColorRGBA.Gray;
 	    }
 		
@@ -83,6 +93,10 @@ public class Moveable {
 	 */
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public int getTeam() {
+		return team;
 	}
 
 	/**

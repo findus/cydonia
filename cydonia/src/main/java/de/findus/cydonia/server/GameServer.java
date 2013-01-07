@@ -70,6 +70,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private static final int RELOAD_TIME = 500;
 
 	private static final float MAX_PICK_RANGE = 10;
+
+	private static final float MAX_PLACE_RANGE = 10;
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -388,6 +390,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			if(result != null && result.getDistance() <= MAX_PICK_RANGE) {
 				Spatial g = result.getGeometry();
 				Moveable m = worldController.getMoveable((Long) g.getUserData("id"));
+				if(m.getTeam() > 0 && m.getTeam() != p.getTeam()) {
+					return;
+				}
 				worldController.detachMoveable(m);
 				p.setInventory(m.getId());
 
@@ -404,7 +409,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			Moveable m = worldController.getMoveable(p.getInventory());
 			if(m != null) {
 			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-			if(result != null && worldController.isPlaceableSurface(result.getGeometry())) {
+			if(result != null && result.getDistance() <= MAX_PLACE_RANGE && worldController.isPlaceableSurface(result.getGeometry())) {
 				Vector3f contactnormal = result.getContactNormal();
 				Vector3f contactpos = result.getContactPoint();
 				
