@@ -49,11 +49,11 @@ public class Flube {
 	    	color = ColorRGBA.DarkGray;
 	    	break;
 	    case -1:
-			color = ColorRGBA.Gray;
+			color = ColorRGBA.LightGray;
 			break;
 			
 		case 0:
-			color = ColorRGBA.White;
+			color = new ColorRGBA(1.0f, 0.90f, 0.6f, 1.0f);
 			break;
 			
 		case 1:

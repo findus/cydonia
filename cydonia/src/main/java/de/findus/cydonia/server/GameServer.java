@@ -388,7 +388,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 		if(p.getInventory() < 0) {
 			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-			if(result != null && canPickup(p, result.getGeometry(), MAX_PICK_RANGE)) {
+			if(result != null && canPickup(p, result.getGeometry(), result.getDistance())) {
 				Flube m = worldController.getFlube((Long) result.getGeometry().getUserData("id"));
 				worldController.detachFlube(m);
 				p.setInventory(m.getId());
@@ -400,11 +400,13 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 	
 	private boolean canPickup(Player p, Spatial g, float distance) {
-		if(p != null && g != null) {
-			if(worldController.isFlube(g) && g.getUserData("Type") != null) {
-				int type = g.getUserData("Type");
-				if(type == 0 || type == p.getTeam()) {
-					return true;
+		if(distance <= MAX_PICK_RANGE) {
+			if(p != null && g != null) {
+				if(worldController.isFlube(g) && g.getUserData("Type") != null) {
+					int type = g.getUserData("Type");
+					if(type == 0 || type == p.getTeam()) {
+						return true;
+					}
 				}
 			}
 		}

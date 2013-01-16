@@ -337,8 +337,9 @@ public class WorldController {
 	}
 	
 	public boolean isPlaceableSurface(Spatial obj) {
-		if(obj.getUserData("PlaceableSurface") != null) {
-			return ((Boolean)obj.getUserData("PlaceableSurface")).booleanValue();
+		if(obj.getUserData("Type") != null) {
+			int type = obj.getUserData("Type");
+			return (type >= -1);
 		}
 		return false;
 	}
