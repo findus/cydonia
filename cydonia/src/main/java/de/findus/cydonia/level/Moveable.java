@@ -16,7 +16,10 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
+
+import de.findus.cydonia.main.GameController;
 
 /**
  * @author Findus
@@ -60,13 +63,14 @@ public class Moveable {
 	    	color = ColorRGBA.Gray;
 	    }
 		
-		
+	    Texture tex_box = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_white.png");
 		Material mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+		mat_lit.setTexture("DiffuseMap", tex_box);
 	    mat_lit.setBoolean("UseMaterialColors",true);    
 	    mat_lit.setColor("Specular",ColorRGBA.White);
 	    mat_lit.setColor("Diffuse", color);
 	    mat_lit.setColor("Ambient", color);
-	    mat_lit.setFloat("Shininess", 5f);
+	    mat_lit.setFloat("Shininess", 2f);
 		
 	    
         model = new Geometry("Moveable_" + id, mesh);
