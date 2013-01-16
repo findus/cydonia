@@ -6,7 +6,7 @@ package de.findus.cydonia.messages;
 import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
-import de.findus.cydonia.level.Moveable;
+import de.findus.cydonia.level.Flube;
 
 /**
  * @author Findus
@@ -31,7 +31,7 @@ public class MoveableInfo {
 		this.location = location;
 	}
 
-	public MoveableInfo(Moveable m) {
+	public MoveableInfo(Flube m) {
 		this.id = m.getId();
 		this.inWorld = m.getModel().getParent() != null;
 		this.location = m.getControl().getPhysicsLocation();

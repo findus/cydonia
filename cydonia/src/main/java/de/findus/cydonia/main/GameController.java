@@ -63,7 +63,7 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
-import de.findus.cydonia.level.Moveable;
+import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
@@ -515,8 +515,8 @@ public class GameController extends Application implements ScreenController, Phy
 			}else if (e instanceof PickupEvent) {
 				PickupEvent pickup = (PickupEvent) e;
 				Player p = players.get(pickup.getPlayerid());
-				Moveable moveable = worldController.getMoveable(pickup.getMoveableid());
-				pickup(p, moveable);
+				Flube flube = worldController.getFlube(pickup.getMoveableid());
+				pickup(p, flube);
 			}else if (e instanceof PlaceEvent) {
 				PlaceEvent place = (PlaceEvent) e;
 				Player p = players.get(place.getPlayerid());
@@ -618,11 +618,11 @@ public class GameController extends Application implements ScreenController, Phy
 			}
 		}
 		for (MoveableInfo info : minfos) {
-			Moveable m = worldController.getMoveable(info.getId());
+			Flube m = worldController.getFlube(info.getId());
 			if(m != null) {
 				m.getControl().setPhysicsLocation(info.getLocation());
 				if(!info.isInWorld()) {
-					worldController.detachMoveable(m);
+					worldController.detachFlube(m);
 				}
 			}
 		}
@@ -779,11 +779,11 @@ public class GameController extends Application implements ScreenController, Phy
 		throwSound.play();
 	}
 	
-	private void pickup(Player p, Moveable moveable) {
-		if(moveable != null) {
-			worldController.detachMoveable(moveable);
+	private void pickup(Player p, Flube flube) {
+		if(flube != null) {
+			worldController.detachFlube(flube);
 			if(p != null) {
-				p.setInventory((Long) moveable.getId());
+				p.setInventory((Long) flube.getId());
 			}
 		}
 	}
@@ -792,9 +792,9 @@ public class GameController extends Application implements ScreenController, Phy
 		if(p == null) return;
 
 		if(p.getInventory() >= 0) {
-			Moveable m = worldController.getMoveable(p.getInventory());
+			Flube m = worldController.getFlube(p.getInventory());
 			m.getControl().setPhysicsLocation(loc);
-			worldController.attachMoveable(m);
+			worldController.attachFlube(m);
 			p.setInventory(-1);
 		}
 	}

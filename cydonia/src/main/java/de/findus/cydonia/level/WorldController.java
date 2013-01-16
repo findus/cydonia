@@ -55,7 +55,7 @@ public class WorldController {
 	
 	protected Node moveablesNode = new Node("Movables");
 	
-	protected ConcurrentHashMap<Long, Moveable> moveables;
+	protected ConcurrentHashMap<Long, Flube> flubes;
 	
 	/**
 	 * Physics control object of the scene.
@@ -76,7 +76,7 @@ public class WorldController {
 		
 		setUpAmbientLight();
 		
-		this.moveables = new ConcurrentHashMap<Long, Moveable>();
+		this.flubes = new ConcurrentHashMap<Long, Flube>();
 	}
 	
 	/**
@@ -109,47 +109,47 @@ public class WorldController {
     	int type = -2;
     	for (int j = 1; j < 20; j++) {
     		for (int i = 1; i <= 20; i++) {
-    			Moveable m = new Moveable(i+(20*j), new Vector3f(i, 0.5f, j), assetManager, type);
-    			this.moveables.put(m.getId(), m);
+    			Flube m = new Flube(i+(20*j), new Vector3f(i, 0.5f, j), assetManager, type);
+    			this.flubes.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
-    			attachMoveable(m);
+    			attachFlube(m);
     		}
     	}
     	
     	type = -1;
     	for (int j = 1; j < 20; j++) {
     		for (int i = 1; i <= 20; i++) {
-    			Moveable m = new Moveable(400+i+(20*j), new Vector3f(i, 0.5f, -j), assetManager, type);
-    			this.moveables.put(m.getId(), m);
+    			Flube m = new Flube(400+i+(20*j), new Vector3f(i, 0.5f, -j), assetManager, type);
+    			this.flubes.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
-    			attachMoveable(m);
+    			attachFlube(m);
     		}
     	}
     	
     	type = 0;
     	for (int j = 1; j < 10; j++) {
     		for (int i = 1; i <= 10; i++) {
-    			Moveable m = new Moveable(800+i+(20*j), new Vector3f(i, 1.5f, j), assetManager, type);
-    			this.moveables.put(m.getId(), m);
+    			Flube m = new Flube(800+i+(20*j), new Vector3f(i, 1.5f, j), assetManager, type);
+    			this.flubes.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
-    			attachMoveable(m);
+    			attachFlube(m);
     		}
     	}
     	
     	type = 1;
     	for (int j = 1; j < 5; j++) {
-    		Moveable m = new Moveable(400+j, new Vector3f(3, 1.5f, -j), assetManager, type);
-    		this.moveables.put(m.getId(), m);
+    		Flube m = new Flube(400+j, new Vector3f(3, 1.5f, -j), assetManager, type);
+    		this.flubes.put(m.getId(), m);
     		m.getControl().setPhysicsLocation(m.getOrigin());
-    		attachMoveable(m);
+    		attachFlube(m);
     	}
     	
     	type = 2;
     	for (int j = 1; j < 5; j++) {
-    		Moveable m = new Moveable(400+5+j, new Vector3f(6, 1.5f, -j), assetManager, type);
-    		this.moveables.put(m.getId(), m);
+    		Flube m = new Flube(400+5+j, new Vector3f(6, 1.5f, -j), assetManager, type);
+    		this.flubes.put(m.getId(), m);
     		m.getControl().setPhysicsLocation(m.getOrigin());
-    		attachMoveable(m);
+    		attachFlube(m);
     	}
     	
 
@@ -164,10 +164,10 @@ public class WorldController {
 	}
 	
 	public void resetWorld() {
-		for (Moveable m : moveables.values()) {
-			detachMoveable(m);
-			m.getControl().setPhysicsLocation(m.getOrigin());
-			attachMoveable(m);
+		for (Flube f : flubes.values()) {
+			detachFlube(f);
+			f.getControl().setPhysicsLocation(f.getOrigin());
+			attachFlube(f);
 		}
 	}
 	
@@ -211,14 +211,14 @@ public class WorldController {
 		rootNode.detachChild(player.getModel());
 	}
 	
-	public void attachMoveable(Moveable moveable) {
-		moveablesNode.attachChild(moveable.getModel());
-		physicsSpace.addCollisionObject(moveable.getControl());
+	public void attachFlube(Flube flube) {
+		worldNode.attachChild(flube.getModel());
+		physicsSpace.addCollisionObject(flube.getControl());
 	}
 	
-	public void detachMoveable(Moveable moveable) {
-		moveablesNode.detachChild(moveable.getModel());
-		physicsSpace.removeCollisionObject(moveable.getControl());
+	public void detachFlube(Flube flube) {
+		worldNode.detachChild(flube.getModel());
+		physicsSpace.removeCollisionObject(flube.getControl());
 	}
 	
 	/**
@@ -255,9 +255,9 @@ public class WorldController {
 //        rootNode.addLight(al);
         
         DirectionalLight dl1 = new DirectionalLight();
-        dl1.setColor(new ColorRGBA(1.0f, 0.95f, 0.6f, 1.0f).mult(0.5f));
+        dl1.setColor(ColorRGBA.White.mult(0.3f));
         dl1.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-//        rootNode.addLight(dl1);
+        rootNode.addLight(dl1);
         
         DirectionalLight dl2 = new DirectionalLight();
         dl2.setColor(new ColorRGBA(1.0f, 0.95f, 0.6f, 1.0f).mult(0.5f));
@@ -278,35 +278,35 @@ public class WorldController {
         g1.setMaterial(mat);
         rootNode.attachChild(g1);
         
-//        PointLight pl2 = new PointLight();
-//        pl2.setColor(ColorRGBA.White.mult(1f));
-//        pl2.setPosition(new Vector3f(-55, 1, 15));
-//        pl2.setRadius(40);
-//        rootNode.addLight(pl2);
-//        
-//        Geometry g2 = new Geometry("pl2-g", new Box(pl2.getPosition(), 0.05f, 0.05f, 0.05f));
-//        g2.setMaterial(mat);
-//        rootNode.attachChild(g2);
-//        
-//        PointLight pl3 = new PointLight();
-//        pl3.setColor(ColorRGBA.White.mult(1f));
-//        pl3.setPosition(new Vector3f(45, 1, -20));
-//        pl3.setRadius(40);
-//        rootNode.addLight(pl3);
-//        
-//        Geometry g3 = new Geometry("pl3-g", new Box(pl3.getPosition(), 0.05f, 0.05f, 0.05f));
-//        g3.setMaterial(mat);
-//        rootNode.attachChild(g3);
-//        
-//        PointLight pl4 = new PointLight();
-//        pl4.setColor(ColorRGBA.White.mult(1f));
-//        pl4.setPosition(new Vector3f(-55, 3, -45));
-//        pl4.setRadius(40);
-//        rootNode.addLight(pl4);
-//        
-//        Geometry g4 = new Geometry("pl4-g", new Box(pl4.getPosition(), 0.05f, 0.05f, 0.05f));
-//        g4.setMaterial(mat);
-//        rootNode.attachChild(g4);
+        PointLight pl2 = new PointLight();
+        pl2.setColor(ColorRGBA.White.mult(1f));
+        pl2.setPosition(new Vector3f(25, 5, 15));
+        pl2.setRadius(40);
+        rootNode.addLight(pl2);
+        
+        Geometry g2 = new Geometry("pl2-g", new Box(pl2.getPosition(), 0.05f, 0.05f, 0.05f));
+        g2.setMaterial(mat);
+        rootNode.attachChild(g2);
+        
+        PointLight pl3 = new PointLight();
+        pl3.setColor(ColorRGBA.White.mult(1f));
+        pl3.setPosition(new Vector3f(30, 5, -20));
+        pl3.setRadius(40);
+        rootNode.addLight(pl3);
+        
+        Geometry g3 = new Geometry("pl3-g", new Box(pl3.getPosition(), 0.05f, 0.05f, 0.05f));
+        g3.setMaterial(mat);
+        rootNode.attachChild(g3);
+        
+        PointLight pl4 = new PointLight();
+        pl4.setColor(ColorRGBA.White.mult(1f));
+        pl4.setPosition(new Vector3f(10, 5, -10));
+        pl4.setRadius(40);
+        rootNode.addLight(pl4);
+        
+        Geometry g4 = new Geometry("pl4-g", new Box(pl4.getPosition(), 0.05f, 0.05f, 0.05f));
+        g4.setMaterial(mat);
+        rootNode.attachChild(g4);
     }
 	
 	public LightList getLights() {
@@ -317,19 +317,12 @@ public class WorldController {
 		return level;
 	}
 	
-	public Moveable getMoveable(long id) {
-		return moveables.get(id);
+	public Flube getFlube(long id) {
+		return flubes.get(id);
 	}
 	
-	public Collection<Moveable> getAllMoveables() {
-		return moveables.values();
-	}
-	
-	public CollisionResult pickMovable(Vector3f source, Vector3f direction) {
-		CollisionResults results = new CollisionResults();
-		Ray ray = new Ray(source, direction);
-		moveablesNode.collideWith(ray, results);
-		return results.getClosestCollision();
+	public Collection<Flube> getAllFlubes() {
+		return flubes.values();
 	}
 	
 	public CollisionResult pickWorld(Vector3f source, Vector3f direction) {
@@ -337,6 +330,10 @@ public class WorldController {
 		Ray ray = new Ray(source, direction);
 		worldNode.collideWith(ray, results);
 		return results.getClosestCollision();
+	}
+	
+	public boolean isFlube(Spatial obj) {
+		return (obj.getName().startsWith("Flube_"));
 	}
 	
 	public boolean isPlaceableSurface(Spatial obj) {

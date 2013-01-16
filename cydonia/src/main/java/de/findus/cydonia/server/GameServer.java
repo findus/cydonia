@@ -19,6 +19,7 @@ import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
@@ -43,7 +44,7 @@ import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Level3;
-import de.findus.cydonia.level.Moveable;
+import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameConfig;
 import de.findus.cydonia.main.GameState;
@@ -384,16 +385,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private void pickup(Player p) {
 		if(p == null) return;
-		
+
 		if(p.getInventory() < 0) {
-			CollisionResult result = worldController.pickMovable(p.getEyePosition(), p.getViewDir());
-			if(result != null && result.getDistance() <= MAX_PICK_RANGE) {
-				Spatial g = result.getGeometry();
-				Moveable m = worldController.getMoveable((Long) g.getUserData("id"));
-				if(m.getTeam() > 0 && m.getTeam() != p.getTeam()) {
-					return;
-				}
-				worldController.detachMoveable(m);
+			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
+			if(result != null && canPickup(p, result.getGeometry(), MAX_PICK_RANGE)) {
+				Flube m = worldController.getFlube((Long) result.getGeometry().getUserData("id"));
+				worldController.detachFlube(m);
 				p.setInventory(m.getId());
 
 				PickupEvent pickup = new PickupEvent(p.getId(), m.getId(), true);
@@ -402,25 +399,37 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		}
 	}
 	
+	private boolean canPickup(Player p, Spatial g, float distance) {
+		if(p != null && g != null) {
+			if(worldController.isFlube(g) && g.getUserData("Type") != null) {
+				int type = g.getUserData("Type");
+				if(type == 0 || type == p.getTeam()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	private void place(Player p) {
 		if(p == null) return;
 
 		if(p.getInventory() >= 0) {
-			Moveable m = worldController.getMoveable(p.getInventory());
+			Flube m = worldController.getFlube(p.getInventory());
 			if(m != null) {
-			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-			if(result != null && result.getDistance() <= MAX_PLACE_RANGE && worldController.isPlaceableSurface(result.getGeometry())) {
-				Vector3f contactnormal = result.getContactNormal();
-				Vector3f contactpos = result.getContactPoint();
-				
-				Vector3f loc = contactpos.add(contactnormal.mult(0.5f));
-				m.getControl().setPhysicsLocation(loc);
-				worldController.attachMoveable(m);
-				p.setInventory(-1);
+				CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
+				if(result != null && result.getDistance() <= MAX_PLACE_RANGE && worldController.isPlaceableSurface(result.getGeometry())) {
+					Vector3f contactnormal = result.getContactNormal();
+					Vector3f contactpos = result.getContactPoint();
 
-				PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
-				eventMachine.fireEvent(place);
-			}
+					Vector3f loc = contactpos.add(contactnormal.mult(0.5f));
+					m.getControl().setPhysicsLocation(loc);
+					worldController.attachFlube(m);
+					p.setInventory(-1);
+
+					PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
+					eventMachine.fireEvent(place);
+				}
 			}
 		}
 	}
@@ -537,10 +546,10 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			i++;
 		}
 		
-		Collection<Moveable> list = worldController.getAllMoveables();
+		Collection<Flube> list = worldController.getAllFlubes();
 		MoveableInfo[] moveableinfos = new MoveableInfo[list.size()];
 		int j=0;
-		for (Moveable m : list) {
+		for (Flube m : list) {
 			moveableinfos[j] = new MoveableInfo(m);
 			j++;
 		}
