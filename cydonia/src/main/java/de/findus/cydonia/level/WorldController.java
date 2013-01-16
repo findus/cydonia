@@ -100,32 +100,58 @@ public class WorldController {
         Spatial scene = null;
         scene = level.getScene(assetManager);
         
-        CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
-        worldCollisionControll = new RigidBodyControl(sceneShape, 0);
-        scene.addControl(worldCollisionControll);
-        worldNode.attachChild(scene);
-    	physicsSpace.add(worldCollisionControll);
+//        CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
+//        worldCollisionControll = new RigidBodyControl(sceneShape, 0);
+//        scene.addControl(worldCollisionControll);
+//        worldNode.attachChild(scene);
+//    	physicsSpace.add(worldCollisionControll);
         
-    	for (int j = 1; j < 10; j++) {
+    	int type = -2;
+    	for (int j = 1; j < 20; j++) {
     		for (int i = 1; i <= 20; i++) {
-    			String type = "cube";
-    			if(i%3 == 0) {
-    				type = "sphere";
-    			}
-    			int team = 0;
-    			if(i%10 == 0) {
-    				if(j%2 == 0) {
-    					team = 1;
-    				}else {
-    					team = 2;
-    				}
-    			}
-    			Moveable m = new Moveable(i+(20*j), new Vector3f(2*i, 0.5f, 2*j), assetManager, type, team);
+    			Moveable m = new Moveable(i+(20*j), new Vector3f(i, 0.5f, j), assetManager, type);
     			this.moveables.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachMoveable(m);
     		}
     	}
+    	
+    	type = -1;
+    	for (int j = 1; j < 20; j++) {
+    		for (int i = 1; i <= 20; i++) {
+    			Moveable m = new Moveable(400+i+(20*j), new Vector3f(i, 0.5f, -j), assetManager, type);
+    			this.moveables.put(m.getId(), m);
+    			m.getControl().setPhysicsLocation(m.getOrigin());
+    			attachMoveable(m);
+    		}
+    	}
+    	
+    	type = 0;
+    	for (int j = 1; j < 10; j++) {
+    		for (int i = 1; i <= 10; i++) {
+    			Moveable m = new Moveable(800+i+(20*j), new Vector3f(i, 1.5f, j), assetManager, type);
+    			this.moveables.put(m.getId(), m);
+    			m.getControl().setPhysicsLocation(m.getOrigin());
+    			attachMoveable(m);
+    		}
+    	}
+    	
+    	type = 1;
+    	for (int j = 1; j < 5; j++) {
+    		Moveable m = new Moveable(400+j, new Vector3f(3, 1.5f, -j), assetManager, type);
+    		this.moveables.put(m.getId(), m);
+    		m.getControl().setPhysicsLocation(m.getOrigin());
+    		attachMoveable(m);
+    	}
+    	
+    	type = 2;
+    	for (int j = 1; j < 5; j++) {
+    		Moveable m = new Moveable(400+5+j, new Vector3f(6, 1.5f, -j), assetManager, type);
+    		this.moveables.put(m.getId(), m);
+    		m.getControl().setPhysicsLocation(m.getOrigin());
+    		attachMoveable(m);
+    	}
+    	
 
 		TargetArea ta = new TargetArea(assetManager);
 		ta.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));

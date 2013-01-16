@@ -15,7 +15,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
 
@@ -29,9 +28,7 @@ public class Moveable {
 
 	private long id;
 	
-	private int team;
-	
-	private String type;
+	private int type;
 	
 	private Vector3f origin;
 	
@@ -39,29 +36,39 @@ public class Moveable {
 	
 	private RigidBodyControl control;
 	
-	public Moveable(long id, Vector3f origin, AssetManager assetManager, String type, int team) {
+	public Moveable(long id, Vector3f origin, AssetManager assetManager, int type) {
 		this.id = id;
-		this.team = team;
 		this.type = type;
 		this.origin = origin;
 		
-		Mesh mesh = null;
-	    if(this.type.equals("sphere")) {
-	    	mesh = new Sphere(10, 10, 0.5f);
-	    }else if(this.type.equals("cube")) {
-	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
-	    }else {
-	    	mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
-	    }
+		Mesh mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
 	    
 	    ColorRGBA color = null;
-	    if(this.team == 1) {
-	    	color = ColorRGBA.Blue;
-	    }else if(this.team == 2) {
-	    	color = ColorRGBA.Red;
-	    }else {
-	    	color = ColorRGBA.Gray;
-	    }
+	    switch (this.type) {
+	    case -2:
+	    	color = ColorRGBA.DarkGray;
+	    	break;
+	    case -1:
+			color = ColorRGBA.LightGray;
+			break;
+			
+		case 0:
+			color = ColorRGBA.White;
+			break;
+			
+		case 1:
+			color = ColorRGBA.Blue;
+			break;
+			
+		case 2:
+			color = ColorRGBA.Red;
+			break;
+
+		default:
+			this.type = 0;
+			color = ColorRGBA.White;
+			break;
+		}
 		
 	    Texture tex_box = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_white.png");
 		Material mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
@@ -71,16 +78,15 @@ public class Moveable {
 	    mat_lit.setColor("Diffuse", color);
 	    mat_lit.setColor("Ambient", color);
 	    mat_lit.setFloat("Shininess", 2f);
-		
 	    
         model = new Geometry("Moveable_" + id, mesh);
         model.setMaterial(mat_lit);
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
-		model.setUserData("PlaceableSurface", true);
+		model.setUserData("PlaceableSurface", (this.type >= -1));
 		TangentBinormalGenerator.generate(model);
         
-        CollisionShape collisionShape = CollisionShapeFactory.createMeshShape(model);
+        CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
         model.addControl(control);
 	}
@@ -100,7 +106,7 @@ public class Moveable {
 	}
 
 	public int getTeam() {
-		return team;
+		return type;
 	}
 
 	/**
