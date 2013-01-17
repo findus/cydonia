@@ -106,10 +106,12 @@ public class WorldController {
 //        worldNode.attachChild(scene);
 //    	physicsSpace.add(worldCollisionControll);
         
+        long idcounter = 1;
+        
     	int type = -2;
     	for (int j = 1; j < 20; j++) {
     		for (int i = 1; i <= 20; i++) {
-    			Flube m = new Flube(i+(20*j), new Vector3f(i, 0.5f, j), assetManager, type);
+    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, j), assetManager, type);
     			this.flubes.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachFlube(m);
@@ -119,7 +121,7 @@ public class WorldController {
     	type = -1;
     	for (int j = 1; j < 20; j++) {
     		for (int i = 1; i <= 20; i++) {
-    			Flube m = new Flube(400+i+(20*j), new Vector3f(i, 0.5f, -j), assetManager, type);
+    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, -j), assetManager, type);
     			this.flubes.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachFlube(m);
@@ -129,7 +131,7 @@ public class WorldController {
     	type = 0;
     	for (int j = 1; j < 10; j++) {
     		for (int i = 1; i <= 10; i++) {
-    			Flube m = new Flube(800+i+(20*j), new Vector3f(i, 1.5f, j), assetManager, type);
+    			Flube m = new Flube(idcounter++, new Vector3f(i, 1.5f, j), assetManager, type);
     			this.flubes.put(m.getId(), m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachFlube(m);
@@ -138,7 +140,7 @@ public class WorldController {
     	
     	type = 1;
     	for (int j = 1; j < 5; j++) {
-    		Flube m = new Flube(400+j, new Vector3f(3, 1.5f, -j), assetManager, type);
+    		Flube m = new Flube(idcounter++, new Vector3f(3, 1.5f, -j), assetManager, type);
     		this.flubes.put(m.getId(), m);
     		m.getControl().setPhysicsLocation(m.getOrigin());
     		attachFlube(m);
@@ -146,7 +148,7 @@ public class WorldController {
     	
     	type = 2;
     	for (int j = 1; j < 5; j++) {
-    		Flube m = new Flube(400+5+j, new Vector3f(6, 1.5f, -j), assetManager, type);
+    		Flube m = new Flube(idcounter++, new Vector3f(6, 1.5f, -j), assetManager, type);
     		this.flubes.put(m.getId(), m);
     		m.getControl().setPhysicsLocation(m.getOrigin());
     		attachFlube(m);

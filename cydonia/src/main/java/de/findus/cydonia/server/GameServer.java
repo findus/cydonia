@@ -70,9 +70,11 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private static final int RELOAD_TIME = 500;
 
-	private static final float MAX_PICK_RANGE = 10;
+	private static final float MAX_PICK_RANGE = 20;
 
-	private static final float MAX_PLACE_RANGE = 10;
+	private static final float MAX_PLACE_RANGE = 20;
+
+	private static final boolean FREE_PLACING = false;
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -424,7 +426,12 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					Vector3f contactnormal = result.getContactNormal();
 					Vector3f contactpos = result.getContactPoint();
 
-					Vector3f loc = contactpos.add(contactnormal.mult(0.5f));
+					Vector3f loc;
+					if(FREE_PLACING) {
+						loc = contactpos.add(contactnormal.mult(0.5f));
+					}else {
+						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
+					}
 					m.getControl().setPhysicsLocation(loc);
 					worldController.attachFlube(m);
 					p.setInventory(-1);

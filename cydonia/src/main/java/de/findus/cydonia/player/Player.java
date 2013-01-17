@@ -23,7 +23,7 @@ public class Player implements AnimEventListener{
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
 	
-	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.35f, 0);
+	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.70f, 0);
 	
 	private AssetManager assetManager;
 	
@@ -74,8 +74,8 @@ public class Player implements AnimEventListener{
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
         control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
         control.setJumpSpeed(10);
-        control.setFallSpeed(20);
-        control.setGravity(20);
+        control.setFallSpeed(25);
+        control.setGravity(25);
         
         loadModel();
 	}

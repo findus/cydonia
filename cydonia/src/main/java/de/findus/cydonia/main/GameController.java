@@ -337,7 +337,7 @@ public class GameController extends Application implements ScreenController, Phy
         
         viewPort.addProcessor(fpp);
         
-        cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.5f, 1000f);
+        cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.3f, 1000f);
         
         eventMachine.registerListener(this);
         
@@ -823,6 +823,7 @@ public class GameController extends Application implements ScreenController, Phy
 		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
 		worldController.attachPlayer(p);
 		if(p.getId() == player.getId()) {
+			p.getModel().setCullHint(CullHint.Always);
 			resumeGame();
 		}
 	}
