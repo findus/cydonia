@@ -607,7 +607,7 @@ public class GameController extends Application implements ScreenController, Phy
 		
 		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
-			Player p = new Player(info.getPlayerid(), assetManager);
+			final Player p = new Player(info.getPlayerid(), assetManager);
 			p.setName(info.getName());
 			p.setTeam(info.getTeam());
 			p.setAlive(info.isAlive());
@@ -616,7 +616,13 @@ public class GameController extends Application implements ScreenController, Phy
 			players.put(p.getId(), p);
 			if(p.isAlive()) {
 				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
-				worldController.attachPlayer(p);
+				enqueue(new Callable<String>() {
+					public String call() {
+						worldController.attachPlayer(p);
+						return null;
+					}
+				});
+				
 			}
 		}
 		for (MoveableInfo info : minfos) {

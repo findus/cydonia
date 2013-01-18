@@ -124,7 +124,6 @@ public class Player implements AnimEventListener{
 	@Override
 	public void onAnimCycleDone(AnimControl animControl, AnimChannel channel,
 			String animName) {
-		System.out.println(animName);
 		if(animName.equals("JumpStart")) {
 			channel.setAnim("JumpLoop", 0.5f);
 			channel.setLoopMode(LoopMode.Loop);
