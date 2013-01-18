@@ -59,6 +59,8 @@ public class Player implements AnimEventListener{
 	
 	private long inventory = 0;
 
+	private boolean jumping = false;
+
 	/**
 	 * Constructs a new Player and inits its physics and model.
 	 * @param id the id of this player. If not available set to -1 and reset later.
@@ -104,24 +106,36 @@ public class Player implements AnimEventListener{
 	
 	public void updateAnimationState() {
 		// Update Animation
-		if(inputs.isForward() || inputs.isBack() || inputs.isLeft() || inputs.isRight()) {
-			basechannel.setAnim("RunBase");
+		if(jumping) {
+			
+		}else if(inputs.isForward() || inputs.isBack() || inputs.isLeft() || inputs.isRight()) {
+			basechannel.setAnim("RunBase", 0.5f);
 			basechannel.setLoopMode(LoopMode.Loop);
-			topchannel.setAnim("RunTop");
+			topchannel.setAnim("RunTop", 0.5f);
 			topchannel.setLoopMode(LoopMode.Loop);
 		}else {
-			basechannel.setAnim("IdleBase");
-			basechannel.setLoopMode(LoopMode.DontLoop);
-			topchannel.setAnim("IdleTop");
-			topchannel.setLoopMode(LoopMode.DontLoop);
+			basechannel.setAnim("IdleBase", 0.5f);
+			basechannel.setLoopMode(LoopMode.Loop);
+			topchannel.setAnim("IdleTop", 0.5f);
+			topchannel.setLoopMode(LoopMode.Loop);
 		}
 	}
 	
 	@Override
-	public void onAnimCycleDone(AnimControl control, AnimChannel channel,
+	public void onAnimCycleDone(AnimControl animControl, AnimChannel channel,
 			String animName) {
-		// TODO Auto-generated method stub
-		
+		System.out.println(animName);
+		if(animName.equals("JumpStart")) {
+			channel.setAnim("JumpLoop", 0.5f);
+			channel.setLoopMode(LoopMode.Loop);
+		}else if(animName.equals("JumpLoop")) {
+			if(this.control.onGround()) {
+				channel.setAnim("JumpEnd", 0.5f);
+			}
+		}else if(animName.equals("JumpEnd")) {
+			jumping = false;
+			updateAnimationState();
+		}
 	}
 
 	@Override
@@ -145,8 +159,18 @@ public class Player implements AnimEventListener{
 		model.setShadowMode(ShadowMode.Cast);
 		
 		animcontrol = model.getControl(AnimControl.class);
+		animcontrol.addListener(this);
         basechannel = animcontrol.createChannel();
+        basechannel.setSpeed(0.1f);
         topchannel = animcontrol.createChannel();
+        topchannel.setSpeed(0.1f);
+	}
+	
+	public void jump() {
+		control.jump();
+		this.jumping = true;
+		basechannel.setAnim("JumpStart", 0.5f);
+		basechannel.setLoopMode(LoopMode.Loop);
 	}
 	
 	/**

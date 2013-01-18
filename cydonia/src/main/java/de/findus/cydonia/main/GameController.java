@@ -1,6 +1,7 @@
 package de.findus.cydonia.main;
 
 import java.net.URL;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -8,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 
+import com.jme3.app.AppTask;
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
 import com.jme3.asset.AssetNotFoundException;
@@ -801,7 +803,7 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void jump(Player p) {
 		if(p == null) return;
-		p.getControl().jump();
+		p.jump();
 	}
 	
 	private void joinPlayer(int playerid, String playername) {
@@ -816,10 +818,11 @@ public class GameController extends Application implements ScreenController, Phy
 		players.remove(p.getId());
 	}
 	
-	private void respawn(Player p) {
+	private void respawn(final Player p) {
 		if(p == null) return;
 		p.setHealthpoints(100);
 		p.setAlive(true);
+
 		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
 		worldController.attachPlayer(p);
 		if(p.getId() == player.getId()) {

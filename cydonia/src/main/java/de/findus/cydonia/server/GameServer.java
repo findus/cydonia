@@ -445,7 +445,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private void jump(Player p) {
 		if(p == null) return;
-		p.getControl().jump();
+		p.jump();
 		
 		JumpEvent jump = new JumpEvent(p.getId(), true);
 		eventMachine.fireEvent(jump);
@@ -513,7 +513,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			}
 			break;
 		case JUMP:
-			jump(p);
+			if(value) {
+				jump(p);
+			}
 			break;
 		case CHOOSETEAM1:
 			chooseTeam(p, 1);
