@@ -3,13 +3,8 @@
  */
 package de.findus.cydonia.level;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.PhysicsSpace;
@@ -30,7 +25,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.jme3.util.SkyFactory;
 
 import de.findus.cydonia.player.Player;
 
@@ -60,10 +54,10 @@ public class WorldController {
 	
 	protected ConcurrentHashMap<Long, Flube> flubes;
 	
-	/**
-	 * Physics control object of the scene.
-	 */
-	private RigidBodyControl worldCollisionControll;
+//	/**
+//	 * Physics control object of the scene.
+//	 */
+//	private RigidBodyControl worldCollisionControll;
 	
 	/**
 	 * The level currently loaded.
@@ -83,39 +77,12 @@ public class WorldController {
 		
 		this.flubes = new ConcurrentHashMap<Long, Flube>();
 	}
-	
-	public void loadWorldFromXML(String xml) {
-		MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-		try {
-			Map level = mapXMLParser.loadMapFromXML(xml);
-			loadWorld(level);
-		} catch (ParserConfigurationException e) {
-			System.out.println("fehler");
-		} catch (SAXException e) {
-			System.out.println("fehler");
-		} catch (IOException e) {
-			System.out.println("fehler");
-		}
-	}
-
-	public void loadWorldFromFile(String filename) {
-		MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-		try {
-			Map level = mapXMLParser.loadMapFromFile(filename);
-			loadWorld(level);
-		} catch (ParserConfigurationException e) {
-			System.out.println("fehler");
-		} catch (SAXException e) {
-			System.out.println("fehler");
-		} catch (IOException e) {
-			System.out.println("fehler");
-		}
-	}
 
 	public void loadWorld(Map level) {
 		this.map = level;
 		
-		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
+//		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
+//		rootNode.attachChild(sky);
 
 		for(TargetArea ta : level.getTargetAreas()) {
 			worldNode.attachChild(ta.getModel());
@@ -324,6 +291,13 @@ public class WorldController {
 		return this.rootNode;
 	}
 	
+	/**
+	 * @return the map
+	 */
+	public Map getMap() {
+		return map;
+	}
+
 	private void setUpAmbientLight() {
 		rootNode.setShadowMode(ShadowMode.Off);
 		

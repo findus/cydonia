@@ -1,5 +1,7 @@
 package de.findus.cydonia.main;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,6 +10,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
+
+import org.jdom2.JDOMException;
+import org.xml.sax.InputSource;
 
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
@@ -64,6 +69,8 @@ import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.level.Map;
+import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
@@ -364,7 +371,20 @@ public class GameController extends Application implements ScreenController, Phy
      * Starts the actual game eg. the game loop.
      */
     public void startGame(String level) {
-        worldController.loadWorldFromFile(level);
+    	InputSource is = new InputSource(new StringReader(level));
+        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+        try {
+			Map map = mapXMLParser.loadMap(is);
+			worldController.loadWorld(map);
+		} catch ( IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			stopGame();
+		} catch (JDOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			stopGame();
+		}
         
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;

@@ -106,6 +106,13 @@ public class Flube {
 		this.id = id;
 	}
 
+	/**
+	 * @return the type
+	 */
+	public int getType() {
+		return type;
+	}
+
 	public int getTeam() {
 		return type;
 	}

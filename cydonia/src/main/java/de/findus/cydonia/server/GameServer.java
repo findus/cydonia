@@ -3,9 +3,13 @@
  */
 package de.findus.cydonia.server;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.jdom2.JDOMException;
+import org.xml.sax.InputSource;
 
 import com.jme3.app.Application;
 import com.jme3.bullet.BulletAppState;
@@ -40,6 +44,8 @@ import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.level.Map;
+import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameConfig;
 import de.findus.cydonia.main.GameState;
@@ -161,7 +167,20 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
         worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
-        worldController.loadWorldFromFile(MAPFILENAME);
+        InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(MAPFILENAME));
+        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+        try {
+			Map map = mapXMLParser.loadMap(is);
+			worldController.loadWorld(map);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			stop();
+		} catch (JDOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			stop();
+		}
         
         Bullet.preloadTextures();
         
@@ -419,10 +438,10 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p != null) {
 			worldController.detachPlayer(p);
 			players.remove(p.getId());
-		}
 
-		PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
-		eventMachine.fireEvent(quit);
+			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
+			eventMachine.fireEvent(quit);
+		}
 	}
 	
 	private void respawn(Player p) {
@@ -534,7 +553,13 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		ConnectionInitMessage init = new ConnectionInitMessage();
 		init.setConnectionAccepted(true);
 		init.setText("Welcome");
-		init.setLevel(MAPFILENAME);
+		try {
+			String xml = new MapXMLParser(assetManager).writeMap(worldController.getMap());
+			init.setLevel(xml);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		networkController.sendMessage(init, clientid);
 	}
 

@@ -55,6 +55,27 @@ public class TargetArea {
 	}
 
 	/**
+	 * @return the width
+	 */
+	public int getWidth() {
+		return width;
+	}
+
+	/**
+	 * @return the height
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * @return the depth
+	 */
+	public int getDepth() {
+		return depth;
+	}
+
+	/**
 	 * @return the model
 	 */
 	public Spatial getModel() {
