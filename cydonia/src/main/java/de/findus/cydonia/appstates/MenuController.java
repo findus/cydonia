@@ -8,7 +8,9 @@ import java.text.SimpleDateFormat;
 import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.elements.Element;
+import de.lessvoid.nifty.elements.render.ImageRenderer;
 import de.lessvoid.nifty.elements.render.TextRenderer;
+import de.lessvoid.nifty.render.NiftyImage;
 
 /**
  * This AppState controls the menu.
@@ -123,7 +125,8 @@ public class MenuController {
 	public void updateHUD() {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
 		if(gameController.getPlayer() != null) {
-			this.inventoryimg.setVisible(gameController.getPlayer().getInventory() >= 0);
+			NiftyImage img = gameController.getNifty().getRenderEngine().createImage(gameController.getPlayer().getCurrentEquipment().getImagePath(), false);
+			this.inventoryimg.getRenderer(ImageRenderer.class).setImage(img);
 		}
 	}
 }

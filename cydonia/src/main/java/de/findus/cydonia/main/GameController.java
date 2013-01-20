@@ -76,7 +76,9 @@ import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
+import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
@@ -369,6 +371,7 @@ public class GameController extends Application implements ScreenController, Phy
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
     	player = new Player(connector.getConnectionId(), assetManager);
+    	player.setCurrEquipment(new Picker("defaultPicker", 20, 3, this.worldController, player, this.eventMachine));
     	player.setName(playername);
     	player.setTeam(team);
     	players.put(player.getId(), player);
@@ -523,7 +526,8 @@ public class GameController extends Application implements ScreenController, Phy
 				PlaceEvent place = (PlaceEvent) e;
 				Player p = players.get(place.getPlayerid());
 				Vector3f loc = place.getLocation();
-				place(p, loc);
+				long moveableId = place.getMoveableid();
+				place(p, loc, moveableId);
 			}else if (e instanceof PlayerJoinEvent) {
 				PlayerJoinEvent join = (PlayerJoinEvent) e;
 				int playerid = join.getPlayerId();
@@ -608,6 +612,17 @@ public class GameController extends Application implements ScreenController, Phy
 		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
 			final Player p = new Player(info.getPlayerid(), assetManager);
+			try {
+				Equipment equip = (Equipment) Class.forName(info.getEquipInfo().getClassName()).newInstance();
+				equip.loadInfo(info.getEquipInfo());
+				p.setCurrEquipment(equip);
+			} catch (InstantiationException e) {
+				System.out.println("Equipment class not found");
+			} catch (IllegalAccessException e) {
+				System.out.println("Equipment class not found");
+			} catch (ClassNotFoundException e) {
+				System.out.println("Equipment class not found");
+			}
 			p.setName(info.getName());
 			p.setTeam(info.getTeam());
 			p.setAlive(info.isAlive());
@@ -791,19 +806,23 @@ public class GameController extends Application implements ScreenController, Phy
 		if(flube != null) {
 			worldController.detachFlube(flube);
 			if(p != null) {
-				p.setInventory((Long) flube.getId());
+				if(p.getCurrentEquipment() instanceof Picker) {
+					Picker picker = (Picker) p.getCurrentEquipment();
+					picker.getRepository().add(flube);
+				}
 			}
 		}
 	}
 	
-	private void place(Player p, Vector3f loc) {
-		if(p == null) return;
-
-		if(p.getInventory() >= 0) {
-			Flube m = worldController.getFlube(p.getInventory());
-			m.getControl().setPhysicsLocation(loc);
-			worldController.attachFlube(m);
-			p.setInventory(-1);
+	private void place(Player p, Vector3f loc, long moveableId) {
+		Flube m = worldController.getFlube(moveableId);
+		m.getControl().setPhysicsLocation(loc);
+		worldController.attachFlube(m);
+		if(p != null) {
+			if(p.getCurrentEquipment() instanceof Picker) {
+				Picker picker = (Picker) p.getCurrentEquipment();
+				picker.getRepository().remove(m);
+			}
 		}
 	}
 	
@@ -814,6 +833,7 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
+		p.setCurrEquipment(new Picker("defaultPicker", 20, 3, this.worldController, p, this.eventMachine));
 		p.setName(playername);
 		players.put(playerid, p);
 	}

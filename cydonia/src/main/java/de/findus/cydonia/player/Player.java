@@ -60,6 +60,8 @@ public class Player implements AnimEventListener{
 	private long inventory = 0;
 
 	private boolean jumping = false;
+	
+	private Equipment currEquip;
 
 	/**
 	 * Constructs a new Player and inits its physics and model.
@@ -170,6 +172,14 @@ public class Player implements AnimEventListener{
 		this.jumping = true;
 		basechannel.setAnim("JumpStart", 0.5f);
 		basechannel.setLoopMode(LoopMode.Loop);
+	}
+	
+	public void setCurrEquipment(Equipment equip) {
+		this.currEquip = equip;
+	}
+	
+	public Equipment getCurrentEquipment() {
+		return this.currEquip;
 	}
 	
 	/**

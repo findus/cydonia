@@ -54,6 +54,7 @@ import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
+import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 
@@ -68,13 +69,13 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public static float PLAYER_SPEED = 5f;
 	public static float PHYSICS_ACCURACY = (1f / 192);
 	
-	private static final int RELOAD_TIME = 500;
+	public static final int RELOAD_TIME = 500;
 
-	private static final float MAX_PICK_RANGE = 20;
+	public static final float MAX_PICK_RANGE = 20;
 
-	private static final float MAX_PLACE_RANGE = 20;
+	public static final float MAX_PLACE_RANGE = 20;
 
-	private static final boolean FREE_PLACING = false;
+	public static final boolean FREE_PLACING = false;
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -385,63 +386,61 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		}
 	}
 	
-	private void pickup(Player p) {
+//	private void pickup(Player p) {
+//		if(p == null) return;
+//
+//		if(p.getInventory() < 0) {
+//			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
+//			if(result != null && canPickup(p, result.getGeometry(), result.getDistance())) {
+//				Flube m = worldController.getFlube((Long) result.getGeometry().getUserData("id"));
+//				worldController.detachFlube(m);
+//				p.setInventory(m.getId());
+//
+//				PickupEvent pickup = new PickupEvent(p.getId(), m.getId(), true);
+//				eventMachine.fireEvent(pickup);
+//			}
+//		}
+//	}
+	
+	private void usePrimary(Player p) {
 		if(p == null) return;
-
-		if(p.getInventory() < 0) {
-			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-			if(result != null && canPickup(p, result.getGeometry(), result.getDistance())) {
-				Flube m = worldController.getFlube((Long) result.getGeometry().getUserData("id"));
-				worldController.detachFlube(m);
-				p.setInventory(m.getId());
-
-				PickupEvent pickup = new PickupEvent(p.getId(), m.getId(), true);
-				eventMachine.fireEvent(pickup);
-			}
-		}
+		
+		p.getCurrentEquipment().usePrimary();
 	}
 	
-	private boolean canPickup(Player p, Spatial g, float distance) {
-		if(distance <= MAX_PICK_RANGE) {
-			if(p != null && g != null) {
-				if(worldController.isFlube(g) && g.getUserData("Type") != null) {
-					int type = g.getUserData("Type");
-					if(type == 0 || type == p.getTeam()) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
+	private void useSecondary(Player p) {
+		if(p == null) return;
+		
+		p.getCurrentEquipment().useSecondary();
 	}
 	
-	private void place(Player p) {
-		if(p == null) return;
-
-		if(p.getInventory() >= 0) {
-			Flube m = worldController.getFlube(p.getInventory());
-			if(m != null) {
-				CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-				if(result != null && result.getDistance() <= MAX_PLACE_RANGE && worldController.isPlaceableSurface(result.getGeometry())) {
-					Vector3f contactnormal = result.getContactNormal();
-					Vector3f contactpos = result.getContactPoint();
-
-					Vector3f loc;
-					if(FREE_PLACING) {
-						loc = contactpos.add(contactnormal.mult(0.5f));
-					}else {
-						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
-					}
-					m.getControl().setPhysicsLocation(loc);
-					worldController.attachFlube(m);
-					p.setInventory(-1);
-
-					PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
-					eventMachine.fireEvent(place);
-				}
-			}
-		}
-	}
+//	private void place(Player p) {
+//		if(p == null) return;
+//
+//		if(p.getInventory() >= 0) {
+//			Flube m = worldController.getFlube(p.getInventory());
+//			if(m != null) {
+//				CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
+//				if(result != null && result.getDistance() <= MAX_PLACE_RANGE && worldController.isPlaceableSurface(result.getGeometry())) {
+//					Vector3f contactnormal = result.getContactNormal();
+//					Vector3f contactpos = result.getContactPoint();
+//
+//					Vector3f loc;
+//					if(FREE_PLACING) {
+//						loc = contactpos.add(contactnormal.mult(0.5f));
+//					}else {
+//						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
+//					}
+//					m.getControl().setPhysicsLocation(loc);
+//					worldController.attachFlube(m);
+//					p.setInventory(-1);
+//
+//					PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
+//					eventMachine.fireEvent(place);
+//				}
+//			}
+//		}
+//	}
 	
 	private void jump(Player p) {
 		if(p == null) return;
@@ -453,6 +452,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	public void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
+		p.setCurrEquipment(new Picker("defaultPicker", 20, 3, this.worldController, p, this.eventMachine));
 		p.setName(playername);
 		players.put(playerid, p);
 		
@@ -460,7 +460,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		eventMachine.fireEvent(join);
 		
 		sendInitialState(playerid);
-		
 	}
 	
 	private void quitPlayer(Player p) {
@@ -487,17 +486,17 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {
 		Player p = players.get(playerid);
 		switch (command) {
-		case PLACE:
+		case USESECONDARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(value && p.isAlive()) {
-					place(p);
+					usePrimary(p);
 				}
 			}
 			break;
-		case PICKUP:
+		case USEPRIMARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(value && p.isAlive()) {
-					if(value) pickup(p);
+					useSecondary(p);
 				}
 			}
 			break;

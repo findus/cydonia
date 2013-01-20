@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public enum InputCommand {
 
-	PICKUP("pickup"), PLACE("place"), ATTACK("attack"), JUMP("jump"), MOVEFRONT("movefront"), MOVEBACK("moveback"), STRAFELEFT("strafeleft"), STRAFERIGHT("straferight"), JOINGAME("joingame"), QUITGAME("quitgame"),
+	USEPRIMARY("useprimary"), USESECONDARY("usesecondary"), ATTACK("attack"), JUMP("jump"), MOVEFRONT("movefront"), MOVEBACK("moveback"), STRAFELEFT("strafeleft"), STRAFERIGHT("straferight"), JOINGAME("joingame"), QUITGAME("quitgame"),
 	SCOREBOARD("scoreboard"), EXIT("exit"), CHOOSETEAM1("chooseteam1"), CHOOSETEAM2("chooseteam2");
 	
 	public static final Set<InputCommand> forwarded = new HashSet<InputCommand>();
@@ -21,8 +21,8 @@ public enum InputCommand {
 	public static final Set<InputCommand> local = new HashSet<InputCommand>();
 	
 	static {
-		forwarded.add(PICKUP);
-		forwarded.add(PLACE);
+		forwarded.add(USEPRIMARY);
+		forwarded.add(USESECONDARY);
 		forwarded.add(ATTACK);
 		forwarded.add(JUMP);
 		forwarded.add(MOVEFRONT);

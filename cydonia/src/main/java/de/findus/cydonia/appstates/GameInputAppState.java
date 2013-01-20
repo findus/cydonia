@@ -7,8 +7,8 @@ import static de.findus.cydonia.player.InputCommand.ATTACK;
 import static de.findus.cydonia.player.InputCommand.JUMP;
 import static de.findus.cydonia.player.InputCommand.MOVEBACK;
 import static de.findus.cydonia.player.InputCommand.MOVEFRONT;
-import static de.findus.cydonia.player.InputCommand.PICKUP;
-import static de.findus.cydonia.player.InputCommand.PLACE;
+import static de.findus.cydonia.player.InputCommand.USEPRIMARY;
+import static de.findus.cydonia.player.InputCommand.USESECONDARY;
 import static de.findus.cydonia.player.InputCommand.SCOREBOARD;
 import static de.findus.cydonia.player.InputCommand.STRAFELEFT;
 import static de.findus.cydonia.player.InputCommand.STRAFERIGHT;
@@ -59,9 +59,9 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(MOVEFRONT.getCode(), new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping(MOVEBACK.getCode(), new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
-        inputManager.addMapping(PLACE.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addMapping(PICKUP.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
-        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), PICKUP.getCode(), PLACE.getCode());
+        inputManager.addMapping(USEPRIMARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping(USESECONDARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode());
         
         inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addListener(this, SCOREBOARD.getCode());

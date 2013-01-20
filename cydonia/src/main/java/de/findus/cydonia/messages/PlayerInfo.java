@@ -5,6 +5,7 @@ package de.findus.cydonia.messages;
 
 import com.jme3.network.serializing.Serializable;
 
+import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.Player;
 
 
@@ -27,17 +28,20 @@ public class PlayerInfo {
 	
 	private int scores;
 	
+	private EquipmentInfo equipInfo;
+	
 	public PlayerInfo() {
 		
 	}
 
-	public PlayerInfo(int playerid, String name, int team, boolean alive, double healthpoints, int kills, int deaths) {
+	public PlayerInfo(int playerid, String name, int team, boolean alive, double healthpoints, int kills, int deaths, EquipmentInfo equipInfo) {
 		this.playerid = playerid;
 		this.name = name;
 		this.team = team;
 		this.alive = alive;
 		this.healthpoints = healthpoints;
 		this.scores = kills;
+		this.setEquipInfo(equipInfo);
 	}
 	
 	public PlayerInfo(Player p) {
@@ -47,6 +51,7 @@ public class PlayerInfo {
 		this.alive = p.isAlive();
 		this.healthpoints = p.getHealthpoints();
 		this.scores = p.getScores();
+		this.setEquipInfo(p.getCurrentEquipment().getInfo());
 	}
 	
 	/**
@@ -131,5 +136,19 @@ public class PlayerInfo {
 	 */
 	public void setScores(int scores) {
 		this.scores = scores;
+	}
+
+	/**
+	 * @return the equipInfo
+	 */
+	public EquipmentInfo getEquipInfo() {
+		return equipInfo;
+	}
+
+	/**
+	 * @param equipInfo the equipInfo to set
+	 */
+	public void setEquipInfo(EquipmentInfo equipInfo) {
+		this.equipInfo = equipInfo;
 	}
 }
