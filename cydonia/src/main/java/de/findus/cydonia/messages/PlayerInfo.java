@@ -5,7 +5,6 @@ package de.findus.cydonia.messages;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.Player;
 
 

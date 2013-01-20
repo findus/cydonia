@@ -648,7 +648,7 @@ public class GameController extends Application implements ScreenController, Phy
 			p.setScores(info.getScores());
 			players.put(p.getId(), p);
 			if(p.isAlive()) {
-				p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
+				p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
 				enqueue(new Callable<String>() {
 					public String call() {
 						worldController.attachPlayer(p);

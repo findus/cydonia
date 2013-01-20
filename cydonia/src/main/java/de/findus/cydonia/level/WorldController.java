@@ -54,11 +54,6 @@ public class WorldController {
 	
 	protected ConcurrentHashMap<Long, Flube> flubes;
 	
-	/**
-	 * The level currently loaded.
-	 */
-	private Level level;
-	
 	private Map map;
 	
 	/**
@@ -308,10 +303,6 @@ public class WorldController {
 	
 	public LightList getLights() {
 		return rootNode.getLocalLightList();
-	}
-
-	public Level getLevel() {
-		return level;
 	}
 	
 	public Flube getFlube(long id) {
