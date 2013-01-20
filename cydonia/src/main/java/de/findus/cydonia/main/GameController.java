@@ -276,7 +276,6 @@ public class GameController extends Application implements ScreenController, Phy
         bullets = new ConcurrentHashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
-        Bullet.preloadTextures();
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);

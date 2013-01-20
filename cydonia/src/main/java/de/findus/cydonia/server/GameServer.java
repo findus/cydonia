@@ -182,8 +182,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			stop();
 		}
         
-        Bullet.preloadTextures();
-        
         eventMachine.registerListener(this);
         
         networkController = new NetworkController(this, eventMachine);
