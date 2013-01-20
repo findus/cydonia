@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 
-import com.jme3.app.AppTask;
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
 import com.jme3.asset.AssetNotFoundException;
@@ -32,7 +31,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
-import com.jme3.post.ssao.SSAOFilter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
@@ -366,7 +364,7 @@ public class GameController extends Application implements ScreenController, Phy
      * Starts the actual game eg. the game loop.
      */
     public void startGame(String level) {
-        worldController.loadWorld(level);
+        worldController.loadWorldFromFile(level);
         
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
@@ -849,7 +847,7 @@ public class GameController extends Application implements ScreenController, Phy
 		p.setHealthpoints(100);
 		p.setAlive(true);
 
-		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
+		p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
 		worldController.attachPlayer(p);
 		if(p.getId() == player.getId()) {
 			p.getModel().setCullHint(CullHint.Always);

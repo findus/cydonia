@@ -36,7 +36,7 @@ public class Flube {
 	
 	private RigidBodyControl control;
 	
-	public Flube(long id, Vector3f origin, AssetManager assetManager, int type) {
+	public Flube(long id, Vector3f origin, int type, AssetManager assetManager) {
 		this.id = id;
 		this.type = type;
 		this.origin = origin;

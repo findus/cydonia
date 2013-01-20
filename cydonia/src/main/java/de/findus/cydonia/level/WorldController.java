@@ -3,15 +3,18 @@
  */
 package de.findus.cydonia.level;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.light.AmbientLight;
@@ -66,7 +69,9 @@ public class WorldController {
 	 * The level currently loaded.
 	 */
 	private Level level;
-
+	
+	private Map map;
+	
 	/**
 	 * Constructs setting up ambient light.
 	 */
@@ -79,26 +84,71 @@ public class WorldController {
 		this.flubes = new ConcurrentHashMap<Long, Flube>();
 	}
 	
-	/**
-	 * Loads the world.
-	 * @param assetManager an instance of AssetManager
-	 */
-	public void loadWorld(String levelname) {
-		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
-//		rootNode.attachChild(sky);
-		
+	public void loadWorldFromXML(String xml) {
+		MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
 		try {
-			level = (Level) Class.forName(levelname).newInstance();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			Map level = mapXMLParser.loadMapFromXML(xml);
+			loadWorld(level);
+		} catch (ParserConfigurationException e) {
+			System.out.println("fehler");
+		} catch (SAXException e) {
+			System.out.println("fehler");
+		} catch (IOException e) {
+			System.out.println("fehler");
+		}
+	}
+
+	public void loadWorldFromFile(String filename) {
+		MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+		try {
+			Map level = mapXMLParser.loadMapFromFile(filename);
+			loadWorld(level);
+		} catch (ParserConfigurationException e) {
+			System.out.println("fehler");
+		} catch (SAXException e) {
+			System.out.println("fehler");
+		} catch (IOException e) {
+			System.out.println("fehler");
+		}
+	}
+
+	public void loadWorld(Map level) {
+		this.map = level;
+		
+		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
+
+		for(TargetArea ta : level.getTargetAreas()) {
+			worldNode.attachChild(ta.getModel());
+			physicsSpace.addCollisionObject(ta.getControl());
+		}
+		for(Flube f : level.getFlubes()) {
+			this.flubes.put(f.getId(), f);
+			attachFlube(f);
 		}
 
-        Spatial scene = null;
-        scene = level.getScene(assetManager);
+		rootNode.attachChild(worldNode);
+	}
+	
+//	/**
+//	 * Loads the world.
+//	 * @param assetManager an instance of AssetManager
+//	 */
+//	public void loadWorldFromFile(String filename) {
+//		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
+//		rootNode.attachChild(sky);
+		
+//		try {
+//			level = (Level) Class.forName(levelname).newInstance();
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (InstantiationException e) {
+//			e.printStackTrace();
+//		} catch (IllegalAccessException e) {
+//			e.printStackTrace();
+//		}
+
+//        Spatial scene = null;
+//        scene = level.getScene(assetManager);
         
 //        CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
 //        worldCollisionControll = new RigidBodyControl(sceneShape, 0);
@@ -106,63 +156,88 @@ public class WorldController {
 //        worldNode.attachChild(scene);
 //    	physicsSpace.add(worldCollisionControll);
         
-        long idcounter = 1;
-        
-    	int type = -2;
-    	for (int j = 1; j < 20; j++) {
-    		for (int i = 1; i <= 20; i++) {
-    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, j), assetManager, type);
-    			this.flubes.put(m.getId(), m);
-    			m.getControl().setPhysicsLocation(m.getOrigin());
-    			attachFlube(m);
-    		}
-    	}
-    	
-    	type = -1;
-    	for (int j = 1; j < 20; j++) {
-    		for (int i = 1; i <= 20; i++) {
-    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, -j), assetManager, type);
-    			this.flubes.put(m.getId(), m);
-    			m.getControl().setPhysicsLocation(m.getOrigin());
-    			attachFlube(m);
-    		}
-    	}
-    	
-    	type = 0;
-    	for (int j = 1; j < 10; j++) {
-    		for (int i = 1; i <= 10; i++) {
-    			Flube m = new Flube(idcounter++, new Vector3f(i, 1.5f, j), assetManager, type);
-    			this.flubes.put(m.getId(), m);
-    			m.getControl().setPhysicsLocation(m.getOrigin());
-    			attachFlube(m);
-    		}
-    	}
-    	
-    	type = 1;
-    	for (int j = 1; j < 5; j++) {
-    		Flube m = new Flube(idcounter++, new Vector3f(3, 1.5f, -j), assetManager, type);
-    		this.flubes.put(m.getId(), m);
-    		m.getControl().setPhysicsLocation(m.getOrigin());
-    		attachFlube(m);
-    	}
-    	
-    	type = 2;
-    	for (int j = 1; j < 5; j++) {
-    		Flube m = new Flube(idcounter++, new Vector3f(6, 1.5f, -j), assetManager, type);
-    		this.flubes.put(m.getId(), m);
-    		m.getControl().setPhysicsLocation(m.getOrigin());
-    		attachFlube(m);
-    	}
+//        long idcounter = 1;
+//        
+//    	int type = -2;
+//    	for (int j = 1; j < 20; j++) {
+//    		for (int i = 1; i <= 20; i++) {
+//    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, j), type, assetManager);
+//    			this.flubes.put(m.getId(), m);
+//    			m.getControl().setPhysicsLocation(m.getOrigin());
+//    			attachFlube(m);
+//    		}
+//    	}
+//    	
+//    	type = -1;
+//    	for (int j = 1; j < 20; j++) {
+//    		for (int i = 1; i <= 20; i++) {
+//    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, -j), type, assetManager);
+//    			this.flubes.put(m.getId(), m);
+//    			m.getControl().setPhysicsLocation(m.getOrigin());
+//    			attachFlube(m);
+//    		}
+//    	}
+//    	
+//    	type = 0;
+//    	for (int j = 1; j < 10; j++) {
+//    		for (int i = 1; i <= 10; i++) {
+//    			Flube m = new Flube(idcounter++, new Vector3f(i, 1.5f, j), type, assetManager);
+//    			this.flubes.put(m.getId(), m);
+//    			m.getControl().setPhysicsLocation(m.getOrigin());
+//    			attachFlube(m);
+//    		}
+//    	}
+//    	
+//    	type = 1;
+//    	for (int j = 1; j < 5; j++) {
+//    		Flube m = new Flube(idcounter++, new Vector3f(3, 1.5f, -j), type, assetManager);
+//    		this.flubes.put(m.getId(), m);
+//    		m.getControl().setPhysicsLocation(m.getOrigin());
+//    		attachFlube(m);
+//    	}
+//    	
+//    	type = 2;
+//    	for (int j = 1; j < 5; j++) {
+//    		Flube m = new Flube(idcounter++, new Vector3f(6, 1.5f, -j), type, assetManager);
+//    		this.flubes.put(m.getId(), m);
+//    		m.getControl().setPhysicsLocation(m.getOrigin());
+//    		attachFlube(m);
+//    	}
     	
 
-		TargetArea ta = new TargetArea(assetManager);
-		ta.getControl().setPhysicsLocation(new Vector3f(0, 10, 0));
-		worldNode.attachChild(ta.getModel());
-		physicsSpace.addCollisionObject(ta.getControl());
-		
-		worldNode.attachChild(moveablesNode);
-		
-		rootNode.attachChild(worldNode);
+//		TargetArea ta = new TargetArea(1, new Vector3f(0, 10, 0), 2, 2, 2, assetManager);
+//		worldNode.attachChild(ta.getModel());
+//		physicsSpace.addCollisionObject(ta.getControl());
+//		
+//		worldNode.attachChild(moveablesNode);
+//		
+//		MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+//		try {
+//			Map level = mapXMLParser.loadMapFromXML(levelname);
+//			
+//			for(TargetArea ta : level.getTargetAreas()) {
+//				worldNode.attachChild(ta.getModel());
+//				physicsSpace.addCollisionObject(ta.getControl());
+//			}
+//			for(Flube f : level.getFlubes()) {
+//				this.flubes.put(f.getId(), f);
+//				attachFlube(f);
+//			}
+//		} catch (ParserConfigurationException e) {
+//		} catch (SAXException e) {
+//		} catch (IOException e) {
+//		}
+//		
+//		rootNode.attachChild(worldNode);
+//	}
+	
+	public SpawnPoint getSpawnPoint(int team) {
+		for(SpawnPoint sp : map.getSpawnPoints()) {
+			if(sp.getTeam() == team) {
+				return sp;
+			}
+		}
+		return null;
 	}
 	
 	public void resetWorld() {

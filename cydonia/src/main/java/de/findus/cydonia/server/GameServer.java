@@ -13,13 +13,11 @@ import com.jme3.bullet.BulletAppState.ThreadingType;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.collision.CollisionResult;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
@@ -36,14 +34,11 @@ import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.JumpEvent;
-import de.findus.cydonia.events.PickupEvent;
-import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
-import de.findus.cydonia.level.Level3;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameConfig;
@@ -76,6 +71,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public static final float MAX_PLACE_RANGE = 20;
 
 	public static final boolean FREE_PLACING = false;
+
+	private static final String MAPFILENAME = "/de/findus/cydonia/level/level1.xml";
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
@@ -164,7 +161,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
         
         worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
-        worldController.loadWorld(Level3.class.getName());
+        worldController.loadWorldFromFile(MAPFILENAME);
         
         Bullet.preloadTextures();
         
@@ -432,7 +429,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(p == null) return;
 		p.setHealthpoints(100);
 		p.setAlive(true);
-		p.getControl().setPhysicsLocation(worldController.getLevel().getSpawnPoint(p.getTeam()).getPosition());
+		p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
 		worldController.attachPlayer(p);
 
 		RespawnEvent respawn = new RespawnEvent(p.getId(), true);
@@ -537,7 +534,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		ConnectionInitMessage init = new ConnectionInitMessage();
 		init.setConnectionAccepted(true);
 		init.setText("Welcome");
-		init.setLevel(worldController.getLevel().getClass().getName());
+		init.setLevel(MAPFILENAME);
 		networkController.sendMessage(init, clientid);
 	}
 

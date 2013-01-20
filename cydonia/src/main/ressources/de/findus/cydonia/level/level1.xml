@@ -1,0 +1,10 @@
+<map name="Level1">
+<targetarea id="1" width="2" height="1" depth="2" posx="0" posy="5" posz="0" />
+<spawnpoint id="1" posx="-2" posy="2" posz="0" team="1" />
+<spawnpoint id="2" posx="2" posy="2" posz="0" team="2" />
+<flube id="1" type="0" posx="-2" posy="0" posz="0" />
+<flube id="2" type="0" posx="-1" posy="0" posz="0" />
+<flube id="3" type="0" posx="0" posy="0" posz="0" />
+<flube id="4" type="0" posx="1" posy="0" posz="0" />
+<flube id="5" type="0" posx="2" posy="0" posz="0" />
+</map>

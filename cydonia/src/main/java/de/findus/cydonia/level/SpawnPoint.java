@@ -11,10 +11,18 @@ import com.jme3.math.Vector3f;
  */
 public class SpawnPoint {
 
+	private int id;
+	
 	private Vector3f position;
 	
 	private int team;
 
+	public SpawnPoint(int id, Vector3f position, int team) {
+		this.id = id;
+		this.position = position;
+		this.team = team;
+	}
+	
 	/**
 	 * @return the position
 	 */
@@ -41,6 +49,20 @@ public class SpawnPoint {
 	 */
 	public void setTeam(int team) {
 		this.team = team;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
 	}
 
 }

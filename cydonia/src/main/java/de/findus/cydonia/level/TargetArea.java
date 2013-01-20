@@ -20,15 +20,29 @@ import com.jme3.scene.shape.Box;
  */
 public class TargetArea {
 
+	private int id;
+	
 	private Spatial model;
+	
+	private Vector3f position;
+	
+	private int width;
+	private int height;
+	private int depth;
 	
 	private RigidBodyControl control;
 	
-	public TargetArea(AssetManager assetManager) {
+	public TargetArea(int id, Vector3f position, int width, int height, int depth, AssetManager assetManager) {
+		this.id = id;
+		this.position = position;
+		this.width = width;
+		this.height = height;
+		this.depth = depth;
+		
 		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		mat_red.setColor("Color", ColorRGBA.Yellow);
 		
-		Box box = new Box(Vector3f.ZERO, 1.5f, 0.5f, 1.5f);
+		Box box = new Box(Vector3f.ZERO, width/2, height/2, depth/2);
         model = new Geometry("TargetArea", box);
         model.setMaterial(mat_red);
         model.setUserData("PlaceableSurface", true);
@@ -36,6 +50,8 @@ public class TargetArea {
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
         model.addControl(control);
+        
+        control.setPhysicsLocation(position);
 	}
 
 	/**
@@ -50,6 +66,34 @@ public class TargetArea {
 	 */
 	public RigidBodyControl getControl() {
 		return control;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the position
+	 */
+	public Vector3f getPosition() {
+		return position;
+	}
+
+	/**
+	 * @param position the position to set
+	 */
+	public void setPosition(Vector3f position) {
+		this.position = position;
 	}
 	
 	
