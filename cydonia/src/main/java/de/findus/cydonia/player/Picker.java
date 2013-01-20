@@ -108,8 +108,7 @@ public class Picker implements Equipment {
 
 	@Override
 	public EquipmentInfo getInfo() {
-		// TODO Auto-generated method stub
-		return null;
+		return new PickerInfo(this);
 	}
 
 	@Override
@@ -203,65 +202,5 @@ public class Picker implements Equipment {
 	 */
 	public void setPlayer(Player player) {
 		this.player = player;
-	}
-
-	public class PickerInfo implements EquipmentInfo {
-
-		private String name;
-		private float range;
-		private int capacity;
-		private List<Long> repository;
-		private int playerid;
-		
-		public PickerInfo(Picker picker) {
-			this.name = picker.getName();
-			this.range = picker.getRange();
-			this.capacity = picker.getCapacity();
-			this.repository = new LinkedList<Long>();
-			for (Flube f : picker.getRepository()) {
-				this.repository.add(f.getId());
-			}
-			this.playerid = picker.getPlayer().getId();
-		}
-		
-		public String getClassName() {
-			return Picker.class.getName();
-		}
-
-		/**
-		 * @return the name
-		 */
-		public String getName() {
-			return name;
-		}
-
-		/**
-		 * @return the range
-		 */
-		public float getRange() {
-			return range;
-		}
-
-		/**
-		 * @return the capacity
-		 */
-		public int getCapacity() {
-			return capacity;
-		}
-
-		/**
-		 * @return the repository
-		 */
-		public List<Long> getRepository() {
-			return repository;
-		}
-
-		/**
-		 * @return the playerid
-		 */
-		public int getPlayerid() {
-			return playerid;
-		}
-		
 	}
 }

@@ -45,21 +45,21 @@ public class Flube {
 	    
 	    ColorRGBA color = null;
 	    switch (this.type) {
+	    case -3:
+	    	color = ColorRGBA.Yellow;
+	    	break;
 	    case -2:
 	    	color = ColorRGBA.DarkGray;
 	    	break;
 	    case -1:
 			color = ColorRGBA.LightGray;
 			break;
-			
 		case 0:
 			color = new ColorRGBA(1.0f, 0.90f, 0.6f, 1.0f);
 			break;
-			
 		case 1:
 			color = ColorRGBA.Blue;
 			break;
-			
 		case 2:
 			color = ColorRGBA.Red;
 			break;
@@ -79,11 +79,17 @@ public class Flube {
 	    mat_lit.setColor("Ambient", color);
 	    mat_lit.setFloat("Shininess", 1f);
 	    
+	    if(type == -3) {
+	    	mat_lit.setTexture("GlowMap", tex_box);
+	    	mat_lit.setColor("GlowColor", ColorRGBA.Yellow);
+	    }
+	    
         model = new Geometry("Flube_" + id, mesh);
         model.setMaterial(mat_lit);
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
 		model.setUserData("PlaceableSurface", (this.type >= -1));
+		model.setUserData("TargetArea", (this.type == -3));
 		model.setUserData("Type", this.type);
 		TangentBinormalGenerator.generate(model);
         

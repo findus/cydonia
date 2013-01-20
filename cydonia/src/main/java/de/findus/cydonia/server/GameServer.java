@@ -304,7 +304,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 				other = e.getNodeB();
 			}
 			
-			if("TargetArea".equals(e.getNodeA().getName())) {
+			if(e.getNodeA().getUserData("TargetArea") != null && ((Boolean)e.getNodeA().getUserData("TargetArea")).booleanValue() == true) {
 				target = e.getNodeA();
 				other = e.getNodeB();
 			}
@@ -316,7 +316,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 				other = e.getNodeA();
 			}
 			
-			if("TargetArea".equals(e.getNodeB().getName())) {
+			if(e.getNodeB().getUserData("TargetArea") != null && ((Boolean)e.getNodeB().getUserData("TargetArea")).booleanValue() == true) {
 				target = e.getNodeB();
 				other = e.getNodeA();
 			}
@@ -551,13 +551,14 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		ConnectionInitMessage init = new ConnectionInitMessage();
 		init.setConnectionAccepted(true);
 		init.setText("Welcome");
-		try {
-			String xml = new MapXMLParser(assetManager).writeMap(worldController.getMap());
-			init.setLevel(xml);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			String xml = new MapXMLParser(assetManager).writeMap(worldController.getMap());
+//			init.setLevel(xml);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		init.setLevel(MAPFILENAME);
 		networkController.sendMessage(init, clientid);
 	}
 

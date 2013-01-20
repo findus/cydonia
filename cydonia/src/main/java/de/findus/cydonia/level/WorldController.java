@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.level;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,9 +84,17 @@ public class WorldController {
 			attachFlube(f);
 		}
 		
-		addflubestoworld();
+//		addflubestoworld();
 
 		rootNode.attachChild(worldNode);
+		
+		try {
+			String xml = new MapXMLParser(assetManager).writeMap(level);
+			System.out.println(xml);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 
@@ -97,6 +106,7 @@ public class WorldController {
     		for (int i = 1; i <= 20; i++) {
     			Flube m = new Flube(idcounter++, new Vector3f(i, -3f, j), type, assetManager);
     			this.flubes.put(m.getId(), m);
+    			map.getFlubes().add(m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachFlube(m);
     		}
@@ -107,6 +117,7 @@ public class WorldController {
     		for (int i = 1; i <= 20; i++) {
     			Flube m = new Flube(idcounter++, new Vector3f(i, -3f, -j), type, assetManager);
     			this.flubes.put(m.getId(), m);
+    			map.getFlubes().add(m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachFlube(m);
     		}
@@ -117,6 +128,7 @@ public class WorldController {
     		for (int i = 1; i <= 10; i++) {
     			Flube m = new Flube(idcounter++, new Vector3f(i, -2f, j), type, assetManager);
     			this.flubes.put(m.getId(), m);
+    			map.getFlubes().add(m);
     			m.getControl().setPhysicsLocation(m.getOrigin());
     			attachFlube(m);
     		}
@@ -126,6 +138,7 @@ public class WorldController {
     	for (int j = 1; j < 5; j++) {
     		Flube m = new Flube(idcounter++, new Vector3f(3, -2f, -j), type, assetManager);
     		this.flubes.put(m.getId(), m);
+			map.getFlubes().add(m);
     		m.getControl().setPhysicsLocation(m.getOrigin());
     		attachFlube(m);
     	}
@@ -134,6 +147,7 @@ public class WorldController {
     	for (int j = 1; j < 5; j++) {
     		Flube m = new Flube(idcounter++, new Vector3f(6, -2f, -j), type, assetManager);
     		this.flubes.put(m.getId(), m);
+			map.getFlubes().add(m);
     		m.getControl().setPhysicsLocation(m.getOrigin());
     		attachFlube(m);
     	}

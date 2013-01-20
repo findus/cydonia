@@ -33,6 +33,7 @@ import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.main.GameConfig;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
+import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.EventMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
@@ -42,6 +43,7 @@ import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.player.PickerInfo;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -87,6 +89,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(InitialStateMessage.class);
 		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);
+		Serializer.registerClass(PickerInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
 		Serializer.registerClass(WorldStateUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);

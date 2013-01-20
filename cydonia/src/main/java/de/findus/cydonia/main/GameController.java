@@ -35,6 +35,7 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -74,6 +75,7 @@ import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
+import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
 import de.findus.cydonia.messages.MoveableInfo;
@@ -84,6 +86,7 @@ import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Picker;
+import de.findus.cydonia.player.PickerInfo;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
@@ -343,6 +346,9 @@ public class GameController extends Application implements ScreenController, Phy
 //        FXAAFilter fxaaFilter = new FXAAFilter();
 //        fpp.addFilter(fxaaFilter);
         
+        BloomFilter bloom = new BloomFilter(BloomFilter.GlowMode.Objects);
+        fpp.addFilter(bloom);
+        
         viewPort.addProcessor(fpp);
         
         cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.3f, 1000f);
@@ -370,7 +376,8 @@ public class GameController extends Application implements ScreenController, Phy
      * Starts the actual game eg. the game loop.
      */
     public void startGame(String level) {
-    	InputSource is = new InputSource(new StringReader(level));
+//    	InputSource is = new InputSource(new StringReader(level));
+    	InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(level));
         MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
         try {
 			Map map = mapXMLParser.loadMap(is);
@@ -629,22 +636,21 @@ public class GameController extends Application implements ScreenController, Phy
 		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
 			final Player p = new Player(info.getPlayerid(), assetManager);
-			try {
-				Equipment equip = (Equipment) Class.forName(info.getEquipInfo().getClassName()).newInstance();
-				equip.loadInfo(info.getEquipInfo());
+			
+			if(info.getEquipInfo().getClassName().equals(Picker.class.getName())) {
+				PickerInfo ei = (PickerInfo) info.getEquipInfo();
+				Equipment equip = new Picker(ei.getName(), ei.getRange(), ei.getCapacity(), worldController, p, eventMachine);
 				p.setCurrEquipment(equip);
-			} catch (InstantiationException e) {
-				System.out.println("Equipment class not found");
-			} catch (IllegalAccessException e) {
-				System.out.println("Equipment class not found");
-			} catch (ClassNotFoundException e) {
-				System.out.println("Equipment class not found");
+			}else {
+				//TODO: other Equipment types
 			}
+			
 			p.setName(info.getName());
 			p.setTeam(info.getTeam());
 			p.setAlive(info.isAlive());
 			p.setHealthpoints(info.getHealthpoints());
 			p.setScores(info.getScores());
+			
 			players.put(p.getId(), p);
 			if(p.isAlive()) {
 				p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
