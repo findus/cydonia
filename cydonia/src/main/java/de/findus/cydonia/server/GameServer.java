@@ -219,7 +219,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
-					p.setInventory(-1);
+					p.getCurrentEquipment().reset();
 				}
 				removeAllBullets();
 				worldController.resetWorld();
@@ -386,22 +386,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		}
 	}
 	
-//	private void pickup(Player p) {
-//		if(p == null) return;
-//
-//		if(p.getInventory() < 0) {
-//			CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-//			if(result != null && canPickup(p, result.getGeometry(), result.getDistance())) {
-//				Flube m = worldController.getFlube((Long) result.getGeometry().getUserData("id"));
-//				worldController.detachFlube(m);
-//				p.setInventory(m.getId());
-//
-//				PickupEvent pickup = new PickupEvent(p.getId(), m.getId(), true);
-//				eventMachine.fireEvent(pickup);
-//			}
-//		}
-//	}
-	
 	private void usePrimary(Player p) {
 		if(p == null) return;
 		
@@ -413,34 +397,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		
 		p.getCurrentEquipment().useSecondary();
 	}
-	
-//	private void place(Player p) {
-//		if(p == null) return;
-//
-//		if(p.getInventory() >= 0) {
-//			Flube m = worldController.getFlube(p.getInventory());
-//			if(m != null) {
-//				CollisionResult result = worldController.pickWorld(p.getEyePosition(), p.getViewDir());
-//				if(result != null && result.getDistance() <= MAX_PLACE_RANGE && worldController.isPlaceableSurface(result.getGeometry())) {
-//					Vector3f contactnormal = result.getContactNormal();
-//					Vector3f contactpos = result.getContactPoint();
-//
-//					Vector3f loc;
-//					if(FREE_PLACING) {
-//						loc = contactpos.add(contactnormal.mult(0.5f));
-//					}else {
-//						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
-//					}
-//					m.getControl().setPhysicsLocation(loc);
-//					worldController.attachFlube(m);
-//					p.setInventory(-1);
-//
-//					PlaceEvent place = new PlaceEvent(p.getId(), m.getId(), loc, true);
-//					eventMachine.fireEvent(place);
-//				}
-//			}
-//		}
-//	}
 	
 	private void jump(Player p) {
 		if(p == null) return;

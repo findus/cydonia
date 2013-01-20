@@ -102,6 +102,11 @@ public class Picker implements Equipment {
 	}
 	
 	@Override
+	public void reset() {
+		this.repository = new LinkedList<Flube>();
+	}
+
+	@Override
 	public EquipmentInfo getInfo() {
 		// TODO Auto-generated method stub
 		return null;

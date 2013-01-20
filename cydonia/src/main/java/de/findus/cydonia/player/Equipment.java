@@ -15,6 +15,8 @@ public interface Equipment {
 	
 	public void useSecondary();
 	
+	public void reset();
+	
 	public String getImagePath();
 	
 	public EquipmentInfo getInfo();

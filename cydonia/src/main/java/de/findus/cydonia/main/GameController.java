@@ -562,7 +562,7 @@ public class GameController extends Application implements ScreenController, Phy
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
-					p.setInventory(-1);
+					p.getCurrentEquipment().reset();
 				}
 				removeAllBullets();
 				worldController.resetWorld();
