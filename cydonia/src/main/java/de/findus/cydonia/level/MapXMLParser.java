@@ -35,6 +35,14 @@ public class MapXMLParser {
 		this.assetManager = assetManager;
 	}
 	
+	/**
+	 * Parses a Map from XML.
+	 * 
+	 * @param is the XML InputSource
+	 * @return the Map object
+	 * @throws JDOMException
+	 * @throws IOException
+	 */
 	public Map loadMap(InputSource is) throws JDOMException, IOException {
 		SAXBuilder sxbuild = new SAXBuilder();
 		Document doc = sxbuild.build(is);
@@ -52,6 +60,13 @@ public class MapXMLParser {
 		return map;
 	}
 	
+	/**
+	 * Writes a Map to XML.
+	 * 
+	 * @param level the Map object
+	 * @return the XML representation of the Map
+	 * @throws IOException
+	 */
 	public String writeMap(Map level) throws IOException {
 		Element root = new Element("map");
 		root.setAttribute("name", level.getName());

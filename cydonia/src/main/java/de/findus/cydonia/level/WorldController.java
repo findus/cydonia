@@ -54,11 +54,6 @@ public class WorldController {
 	
 	protected ConcurrentHashMap<Long, Flube> flubes;
 	
-//	/**
-//	 * Physics control object of the scene.
-//	 */
-//	private RigidBodyControl worldCollisionControll;
-	
 	/**
 	 * The level currently loaded.
 	 */
@@ -92,111 +87,62 @@ public class WorldController {
 			this.flubes.put(f.getId(), f);
 			attachFlube(f);
 		}
+		
+		addflubestoworld();
 
 		rootNode.attachChild(worldNode);
 	}
 	
-//	/**
-//	 * Loads the world.
-//	 * @param assetManager an instance of AssetManager
-//	 */
-//	public void loadWorldFromFile(String filename) {
-//		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
-//		rootNode.attachChild(sky);
-		
-//		try {
-//			level = (Level) Class.forName(levelname).newInstance();
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (InstantiationException e) {
-//			e.printStackTrace();
-//		} catch (IllegalAccessException e) {
-//			e.printStackTrace();
-//		}
 
-//        Spatial scene = null;
-//        scene = level.getScene(assetManager);
+	private void addflubestoworld() {
+        long idcounter = 1000;
         
-//        CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(scene);
-//        worldCollisionControll = new RigidBodyControl(sceneShape, 0);
-//        scene.addControl(worldCollisionControll);
-//        worldNode.attachChild(scene);
-//    	physicsSpace.add(worldCollisionControll);
-        
-//        long idcounter = 1;
-//        
-//    	int type = -2;
-//    	for (int j = 1; j < 20; j++) {
-//    		for (int i = 1; i <= 20; i++) {
-//    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, j), type, assetManager);
-//    			this.flubes.put(m.getId(), m);
-//    			m.getControl().setPhysicsLocation(m.getOrigin());
-//    			attachFlube(m);
-//    		}
-//    	}
-//    	
-//    	type = -1;
-//    	for (int j = 1; j < 20; j++) {
-//    		for (int i = 1; i <= 20; i++) {
-//    			Flube m = new Flube(idcounter++, new Vector3f(i, 0.5f, -j), type, assetManager);
-//    			this.flubes.put(m.getId(), m);
-//    			m.getControl().setPhysicsLocation(m.getOrigin());
-//    			attachFlube(m);
-//    		}
-//    	}
-//    	
-//    	type = 0;
-//    	for (int j = 1; j < 10; j++) {
-//    		for (int i = 1; i <= 10; i++) {
-//    			Flube m = new Flube(idcounter++, new Vector3f(i, 1.5f, j), type, assetManager);
-//    			this.flubes.put(m.getId(), m);
-//    			m.getControl().setPhysicsLocation(m.getOrigin());
-//    			attachFlube(m);
-//    		}
-//    	}
-//    	
-//    	type = 1;
-//    	for (int j = 1; j < 5; j++) {
-//    		Flube m = new Flube(idcounter++, new Vector3f(3, 1.5f, -j), type, assetManager);
-//    		this.flubes.put(m.getId(), m);
-//    		m.getControl().setPhysicsLocation(m.getOrigin());
-//    		attachFlube(m);
-//    	}
-//    	
-//    	type = 2;
-//    	for (int j = 1; j < 5; j++) {
-//    		Flube m = new Flube(idcounter++, new Vector3f(6, 1.5f, -j), type, assetManager);
-//    		this.flubes.put(m.getId(), m);
-//    		m.getControl().setPhysicsLocation(m.getOrigin());
-//    		attachFlube(m);
-//    	}
+    	int type = -2;
+    	for (int j = 1; j < 20; j++) {
+    		for (int i = 1; i <= 20; i++) {
+    			Flube m = new Flube(idcounter++, new Vector3f(i, -3f, j), type, assetManager);
+    			this.flubes.put(m.getId(), m);
+    			m.getControl().setPhysicsLocation(m.getOrigin());
+    			attachFlube(m);
+    		}
+    	}
     	
-
-//		TargetArea ta = new TargetArea(1, new Vector3f(0, 10, 0), 2, 2, 2, assetManager);
-//		worldNode.attachChild(ta.getModel());
-//		physicsSpace.addCollisionObject(ta.getControl());
-//		
-//		worldNode.attachChild(moveablesNode);
-//		
-//		MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-//		try {
-//			Map level = mapXMLParser.loadMapFromXML(levelname);
-//			
-//			for(TargetArea ta : level.getTargetAreas()) {
-//				worldNode.attachChild(ta.getModel());
-//				physicsSpace.addCollisionObject(ta.getControl());
-//			}
-//			for(Flube f : level.getFlubes()) {
-//				this.flubes.put(f.getId(), f);
-//				attachFlube(f);
-//			}
-//		} catch (ParserConfigurationException e) {
-//		} catch (SAXException e) {
-//		} catch (IOException e) {
-//		}
-//		
-//		rootNode.attachChild(worldNode);
-//	}
+    	type = -1;
+    	for (int j = 1; j < 20; j++) {
+    		for (int i = 1; i <= 20; i++) {
+    			Flube m = new Flube(idcounter++, new Vector3f(i, -3f, -j), type, assetManager);
+    			this.flubes.put(m.getId(), m);
+    			m.getControl().setPhysicsLocation(m.getOrigin());
+    			attachFlube(m);
+    		}
+    	}
+    	
+    	type = 0;
+    	for (int j = 1; j < 10; j++) {
+    		for (int i = 1; i <= 10; i++) {
+    			Flube m = new Flube(idcounter++, new Vector3f(i, -2f, j), type, assetManager);
+    			this.flubes.put(m.getId(), m);
+    			m.getControl().setPhysicsLocation(m.getOrigin());
+    			attachFlube(m);
+    		}
+    	}
+    	
+    	type = 1;
+    	for (int j = 1; j < 5; j++) {
+    		Flube m = new Flube(idcounter++, new Vector3f(3, -2f, -j), type, assetManager);
+    		this.flubes.put(m.getId(), m);
+    		m.getControl().setPhysicsLocation(m.getOrigin());
+    		attachFlube(m);
+    	}
+    	
+    	type = 2;
+    	for (int j = 1; j < 5; j++) {
+    		Flube m = new Flube(idcounter++, new Vector3f(6, -2f, -j), type, assetManager);
+    		this.flubes.put(m.getId(), m);
+    		m.getControl().setPhysicsLocation(m.getOrigin());
+    		attachFlube(m);
+    	}
+	}
 	
 	public SpawnPoint getSpawnPoint(int team) {
 		for(SpawnPoint sp : map.getSpawnPoints()) {
