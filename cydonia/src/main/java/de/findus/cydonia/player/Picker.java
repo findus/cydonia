@@ -16,13 +16,14 @@ import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.EquipmentInfo;
+import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.server.GameServer;
 
 /**
  * @author Findus
  *
  */
-public class Picker implements Equipment {
+public class Picker extends AbstractEquipment {
 
 	private String name;
 	
@@ -32,13 +33,11 @@ public class Picker implements Equipment {
 	
 	private List<Flube> repository = new LinkedList<Flube>();
 	
-	private WorldController worldController;
+	public Picker() {
+		
+	}
 	
-	private Player player;
-	
-	private EventMachine eventMachine;
-	
-	public Picker(String name, float range, int capacity, WorldController worldController, Player player, EventMachine eventMachine) {
+	public Picker(String name, float range, int capacity, Player player, WorldController worldController, EventMachine eventMachine) {
 		this.name = name;
 		this.range = range;
 		this.capacity = capacity;
@@ -188,19 +187,5 @@ public class Picker implements Equipment {
 	 */
 	public void setRepository(List<Flube> repository) {
 		this.repository = repository;
-	}
-
-	/**
-	 * @return the player
-	 */
-	public Player getPlayer() {
-		return player;
-	}
-
-	/**
-	 * @param player the player to set
-	 */
-	public void setPlayer(Player player) {
-		this.player = player;
 	}
 }

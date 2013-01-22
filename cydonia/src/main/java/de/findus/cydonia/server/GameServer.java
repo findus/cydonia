@@ -422,7 +422,9 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	public void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
-		p.setCurrEquipment(new Picker("defaultPicker", 20, 3, this.worldController, p, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker1", 20, 1, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker2", 20, 2, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker3", 20, 3, p, this.worldController, this.eventMachine));
 		p.setName(playername);
 		players.put(playerid, p);
 		

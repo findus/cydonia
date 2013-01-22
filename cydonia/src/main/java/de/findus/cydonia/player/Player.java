@@ -3,6 +3,9 @@
  */
 package de.findus.cydonia.player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
@@ -59,7 +62,9 @@ public class Player implements AnimEventListener{
 
 	private boolean jumping = false;
 	
-	private Equipment currEquip;
+	private List<Equipment> equips = new ArrayList<Equipment>();
+	
+	private int currEquip;
 
 	/**
 	 * Constructs a new Player and inits its physics and model.
@@ -96,7 +101,9 @@ public class Player implements AnimEventListener{
 		case STRAFERIGHT:
 			inputs.setRight(value);
 			break;
-
+		case SWITCHEQUIP:
+			this.switchEquipment(value);
+			break;
 		default:
 			break;
 		}
@@ -165,6 +172,12 @@ public class Player implements AnimEventListener{
         topchannel.setSpeed(0.1f);
 	}
 	
+	public void reset() {
+		for(Equipment equip : this.equips) {
+			equip.reset();
+		}
+	}
+	
 	public void jump() {
 		control.jump();
 		this.jumping = true;
@@ -172,12 +185,26 @@ public class Player implements AnimEventListener{
 		basechannel.setLoopMode(LoopMode.Loop);
 	}
 	
-	public void setCurrEquipment(Equipment equip) {
-		this.currEquip = equip;
+	public void switchEquipment(boolean up) {
+		if(this.equips.size() > 0) {
+			this.currEquip = (this.currEquip + (up?1:-1)) % this.equips.size();
+		}
+	}
+	
+	public int getCurrEquipIndex() {
+		return this.currEquip;
+	}
+	
+	public void setCurrEquip(int index) {
+		this.currEquip = index;
 	}
 	
 	public Equipment getCurrentEquipment() {
-		return this.currEquip;
+		if(this.equips.size() > this.currEquip) {
+			return this.equips.get(this.currEquip);
+		}else {
+			return null;
+		}
 	}
 	
 	/**
@@ -321,6 +348,23 @@ public class Player implements AnimEventListener{
 	public void setViewDir(Vector3f viewDir) {
 		this.viewDir = viewDir.clone();
 		control.setViewDirection(viewDir.clone().setY(0).normalizeLocal());
+	}
+
+	/**
+	 * @return the equips
+	 */
+	public List<Equipment> getEquips() {
+		return equips;
+	}
+
+	/**
+	 * @param equips the equips to set
+	 */
+	public void setEquips(List<Equipment> equips) {
+		if(equips.size() <= this.currEquip) {
+			this.currEquip = equips.size()-1;
+		}
+		this.equips = equips;
 	}
 
 }

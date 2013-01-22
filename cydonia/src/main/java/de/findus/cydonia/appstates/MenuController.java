@@ -124,7 +124,7 @@ public class MenuController {
 
 	public void updateHUD() {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
-		if(gameController.getPlayer() != null) {
+		if(gameController.getPlayer() != null && gameController.getPlayer().getCurrentEquipment() != null) {
 			NiftyImage img = gameController.getNifty().getRenderEngine().createImage(gameController.getPlayer().getCurrentEquipment().getImagePath(), false);
 			this.inventoryimg.getRenderer(ImageRenderer.class).setImage(img);
 		}

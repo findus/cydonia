@@ -7,11 +7,12 @@ import static de.findus.cydonia.player.InputCommand.ATTACK;
 import static de.findus.cydonia.player.InputCommand.JUMP;
 import static de.findus.cydonia.player.InputCommand.MOVEBACK;
 import static de.findus.cydonia.player.InputCommand.MOVEFRONT;
-import static de.findus.cydonia.player.InputCommand.USEPRIMARY;
-import static de.findus.cydonia.player.InputCommand.USESECONDARY;
 import static de.findus.cydonia.player.InputCommand.SCOREBOARD;
 import static de.findus.cydonia.player.InputCommand.STRAFELEFT;
 import static de.findus.cydonia.player.InputCommand.STRAFERIGHT;
+import static de.findus.cydonia.player.InputCommand.SWITCHEQUIP;
+import static de.findus.cydonia.player.InputCommand.USEPRIMARY;
+import static de.findus.cydonia.player.InputCommand.USESECONDARY;
 
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -22,6 +23,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 
@@ -61,7 +63,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
         inputManager.addMapping(USEPRIMARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping(USESECONDARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
-        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode());
+        inputManager.addMapping(SWITCHEQUIP.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(), SWITCHEQUIP.getCode());
         
         inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addListener(this, SCOREBOARD.getCode());

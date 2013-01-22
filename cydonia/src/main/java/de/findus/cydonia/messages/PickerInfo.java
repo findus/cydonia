@@ -1,4 +1,4 @@
-package de.findus.cydonia.player;
+package de.findus.cydonia.messages;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 import com.jme3.network.serializing.Serializable;
 
 import de.findus.cydonia.level.Flube;
-import de.findus.cydonia.messages.EquipmentInfo;
+import de.findus.cydonia.player.Picker;
 
 @Serializable
 public class PickerInfo implements EquipmentInfo {

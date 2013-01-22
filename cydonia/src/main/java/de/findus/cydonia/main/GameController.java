@@ -1,7 +1,6 @@
 package de.findus.cydonia.main;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,7 +85,6 @@ import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Picker;
-import de.findus.cydonia.player.PickerInfo;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
@@ -395,7 +393,9 @@ public class GameController extends Application implements ScreenController, Phy
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
     	player = new Player(connector.getConnectionId(), assetManager);
-    	player.setCurrEquipment(new Picker("defaultPicker", 20, 3, this.worldController, player, this.eventMachine));
+    	player.getEquips().add(new Picker("defaultPicker1", 20, 1, player, this.worldController, this.eventMachine));
+    	player.getEquips().add(new Picker("defaultPicker2", 20, 2, player, this.worldController, this.eventMachine));
+    	player.getEquips().add(new Picker("defaultPicker3", 20, 3, player, this.worldController, this.eventMachine));
     	player.setName(playername);
     	player.setTeam(team);
     	players.put(player.getId(), player);
@@ -586,7 +586,7 @@ public class GameController extends Application implements ScreenController, Phy
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
-					p.getCurrentEquipment().reset();
+					p.reset();
 				}
 				removeAllBullets();
 				worldController.resetWorld();
@@ -636,13 +636,20 @@ public class GameController extends Application implements ScreenController, Phy
 		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
 			final Player p = new Player(info.getPlayerid(), assetManager);
-			
-			if(info.getEquipInfo().getClassName().equals(Picker.class.getName())) {
-				PickerInfo ei = (PickerInfo) info.getEquipInfo();
-				Equipment equip = new Picker(ei.getName(), ei.getRange(), ei.getCapacity(), worldController, p, eventMachine);
-				p.setCurrEquipment(equip);
-			}else {
-				//TODO: other Equipment types
+			for(EquipmentInfo ei : info.getEquipInfos()) {
+				try {
+					Equipment equip = (Equipment) Class.forName(ei.getClassName()).newInstance();
+					equip.setWorldController(worldController);
+					equip.setEventMachine(eventMachine);
+					equip.loadInfo(ei);
+					p.getEquips().add(equip);
+				} catch (InstantiationException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
 			}
 			
 			p.setName(info.getName());
@@ -650,6 +657,7 @@ public class GameController extends Application implements ScreenController, Phy
 			p.setAlive(info.isAlive());
 			p.setHealthpoints(info.getHealthpoints());
 			p.setScores(info.getScores());
+			p.setCurrEquip(info.getCurrEquip());
 			
 			players.put(p.getId(), p);
 			if(p.isAlive()) {
@@ -856,7 +864,9 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
-		p.setCurrEquipment(new Picker("defaultPicker", 20, 3, this.worldController, p, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker1", 20, 1, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker2", 20, 2, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker3", 20, 3, p, this.worldController, this.eventMachine));
 		p.setName(playername);
 		players.put(playerid, p);
 	}

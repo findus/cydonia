@@ -3,8 +3,13 @@
  */
 package de.findus.cydonia.messages;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.jme3.network.serializing.Serializable;
 
+import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.Player;
 
 
@@ -27,20 +32,23 @@ public class PlayerInfo {
 	
 	private int scores;
 	
-	private EquipmentInfo equipInfo;
+	private int currEquip;
+
+	private Collection<EquipmentInfo> equipInfos;
 	
 	public PlayerInfo() {
 		
 	}
 
-	public PlayerInfo(int playerid, String name, int team, boolean alive, double healthpoints, int kills, int deaths, EquipmentInfo equipInfo) {
+	public PlayerInfo(int playerid, String name, int team, boolean alive, double healthpoints, int kills, int deaths, int currEquip, Collection<EquipmentInfo> equipInfos) {
 		this.playerid = playerid;
 		this.name = name;
 		this.team = team;
 		this.alive = alive;
 		this.healthpoints = healthpoints;
 		this.scores = kills;
-		this.setEquipInfo(equipInfo);
+		this.setCurrEquip(currEquip);
+		this.equipInfos = equipInfos;
 	}
 	
 	public PlayerInfo(Player p) {
@@ -50,7 +58,12 @@ public class PlayerInfo {
 		this.alive = p.isAlive();
 		this.healthpoints = p.getHealthpoints();
 		this.scores = p.getScores();
-		this.setEquipInfo(p.getCurrentEquipment().getInfo());
+		this.setCurrEquip(p.getCurrEquipIndex());
+		List<EquipmentInfo> eis = new LinkedList<EquipmentInfo>();
+		for(Equipment e : p.getEquips()) {
+			eis.add(e.getInfo());
+		}
+		this.equipInfos = eis;
 	}
 	
 	/**
@@ -138,16 +151,30 @@ public class PlayerInfo {
 	}
 
 	/**
+	 * @return the currEquip
+	 */
+	public int getCurrEquip() {
+		return currEquip;
+	}
+
+	/**
+	 * @param currEquip the currEquip to set
+	 */
+	public void setCurrEquip(int currEquip) {
+		this.currEquip = currEquip;
+	}
+
+	/**
 	 * @return the equipInfo
 	 */
-	public EquipmentInfo getEquipInfo() {
-		return equipInfo;
+	public Collection<EquipmentInfo> getEquipInfos() {
+		return equipInfos;
 	}
 
 	/**
 	 * @param equipInfo the equipInfo to set
 	 */
-	public void setEquipInfo(EquipmentInfo equipInfo) {
-		this.equipInfo = equipInfo;
+	public void setEquipInfos(Collection<EquipmentInfo> equipInfos) {
+		this.equipInfos = equipInfos;
 	}
 }
