@@ -39,7 +39,7 @@ public class PlayerController {
 	
 	public Player createNew(int id) {
 		Player p = new Player(id);
-		p.getEquips().add(new Picker("defaultPicker1", 30, 1, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this.worldController, this.eventMachine));
 		p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this.worldController, this.eventMachine));
 		
 		players.put(p.getId(), p);
