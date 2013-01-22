@@ -12,6 +12,9 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
+import de.findus.cydonia.events.EventMachine;
+import de.findus.cydonia.level.WorldController;
+
 /**
  * @author Findus
  *
@@ -20,16 +23,25 @@ public class PlayerController {
 	
 	private AssetManager assetManager;
     
-    private ConcurrentHashMap<Integer, Player> players;
+    private WorldController worldController;
 
-	public PlayerController(AssetManager assetManager) {
+	private EventMachine eventMachine;
+
+	private ConcurrentHashMap<Integer, Player> players;
+
+	public PlayerController(AssetManager assetManager, WorldController worldController, EventMachine eventMachine) {
 		this.assetManager = assetManager;
+		this.worldController = worldController;
+		this.eventMachine = eventMachine;
         
         players = new ConcurrentHashMap<Integer, Player>();
 	}
 	
 	public Player createNew(int id) {
 		Player p = new Player(id);
+		p.getEquips().add(new Picker("defaultPicker1", 30, 1, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this.worldController, this.eventMachine));
+		
 		players.put(p.getId(), p);
 		
 		return p;

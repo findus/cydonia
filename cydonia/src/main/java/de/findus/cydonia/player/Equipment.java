@@ -3,6 +3,8 @@
  */
 package de.findus.cydonia.player;
 
+import java.awt.image.BufferedImage;
+
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -19,7 +21,7 @@ public interface Equipment {
 	
 	public void reset();
 	
-	public String getImagePath();
+	public BufferedImage getImagePath();
 	
 	public void setWorldController(WorldController wc);
 	

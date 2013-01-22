@@ -360,7 +360,7 @@ public class GameController extends Application implements ScreenController, Phy
 		throwSound.setVolume(1);
 		worldController.attachObject(throwSound);
 		
-		playerController = new PlayerController(assetManager);
+		playerController = new PlayerController(assetManager, worldController, eventMachine);
     }
     
     public void connect() {
@@ -395,9 +395,6 @@ public class GameController extends Application implements ScreenController, Phy
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
     	player = playerController.createNew(connector.getConnectionId());
-    	player.getEquips().add(new Picker("defaultPicker1", 20, 1, player, this.worldController, this.eventMachine));
-    	player.getEquips().add(new Picker("defaultPicker2", 20, 2, player, this.worldController, this.eventMachine));
-    	player.getEquips().add(new Picker("defaultPicker3", 20, 3, player, this.worldController, this.eventMachine));
     	player.setName(playername);
     	playerController.setTeam(player, team);
     	
@@ -856,9 +853,6 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void joinPlayer(int playerid, String playername) {
 		Player p = playerController.createNew(playerid);
-		p.getEquips().add(new Picker("defaultPicker1", 20, 1, p, this.worldController, this.eventMachine));
-		p.getEquips().add(new Picker("defaultPicker2", 20, 2, p, this.worldController, this.eventMachine));
-		p.getEquips().add(new Picker("defaultPicker3", 20, 3, p, this.worldController, this.eventMachine));
 		p.setName(playername);
 	}
 	

@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.player;
 
+import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class Flucob extends AbstractEquipment {
 	}
 
 	@Override
-	public String getImagePath() {
+	public BufferedImage getImagePath() {
 		// TODO Auto-generated method stub
 		return null;
 	}
