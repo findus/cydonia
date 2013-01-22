@@ -56,6 +56,7 @@ import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerController;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -90,8 +91,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	
 	private Thread senderLoop;
 	
-    private ConcurrentHashMap<Integer, Player> players;
-    
     private ConcurrentHashMap<Long, Bullet> bullets;
     
 	private BulletAppState bulletAppState;
@@ -113,6 +112,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private ConcurrentLinkedQueue<Event> eventQueue;
 	
 	private WorldController worldController;
+	
+    protected PlayerController playerController;
 	
 	@Override
 	public void start() {
@@ -153,7 +154,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
         
         eventMachine = new EventMachine();
         
-        this.players = new ConcurrentHashMap<Integer, Player>();
         this.bullets = new ConcurrentHashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
@@ -180,6 +180,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			e.printStackTrace();
 			stop();
 		}
+        
+        playerController = new PlayerController(assetManager);
         
         eventMachine.registerListener(this);
         
@@ -228,7 +230,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
     		}else if(e instanceof ConnectionRemovedEvent) {
     			connectionRemoved(((ConnectionRemovedEvent) e).getClientid());
     		}else if (e instanceof RestartRoundEvent) {
-				for (Player p : players.values()) {
+				for (Player p : playerController.getAllPlayers()) {
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
@@ -236,14 +238,14 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 				}
 				removeAllBullets();
 				worldController.resetWorld();
-				for (Player p : players.values()) {
+				for (Player p : playerController.getAllPlayers()) {
 					respawn(p);
 				}
 				bulletAppState.setEnabled(true);
 			}else if (e instanceof RoundEndedEvent) {
 				bulletAppState.setEnabled(false);
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
-				for (Player p : players.values()) {
+				for (Player p : playerController.getAllPlayers()) {
 					p.setInputState(new PlayerInputState());
 					if(p.getId() == roundEnded.getWinnerid()) {
 						p.setScores(p.getScores() + 1);
@@ -262,7 +264,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		if(gameplayController.getGameState() != GameState.RUNNING) {
 			return;
 		}
-		for (Player p : this.players.values()) {
+		for (Player p : this.playerController.getAllPlayers()) {
 			Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
 			Vector3f viewLeft = new Vector3f();
 			ROTATE90LEFT.transformVector(viewDir, viewLeft);
@@ -348,8 +350,8 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 	
 	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
-		Player victim = players.get(victimid);
-		Player attacker = players.get(sourceid);
+		Player victim = playerController.getPlayer(victimid);
+		Player attacker = playerController.getPlayer(sourceid);
 		if(victim == null) {
 			System.out.println("cannot prozess hit. player not available.");
 			return;
@@ -360,7 +362,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 			if(hp <= 0) {
 				hp = 0;
 				this.killPlayer(victim);
-				Player source = players.get(sourceid);
+				Player source = playerController.getPlayer(sourceid);
 				if(source != null) {
 					source.setScores(source.getScores() + 1);
 				}
@@ -412,12 +414,11 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 	
 	public void joinPlayer(int playerid, String playername) {
-		Player p = new Player(playerid, assetManager);
+		Player p = playerController.createNew(playerid);
 		p.getEquips().add(new Picker("defaultPicker1", 20, 1, p, this.worldController, this.eventMachine));
 		p.getEquips().add(new Picker("defaultPicker2", 20, 2, p, this.worldController, this.eventMachine));
 		p.getEquips().add(new Picker("defaultPicker3", 20, 3, p, this.worldController, this.eventMachine));
 		p.setName(playername);
-		players.put(playerid, p);
 		
 		PlayerJoinEvent join = new PlayerJoinEvent(playerid, playername, true);
 		eventMachine.fireEvent(join);
@@ -428,7 +429,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	private void quitPlayer(Player p) {
 		if(p != null) {
 			worldController.detachPlayer(p);
-			players.remove(p.getId());
+			playerController.removePlayer(p.getId());
 
 			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
 			eventMachine.fireEvent(quit);
@@ -447,7 +448,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 	
 	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {
-		Player p = players.get(playerid);
+		Player p = playerController.getPlayer(playerid);
 		switch (command) {
 		case USESECONDARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
@@ -496,20 +497,20 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 	private void chooseTeam(Player p, int team) {
 		if(p == null) return;
-		p.setTeam(team);
+		playerController.setTeam(p, team);
 		
 		ChooseTeamEvent event = new ChooseTeamEvent(p.getId(), team, true);
 		eventMachine.fireEvent(event);
 		
-		if(players.size() == 1) {
+		if(playerController.getPlayerCount() == 1) {
 			gameplayController.restartRound();
 		}
 	}
 	
 	private void sendInitialState(int playerid) {
-		PlayerInfo[] playerinfos = new PlayerInfo[players.size()];
+		PlayerInfo[] playerinfos = new PlayerInfo[playerController.getPlayerCount()];
 		int i=0;
-		for (Player p : players.values()) {
+		for (Player p : playerController.getAllPlayers()) {
 			playerinfos[i] = new PlayerInfo(p);
 			i++;
 		}
@@ -530,7 +531,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 
 	public void setViewDir(int playerid, Vector3f dir) {
-		Player p = players.get(playerid);
+		Player p = playerController.getPlayer(playerid);
 		if(p == null || dir == null)  return;
 		p.setViewDir(dir);
 	}
@@ -551,7 +552,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	}
 
 	public void connectionRemoved(int clientid) {
-		Player p = players.get(clientid);
+		Player p = playerController.getPlayer(clientid);
 		quitPlayer(p);
 	}
 	
@@ -564,7 +565,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		@Override
 		public void run() {
 			while(!Thread.interrupted()) {
-				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(players.values(), bullets.values());
+				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(playerController.getAllPlayers(), bullets.values());
 				networkController.broadcast(worldstate);
 				
 				try {

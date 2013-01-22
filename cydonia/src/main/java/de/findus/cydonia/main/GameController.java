@@ -85,6 +85,7 @@ import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerController;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.controls.DropDown;
@@ -122,6 +123,8 @@ public class GameController extends Application implements ScreenController, Phy
     protected WorldController worldController;
     
     protected MenuController menuController;
+    
+    protected PlayerController playerController;
 
 	protected Node guiNode = new Node("Gui Node");
     
@@ -145,8 +148,7 @@ public class GameController extends Application implements ScreenController, Phy
     
     private Player player;
     private AudioNode throwSound;
-    
-    private ConcurrentHashMap<Integer, Player> players;
+
     private ConcurrentHashMap<Long, Bullet> bullets;
     private ServerConnector connector;
     
@@ -271,8 +273,7 @@ public class GameController extends Application implements ScreenController, Phy
         eventQueue = new ConcurrentLinkedQueue<Event>();
         
         this.gamestate = GameState.LOBBY;
-        
-        players = new ConcurrentHashMap<Integer, Player>();
+
         bullets = new ConcurrentHashMap<Long, Bullet>();
         
         Bullet.setAssetManager(assetManager);
@@ -358,6 +359,8 @@ public class GameController extends Application implements ScreenController, Phy
 		throwSound.setLocalTranslation(Vector3f.ZERO);
 		throwSound.setVolume(1);
 		worldController.attachObject(throwSound);
+		
+		playerController = new PlayerController(assetManager);
     }
     
     public void connect() {
@@ -391,13 +394,13 @@ public class GameController extends Application implements ScreenController, Phy
         
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
-    	player = new Player(connector.getConnectionId(), assetManager);
+    	player = playerController.createNew(connector.getConnectionId());
     	player.getEquips().add(new Picker("defaultPicker1", 20, 1, player, this.worldController, this.eventMachine));
     	player.getEquips().add(new Picker("defaultPicker2", 20, 2, player, this.worldController, this.eventMachine));
     	player.getEquips().add(new Picker("defaultPicker3", 20, 3, player, this.worldController, this.eventMachine));
     	player.setName(playername);
-    	player.setTeam(team);
-    	players.put(player.getId(), player);
+    	playerController.setTeam(player, team);
+    	
     	
         JoinMessage join = new JoinMessage(player.getId(), player.getName());
     	connector.sendMessage(join);
@@ -499,7 +502,7 @@ public class GameController extends Application implements ScreenController, Phy
 			}
 
 			for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
-				Player p = players.get(physic.getId());
+				Player p = playerController.getPlayer(physic.getId());
 				if(p != null) {
 					p.setExactLoc(physic.getTranslation());
 					p.setViewDir(physic.getOrientation());
@@ -535,19 +538,19 @@ public class GameController extends Application implements ScreenController, Phy
 				startGame(((ConnectionInitEvent) e).getLevel());
 			}else if (e instanceof AttackEvent) {
 				AttackEvent attack = (AttackEvent) e;
-				Player p = players.get(attack.getPlayerid());
+				Player p = playerController.getPlayer(attack.getPlayerid());
 				attack(p, attack.getBulletid());
 			}else if (e instanceof HitEvent) {
 				HitEvent hit = (HitEvent) e;
 				hitPlayer(hit.getAttackerPlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
 			}else if (e instanceof PickupEvent) {
 				PickupEvent pickup = (PickupEvent) e;
-				Player p = players.get(pickup.getPlayerid());
+				Player p = playerController.getPlayer(pickup.getPlayerid());
 				Flube flube = worldController.getFlube(pickup.getMoveableid());
 				pickup(p, flube);
 			}else if (e instanceof PlaceEvent) {
 				PlaceEvent place = (PlaceEvent) e;
-				Player p = players.get(place.getPlayerid());
+				Player p = playerController.getPlayer(place.getPlayerid());
 				Vector3f loc = place.getLocation();
 				long moveableId = place.getMoveableid();
 				place(p, loc, moveableId);
@@ -559,25 +562,25 @@ public class GameController extends Application implements ScreenController, Phy
 				}
 			}else if (e instanceof ChooseTeamEvent) {
 				ChooseTeamEvent choose = (ChooseTeamEvent) e;
-				Player p = players.get(choose.getPlayerId());
+				Player p = playerController.getPlayer(choose.getPlayerId());
 				chooseTeam(p, choose.getTeam());
 			}else if (e instanceof RespawnEvent) {
 				RespawnEvent respawn = (RespawnEvent) e;
-				Player p = players.get(respawn.getPlayerid());
+				Player p = playerController.getPlayer(respawn.getPlayerid());
 				respawn(p);
 			}else if (e instanceof PlayerQuitEvent) {
 				PlayerQuitEvent quit = (PlayerQuitEvent) e;
-				Player p = players.get(quit.getPlayerId());
+				Player p = playerController.getPlayer(quit.getPlayerId());
 				quitPlayer(p);
 			}else if (e instanceof InputEvent) {
     			InputEvent input = (InputEvent) e;
     			// only use inputs from other players, not our own inputs, that are sent back to us from the server
     			if(player.getId() != input.getPlayerid()) {
-    				Player p = players.get(input.getPlayerid());
+    				Player p = playerController.getPlayer(input.getPlayerid());
     				p.handleInput(input.getCommand(), input.isValue());
     			}
     		}else if (e instanceof RestartRoundEvent) {
-				for (Player p : players.values()) {
+				for (Player p : playerController.getAllPlayers()) {
 					if(p.isAlive()) {
 						killPlayer(p);
 					}
@@ -588,7 +591,7 @@ public class GameController extends Application implements ScreenController, Phy
 				this.roundStartTime = System.currentTimeMillis();
 			}else if (e instanceof RoundEndedEvent) {
 				RoundEndedEvent roundEnded = (RoundEndedEvent) e;
-				for (Player p : players.values()) {
+				for (Player p : playerController.getAllPlayers()) {
 					p.setInputState(new PlayerInputState());
 					if(p.getId() == roundEnded.getWinnerid()) {
 						p.setScores(p.getScores() + 1);
@@ -618,7 +621,7 @@ public class GameController extends Application implements ScreenController, Phy
 	}
 
 	private void clean() {
-		players.clear();
+		playerController.removeAllPlayers();
 	}
 	
 	public void setlatestWorldstate(WorldStateUpdatedMessage update) {
@@ -630,7 +633,7 @@ public class GameController extends Application implements ScreenController, Phy
 		
 		for (PlayerInfo info : pinfos) {
 			if(player.getId() == info.getPlayerid()) continue;
-			final Player p = new Player(info.getPlayerid(), assetManager);
+			final Player p = playerController.createNew(info.getPlayerid());
 			for(EquipmentInfo ei : info.getEquipInfos()) {
 				try {
 					Equipment equip = (Equipment) Class.forName(ei.getClassName()).newInstance();
@@ -648,13 +651,12 @@ public class GameController extends Application implements ScreenController, Phy
 			}
 			
 			p.setName(info.getName());
-			p.setTeam(info.getTeam());
+			playerController.setTeam(p, info.getTeam());
 			p.setAlive(info.isAlive());
 			p.setHealthpoints(info.getHealthpoints());
 			p.setScores(info.getScores());
 			p.setCurrEquip(info.getCurrEquip());
 			
-			players.put(p.getId(), p);
 			if(p.isAlive()) {
 				p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
 				enqueue(new Callable<String>() {
@@ -714,7 +716,7 @@ public class GameController extends Application implements ScreenController, Phy
      */
 	private void movePlayers(float tpf) {
         
-		for (Player p : players.values()) {
+		for (Player p : playerController.getAllPlayers()) {
 			if(p.getId() == player.getId()) {
 				p.setViewDir(cam.getDirection());
 				listener.setLocation(cam.getLocation());
@@ -787,7 +789,7 @@ public class GameController extends Application implements ScreenController, Phy
     }
 
 	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
-		Player victim = players.get(victimid);
+		Player victim = playerController.getPlayer(victimid);
 		if(victim == null) {
 			return;
 		}
@@ -797,7 +799,7 @@ public class GameController extends Application implements ScreenController, Phy
 		if(hp <= 0) {
 			hp = 0;
 			this.killPlayer(victim);
-			Player source = this.players.get(sourceid);
+			Player source = playerController.getPlayer(sourceid);
 			if(source != null) {
 				source.setScores(source.getScores() + 1);
 			}
@@ -853,18 +855,17 @@ public class GameController extends Application implements ScreenController, Phy
 	}
 	
 	private void joinPlayer(int playerid, String playername) {
-		Player p = new Player(playerid, assetManager);
+		Player p = playerController.createNew(playerid);
 		p.getEquips().add(new Picker("defaultPicker1", 20, 1, p, this.worldController, this.eventMachine));
 		p.getEquips().add(new Picker("defaultPicker2", 20, 2, p, this.worldController, this.eventMachine));
 		p.getEquips().add(new Picker("defaultPicker3", 20, 3, p, this.worldController, this.eventMachine));
 		p.setName(playername);
-		players.put(playerid, p);
 	}
 	
 	private void quitPlayer(Player p) {
 		if(p == null) return;
 		worldController.detachPlayer(p);
-		players.remove(p.getId());
+		playerController.removePlayer(p.getId());
 	}
 	
 	private void respawn(final Player p) {
@@ -882,7 +883,7 @@ public class GameController extends Application implements ScreenController, Phy
 	
 	private void chooseTeam(Player p, int team) {
 		if(p == null) return;
-		p.setTeam(team);
+		playerController.setTeam(p, team);
 	}
 	
 	public long getRemainingTime() {
@@ -891,13 +892,13 @@ public class GameController extends Application implements ScreenController, Phy
 	}
 	
 	public Player getLastScorer() {
-		return players.get(lastScorerId);
+		return playerController.getPlayer(lastScorerId);
 	}
 
 	public String getScores() {
 		StringBuilder sb_team1 = new StringBuilder();
 		StringBuilder sb_team2 = new StringBuilder();
-		for (Player p : players.values()) {
+		for (Player p : playerController.getAllPlayers()) {
 			if(p.getTeam() == 1) {
 				sb_team1.append("\n" + p.getName() + "\t\t" + p.getScores());
 			}else if(p.getTeam() == 2) {

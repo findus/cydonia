@@ -28,8 +28,6 @@ public class Player implements AnimEventListener{
 	
 	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.70f, 0);
 	
-	private AssetManager assetManager;
-	
 	private int id;
 	
 	private String name;
@@ -71,10 +69,9 @@ public class Player implements AnimEventListener{
 	 * @param id the id of this player. If not available set to -1 and reset later.
 	 * @param assetManager the used instance of AssetManager 
 	 */
-	public Player(int id, AssetManager assetManager) {
+	public Player(int id) {
 		this.id = id;
-		
-		this.assetManager = assetManager;
+
 		
 		inputs = new PlayerInputState();
 		
@@ -83,8 +80,6 @@ public class Player implements AnimEventListener{
         control.setJumpSpeed(10);
         control.setFallSpeed(25);
         control.setGravity(25);
-        
-        loadModel();
 	}
 	
 	public void handleInput(InputCommand command, boolean value) {
@@ -156,18 +151,8 @@ public class Player implements AnimEventListener{
 		
 	}
 
-	public void loadModel() {
-		if(this.team == 1) {
-			model = (Node) assetManager.loadModel("de/findus/cydonia/models/blue/Sinbad.mesh.xml");
-		}else if(this.team == 2) {
-			model = (Node) assetManager.loadModel("de/findus/cydonia/models/red/Sinbad.mesh.xml");
-		}else {
-			model = (Node) assetManager.loadModel("de/findus/cydonia/models/green/Sinbad.mesh.xml");
-		}
-		model.setName("player" + id);
-		model.setLocalScale(0.2f);
-		model.addControl(this.control);
-		model.setShadowMode(ShadowMode.Cast);
+	public void setModel(Spatial s) {
+		this.model = s;
 		
 		animcontrol = model.getControl(AnimControl.class);
 		animcontrol.addListener(this);
@@ -335,9 +320,8 @@ public class Player implements AnimEventListener{
 	/**
 	 * @param team the team to set
 	 */
-	public void setTeam(int team) {
+	protected void setTeam(int team) {
 		this.team = team;
-		this.loadModel();
 	}
 
 	/**
