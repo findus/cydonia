@@ -101,6 +101,11 @@ public class Player implements AnimEventListener{
 		case STRAFERIGHT:
 			inputs.setRight(value);
 			break;
+		case JUMP:
+			if(value) {
+				this.jump();
+			}
+			break;
 		case SWITCHEQUIP:
 			this.switchEquipment(value);
 			break;

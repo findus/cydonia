@@ -60,7 +60,6 @@ import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
-import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
@@ -570,10 +569,6 @@ public class GameController extends Application implements ScreenController, Phy
 				PlayerQuitEvent quit = (PlayerQuitEvent) e;
 				Player p = players.get(quit.getPlayerId());
 				quitPlayer(p);
-			}else if (e instanceof JumpEvent) {
-				JumpEvent jump = (JumpEvent) e;
-				Player p = players.get(jump.getPlayerid());
-				jump(p);
 			}else if (e instanceof InputEvent) {
     			InputEvent input = (InputEvent) e;
     			// only use inputs from other players, not our own inputs, that are sent back to us from the server
@@ -855,11 +850,6 @@ public class GameController extends Application implements ScreenController, Phy
 				picker.getRepository().remove(m);
 			}
 		}
-	}
-	
-	private void jump(Player p) {
-		if(p == null) return;
-		p.jump();
 	}
 	
 	private void joinPlayer(int playerid, String playername) {

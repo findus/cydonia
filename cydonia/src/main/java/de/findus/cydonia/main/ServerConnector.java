@@ -18,7 +18,6 @@ import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
-import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
@@ -109,7 +108,6 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(HitEvent.class);
 		Serializer.registerClass(PickupEvent.class);
 		Serializer.registerClass(PlaceEvent.class);
-		Serializer.registerClass(JumpEvent.class);
 		Serializer.registerClass(RespawnEvent.class);
 		Serializer.registerClass(RestartRoundEvent.class);
 		Serializer.registerClass(RoundEndedEvent.class);

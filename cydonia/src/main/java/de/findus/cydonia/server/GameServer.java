@@ -37,7 +37,6 @@ import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
-import de.findus.cydonia.events.JumpEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
@@ -412,14 +411,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		p.getCurrentEquipment().useSecondary();
 	}
 	
-	private void jump(Player p) {
-		if(p == null) return;
-		p.jump();
-		
-		JumpEvent jump = new JumpEvent(p.getId(), true);
-		eventMachine.fireEvent(jump);
-	}
-	
 	public void joinPlayer(int playerid, String playername) {
 		Player p = new Player(playerid, assetManager);
 		p.getEquips().add(new Picker("defaultPicker1", 20, 1, p, this.worldController, this.eventMachine));
@@ -481,11 +472,6 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 						respawn(p);
 					}
 				}
-			}
-			break;
-		case JUMP:
-			if(value) {
-				jump(p);
 			}
 			break;
 		case CHOOSETEAM1:
