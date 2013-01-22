@@ -78,7 +78,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 
 	public static final boolean FREE_PLACING = false;
 
-	private static final String MAPFILENAME = "/de/findus/cydonia/level/level1.xml";
+	private static final String MAPFILENAME = "/de/findus/cydonia/level/level3.xml";
 	
 	public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
