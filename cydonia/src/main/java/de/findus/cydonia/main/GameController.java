@@ -349,7 +349,7 @@ public class GameController extends Application implements ScreenController, Phy
         
         viewPort.addProcessor(fpp);
         
-        cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.3f, 1000f);
+        cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.3f, 300f);
         
         eventMachine.registerListener(this);
         
