@@ -79,10 +79,10 @@ public class Flube {
 	    mat_lit.setColor("Ambient", color);
 	    mat_lit.setFloat("Shininess", 1f);
 	    
-	    if(type == -3) {
-	    	mat_lit.setTexture("GlowMap", tex_box);
-	    	mat_lit.setColor("GlowColor", ColorRGBA.Yellow);
-	    }
+//	    if(type == -3) {
+	    	Texture tex_box_glow = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_glow2.png");
+	    	mat_lit.setTexture("GlowMap", tex_box_glow);
+//	    }
 	    
         model = new Geometry("Flube_" + id, mesh);
         model.setMaterial(mat_lit);
