@@ -5,6 +5,7 @@ package de.findus.cydonia.player;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -31,6 +32,8 @@ import de.findus.cydonia.server.GameServer;
  */
 public class Picker extends AbstractEquipment {
 
+	private static Image[] hudImgs;
+	
 	private String name;
 	
 	private float range;
@@ -38,8 +41,6 @@ public class Picker extends AbstractEquipment {
 	private int capacity;
 	
 	private List<Flube> repository = new LinkedList<Flube>();
-	
-	private BufferedImage img;
 	
 	public Picker() {
 		
@@ -52,6 +53,17 @@ public class Picker extends AbstractEquipment {
 		this.worldController = worldController;
 		this.player = player;
 		this.eventMachine = eventMachine;
+		
+		
+		try {
+			if(hudImgs == null) {
+				hudImgs = new Image[3];
+				hudImgs[0] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_gold.png"));
+				hudImgs[1] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_blue.png"));
+				hudImgs[2] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_red.png"));
+			}
+		} catch (IOException e) {
+		}
 	}
 	
 	public void usePrimary() {
@@ -133,20 +145,17 @@ public class Picker extends AbstractEquipment {
 	}
 
 	@Override
-	public BufferedImage getImagePath() {
-		if(img == null) {
-			try {
-				img = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/Inventory.png"));
-			} catch (IOException e) {
-			}
-		}
-		
-		BufferedImage tmpimg = new BufferedImage(35, 35, BufferedImage.TYPE_INT_ARGB);
+	public BufferedImage getHUDImage() {
+		BufferedImage tmpimg = new BufferedImage(35*this.capacity, 35, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D gr = (Graphics2D) tmpimg.getGraphics();
 		
-		gr.drawImage(img, 0, 0, new Color(0, 0, 0, 0), null);
-		String text = this.getRepository().size() + "/" + this.getCapacity();
-		gr.drawString(text, 5, 25);
+		int imgpos = 0;
+		for(Flube f : this.repository) {
+			if(f.getType() >= 0) {
+				gr.drawImage(hudImgs[f.getType()], imgpos, 0, new Color(0, 0, 0, 0), null);
+				imgpos += 35;
+			}
+		}
 
 		return tmpimg;
 	}

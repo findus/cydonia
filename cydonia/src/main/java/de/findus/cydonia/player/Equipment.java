@@ -21,7 +21,7 @@ public interface Equipment {
 	
 	public void reset();
 	
-	public BufferedImage getImagePath();
+	public BufferedImage getHUDImage();
 	
 	public void setWorldController(WorldController wc);
 	

@@ -54,7 +54,7 @@ public class Flucob extends AbstractEquipment {
 	}
 
 	@Override
-	public BufferedImage getImagePath() {
+	public BufferedImage getHUDImage() {
 		// TODO Auto-generated method stub
 		return null;
 	}

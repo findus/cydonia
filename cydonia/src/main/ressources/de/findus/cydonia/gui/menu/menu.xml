@@ -50,7 +50,7 @@
       </panel>
       <panel width="98%" align="center" valign="bottom" backgroundColor="#fff0" childLayout="center" padding="10px">
       	<panel align="right" valign="center" backgroundColor="#8888" childLayout="center">
-      		<image id="inventoryimg" filename="de/findus/cydonia/gui/hud/Inventory.png"/>
+      		<image id="inventoryimg" filename="de/findus/cydonia/gui/hud/inventory_gold.png"/>
       	</panel>
       </panel>
     </layer>

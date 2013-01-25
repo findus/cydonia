@@ -26,6 +26,7 @@ import de.lessvoid.nifty.elements.render.ImageRenderer;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.render.NiftyImage;
 import de.lessvoid.nifty.spi.render.RenderImage;
+import de.lessvoid.nifty.tools.SizeValue;
 
 /**
  * This AppState controls the menu.
@@ -140,9 +141,9 @@ public class MenuController {
 	public void updateHUD() {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
 		if(gameController.getPlayer() != null && gameController.getPlayer().getCurrentEquipment() != null) {
-			BufferedImage img = gameController.getPlayer().getCurrentEquipment().getImagePath();
+			BufferedImage img = gameController.getPlayer().getCurrentEquipment().getHUDImage();
 
-			Texture tex = new Texture2D(35, 35, Format.RGBA16);
+			Texture tex = new Texture2D(img.getWidth(), img.getHeight(), Format.RGBA16);
 			tex.setAnisotropicFilter(16);
 			tex.setMagFilter(MagFilter.Bilinear);
 			AWTLoader loader =new AWTLoader();
@@ -153,6 +154,8 @@ public class MenuController {
 			RenderImage rimg = new RenderImageJme(new Texture2D(imageJME));
 			NiftyImage nimg = new NiftyImage(gameController.getNifty().getRenderEngine(), rimg);
 			this.inventoryimg.getRenderer(ImageRenderer.class).setImage(nimg);
+			this.inventoryimg.setConstraintWidth(new SizeValue(String.valueOf(nimg.getWidth())));
+			this.hudlayer.layoutElements();
 		}
 	}
 }
