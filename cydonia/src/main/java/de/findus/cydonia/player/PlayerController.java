@@ -6,7 +6,6 @@ package de.findus.cydonia.player;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.jme3.animation.AnimControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
