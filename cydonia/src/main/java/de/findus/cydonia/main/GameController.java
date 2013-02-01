@@ -141,6 +141,8 @@ public class GameController extends Application implements ScreenController, Phy
     private Vector3f walkDirection = new Vector3f();
     private boolean left=false, right=false, up=false, down=false;
     
+    private String serverAddress = "";
+    
     private Nifty nifty;
     private TextField serverAddressInput;
     private TextField playerNameInput;
@@ -163,6 +165,11 @@ public class GameController extends Application implements ScreenController, Phy
     private long roundStartTime;
     
     private int lastScorerId;
+    
+    public void start(String server) {
+    	this.serverAddress = server;
+    	this.start();
+    }
     
     @Override
     public void start() {
@@ -272,7 +279,7 @@ public class GameController extends Application implements ScreenController, Phy
         
         eventQueue = new ConcurrentLinkedQueue<Event>();
         
-        this.gamestate = GameState.LOBBY;
+        this.gamestate = GameState.LOADING;
 
         bullets = new ConcurrentHashMap<Long, Bullet>();
         
@@ -361,15 +368,10 @@ public class GameController extends Application implements ScreenController, Phy
 		worldController.attachObject(throwSound);
 		
 		playerController = new PlayerController(assetManager, worldController, eventMachine);
-    }
-    
-    public void connect() {
-    	gamestate = GameState.LOADING;
+		
     	menuController.actualizeScreen();
-    	String serveraddress = this.serverAddressInput.getRealText();
-    	connector.connectToServer(serveraddress, 6173);
+    	connector.connectToServer(serverAddress, 6173);
     }
-    
     
 
 	/**
@@ -383,15 +385,19 @@ public class GameController extends Application implements ScreenController, Phy
 			Map map = mapXMLParser.loadMap(is);
 			worldController.loadWorld(map);
 		} catch ( IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			stopGame();
 		} catch (JDOMException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			stopGame();
 		}
-        
+    	
+    	bulletAppState.setEnabled(true);
+    	gamestate = GameState.LOBBY;
+    	menuController.actualizeScreen();
+    }
+    
+    public void joinGame() {
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
     	player = playerController.createNew(connector.getConnectionId());
@@ -409,11 +415,6 @@ public class GameController extends Application implements ScreenController, Phy
     		chooseteam = new InputMessage(player.getId(), InputCommand.CHOOSETEAM2, true);
     	}
     	connector.sendMessage(chooseteam);
-    	
-    	bulletAppState.setEnabled(true);
-    	gamestate = GameState.SPECTATE;
-    	stateManager.attach(gameInputAppState);
-    	menuController.actualizeScreen();
     }
     
     /**
@@ -958,7 +959,7 @@ public class GameController extends Application implements ScreenController, Phy
 
 	@Override
 	public void bind(Nifty nifty, Screen screen) {
-		this.serverAddressInput = screen.findNiftyControl("serveraddress", TextField.class);
+//		this.serverAddressInput = screen.findNiftyControl("serveraddress", TextField.class);
 		this.playerNameInput = screen.findNiftyControl("playername", TextField.class);
 		this.teamInput = screen.findNiftyControl("team", DropDown.class);
 		

@@ -110,7 +110,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 						response.setAddress(pack.getAddress());
 						response.setPort(55001);
 
-						DatagramSocket c = new DatagramSocket(55000);
+						DatagramSocket c = new DatagramSocket();
 						c.send(response); 
 						System.out.println("Sent Response");
 						c.close();
