@@ -143,13 +143,8 @@ public class MenuController {
 		if(gameController.getPlayer() != null && gameController.getPlayer().getCurrentEquipment() != null) {
 			BufferedImage img = gameController.getPlayer().getCurrentEquipment().getHUDImage();
 
-			Texture tex = new Texture2D(img.getWidth(), img.getHeight(), Format.RGBA16);
-			tex.setAnisotropicFilter(16);
-			tex.setMagFilter(MagFilter.Bilinear);
 			AWTLoader loader =new AWTLoader();
-
 			Image imageJME = loader.load(img, true);
-			tex.setImage(imageJME);
 			
 			RenderImage rimg = new RenderImageJme(new Texture2D(imageJME));
 			NiftyImage nimg = new NiftyImage(gameController.getNifty().getRenderEngine(), rimg);

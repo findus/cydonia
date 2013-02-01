@@ -122,6 +122,7 @@ public class ServerConnector implements MessageListener<Client> {
 							System.out.println("Listening for Servers...");
 							s.receive(pack);
 							System.out.println("Found Server: " + pack.getAddress());
+							
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

@@ -3,13 +3,23 @@
  */
 package de.findus.cydonia.player;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.material.Material;
+import com.jme3.material.RenderState.BlendMode;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture;
+import com.jme3.texture.Texture2D;
+import com.jme3.texture.plugins.AWTLoader;
 
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.level.WorldController;
@@ -77,8 +87,30 @@ public class PlayerController {
 		model.setLocalScale(0.2f);
 		model.addControl(p.getControl());
 		model.setShadowMode(ShadowMode.Cast);
+		model.setQueueBucket(Bucket.Transparent);
 		
 		p.setModel(model);
+		setTransparency(p, 0.5f);
+	}
+	
+	public void setTransparency(Player p, float transparency) {
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+		int cw = Math.round(255*transparency);
+		Color c = new Color(cw, cw, cw);
+		img.setRGB(0, 0, c.getRGB());
+		
+		AWTLoader loader =new AWTLoader();
+		Image imageJME = loader.load(img, true);
+		Texture t = new Texture2D(imageJME);
+		
+		Node n = (Node) p.getModel();
+		for(Spatial s : n.getChildren()) {
+			if(s instanceof Geometry) {
+				Material m = ((Geometry) s).getMaterial();
+				m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+				m.setTexture("AlphaMap", t);
+			}
+		}
 	}
 	
 	public void setTeam(Player p, int team) {
