@@ -4,6 +4,12 @@
 package de.findus.cydonia.main;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import com.jme3.network.Client;
 import com.jme3.network.Message;
@@ -51,7 +57,8 @@ public class ServerConnector implements MessageListener<Client> {
 	private EventMachine eventMachine;
 	
 	private Client client;
-	
+
+	private Thread replyListener;
 	
 	/**
 	 * Constructor.
@@ -61,6 +68,74 @@ public class ServerConnector implements MessageListener<Client> {
 		gameController = app;
 		eventMachine = em;
 		initSerializer();
+		
+		updateLocalServers();
+	}
+	
+	public void updateLocalServers() {
+		initSearchListener();
+		
+		try {
+			// Create the socket but we don't bind it as we are only going to send data
+			MulticastSocket s = new MulticastSocket();
+
+			// Note that we don't have to join the multicast group if we are only
+			// sending data and not receiving
+
+			byte buf[] = new byte[1];
+			// Create a DatagramPacket 
+			DatagramPacket pack = new DatagramPacket(buf, buf.length,
+					InetAddress.getByName("224.0.0.1"), 55000);
+			// Do a send.
+			s.send(pack);
+			
+			// And when we have finished sending data close the socket
+			s.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void initSearchListener() {
+		// if thread is already initialised, dont do it again
+		if(replyListener != null) {
+			// if thread is not running, start it
+			if(!replyListener.isAlive()) {
+				replyListener.start();
+			}
+			return;
+		}
+		
+		byte buf[] = new byte[1];
+		final DatagramPacket pack = new DatagramPacket(buf, buf.length);
+
+		try {
+			final DatagramSocket s = new DatagramSocket(55001, InetAddress.getLocalHost());
+			System.out.println(s.getLocalAddress());
+
+			replyListener = new Thread(new Runnable() {
+				@Override
+				public void run() {
+
+					while(!Thread.interrupted()) {
+						try {
+							System.out.println("Listening for Servers...");
+							s.receive(pack);
+							System.out.println("Found Server: " + pack.getAddress());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					s.close();
+				}
+			});
+
+			replyListener.start();
+		} catch (SocketException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -69,6 +144,7 @@ public class ServerConnector implements MessageListener<Client> {
 	 * @param port listening port of the server
 	 */
 	public void connectToServer(String address, int port) {
+		replyListener.interrupt();
 		try {
 			client = Network.connectToServer(address, port);
 			client.addMessageListener(this);

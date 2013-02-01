@@ -4,6 +4,10 @@
 package de.findus.cydonia.server;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 
 import com.jme3.network.ConnectionListener;
 import com.jme3.network.HostedConnection;
@@ -56,6 +60,8 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 	
 	private EventMachine eventMachine;
 	
+	private Thread searchResponder;
+	
 	public NetworkController(GameServer app, EventMachine em) {
 		gameserver = app;
 		eventMachine = em;
@@ -75,9 +81,54 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		}
 		
 		eventMachine.registerListener(this);
+		
+		initSearchResponder();
+	}
+	
+	private void initSearchResponder() {
+		searchResponder = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					MulticastSocket s = new MulticastSocket(55000);
+					s.setReuseAddress(true);
+
+					// join the multicast group
+					s.joinGroup(InetAddress.getByName("224.0.0.1"));
+
+					// Create a DatagramPacket and do a receive
+					byte buf[] = new byte[1];
+					DatagramPacket pack = new DatagramPacket(buf, buf.length);
+					while(!Thread.interrupted()) {
+						s.receive(pack);
+
+						System.out.println("Received Multicast: " + pack.getAddress());
+
+						byte buf2[] = new byte[1];
+						DatagramPacket response = new DatagramPacket(buf2, buf2.length);
+						response.setAddress(pack.getAddress());
+						response.setPort(55001);
+
+						DatagramSocket c = new DatagramSocket(55000);
+						c.send(response); 
+						System.out.println("Sent Response");
+						c.close();
+					}
+					// And when we have finished receiving data leave the multicast group and
+					// close the socket
+					s.leaveGroup(InetAddress.getByName("224.0.0.1"));
+					s.close();
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		searchResponder.start();
 	}
 	
 	public void stop() {
+		searchResponder.interrupt();
 		server.close();
 	}
 	
