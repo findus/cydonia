@@ -128,7 +128,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 	public void stop(boolean waitfor) {
 		cleanup();
 		super.stop(waitfor);
-		System.exit(0);
+//		System.exit(0);
 	}
 	
 	private void cleanup() {
@@ -136,6 +136,7 @@ public class GameServer extends Application implements EventListener, PhysicsCol
 		bulletAppState.setEnabled(false);
 		senderLoop.interrupt();
 		gameplayController.dispose();
+		eventMachine.stop();
 		configFrame.setVisible(false);
 		configFrame.dispose();
 	}

@@ -8,6 +8,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 
 import com.jme3.network.ConnectionListener;
 import com.jme3.network.HostedConnection;
@@ -92,6 +93,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 			public void run() {
 				try {
 					MulticastSocket s = new MulticastSocket(55000);
+					s.setSoTimeout(5000);
 					s.setReuseAddress(true);
 
 					// join the multicast group
@@ -101,7 +103,11 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 					byte buf[] = new byte[1];
 					DatagramPacket pack = new DatagramPacket(buf, buf.length);
 					while(!Thread.interrupted()) {
-						s.receive(pack);
+						try{
+							s.receive(pack);
+						}catch(SocketTimeoutException e) {
+							continue;
+						}
 
 						System.out.println("Received Multicast: " + pack.getAddress());
 
@@ -119,6 +125,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 					// close the socket
 					s.leaveGroup(InetAddress.getByName("224.0.0.1"));
 					s.close();
+					System.out.println("MulticastReceiver stopped");
 				}catch (IOException e) {
 					e.printStackTrace();
 				}

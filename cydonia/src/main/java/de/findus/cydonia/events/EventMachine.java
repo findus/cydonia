@@ -39,6 +39,15 @@ public class EventMachine {
 		f.start();
 	}
 	
+	public void stop() {
+		for(Forwarder f : handlers.values()) {
+			f.interrupt();
+			synchronized (f) {
+				f.notify();
+			}
+		}
+	}
+	
 	private class Forwarder extends Thread {
 
 		private EventListener listener;

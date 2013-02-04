@@ -4,6 +4,8 @@
 package de.findus.cydonia.main;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -12,12 +14,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 /**
  * @author Findus
@@ -27,6 +32,7 @@ public class ServerBrowser implements ActionListener {
 
 	public static void main(String[] args) {
 		ServerBrowser s = new ServerBrowser();
+//		s.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	private Thread replyListener;
@@ -48,6 +54,7 @@ public class ServerBrowser implements ActionListener {
 	
 	public void initGUI() {
 		frame = new JFrame(GameController.APPTITLE + " - Serverbrowser");
+		frame.setMinimumSize(new Dimension(400, 300));
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
@@ -59,10 +66,25 @@ public class ServerBrowser implements ActionListener {
 		list = new JList<String>(model);
 		frame.add(list, BorderLayout.CENTER);
 		
+		JPanel topPanel = new JPanel(new FlowLayout());
+		frame.add(topPanel, BorderLayout.NORTH);
+		
+		JPanel bottomPanel = new JPanel(new FlowLayout());
+		frame.add(bottomPanel, BorderLayout.SOUTH);
+		
+		JButton addButton = new JButton("Add Server");
+		addButton.setActionCommand("add");
+		topPanel.add(addButton, BorderLayout.NORTH);
+		addButton.addActionListener(this);
+		
+		JButton refreshButton = new JButton("Refresh List");
+		refreshButton.setActionCommand("refresh");
+		topPanel.add(refreshButton, BorderLayout.NORTH);
+		refreshButton.addActionListener(this);
+		
 		JButton joinButton = new JButton("Join");
 		joinButton.setActionCommand("join");
-		frame.add(joinButton, BorderLayout.SOUTH);
-		
+		bottomPanel.add(joinButton, BorderLayout.SOUTH);
 		joinButton.addActionListener(this);
 	}
 	
@@ -71,12 +93,28 @@ public class ServerBrowser implements ActionListener {
 		if(e.getActionCommand().equals("join")) {
 			if(list.getSelectedValue() != null) {
 				joinServer(list.getSelectedValue());
-				frame.setVisible(false);
+				cleanup();
 			}
+		}else if(e.getActionCommand().equals("add")) {
+			String address = JOptionPane.showInputDialog(frame, "Please insert the name or IP of the server", "");
+			if(address != null && address != "") {
+				addServer(address);
+			}
+		}else if(e.getActionCommand().equals("refresh")) {
+			list.removeAll();
+			multicastServerRequest();
 		}
 	}
 
 	private void joinServer(final String address) {
+//		ProcessBuilder pb = new ProcessBuilder("java", "GameController", address);
+//		try {
+//			pb.start();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
 		new Thread(new Runnable() {
 
 			@Override
@@ -92,6 +130,10 @@ public class ServerBrowser implements ActionListener {
 			if(replyListener.isAlive()) {
 				replyListener.interrupt();
 			}
+		}
+		if(frame != null) {
+			frame.setVisible(false);
+			frame.dispose();
 		}
 	}
 	
@@ -134,6 +176,7 @@ public class ServerBrowser implements ActionListener {
 		try {
 			final DatagramSocket s = new DatagramSocket(55001, InetAddress.getLocalHost());
 			System.out.println(s.getLocalAddress());
+			s.setSoTimeout(5000);
 
 			replyListener = new Thread(new Runnable() {
 				@Override
@@ -145,11 +188,14 @@ public class ServerBrowser implements ActionListener {
 							s.receive(pack);
 							System.out.println("Found Server: " + pack.getAddress());
 							addServer(pack.getAddress().getHostAddress());
+						} catch (SocketTimeoutException e) {
+							
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
 					s.close();
+					System.out.println("Socket closed");
 				}
 			});
 

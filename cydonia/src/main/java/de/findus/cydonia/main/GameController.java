@@ -114,6 +114,19 @@ public class GameController extends Application implements ScreenController, Phy
     
     public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
     
+    public static void main(String[] args) {
+    	String ip = "";
+    	if(args.length > 0) {
+    		ip = args[0];
+    	}
+    	System.out.println("ip: " + args[0]);
+		
+		GameController controller = new GameController();
+		controller.start(args[0]);
+    }
+    
+    
+    
     protected boolean showSettings = true;
     
     protected GameState gamestate;
@@ -263,8 +276,12 @@ public class GameController extends Application implements ScreenController, Phy
     
     @Override
     public void stop(boolean waitfor) {
+    	stopInputSender();
+    	connector.disconnectFromServer();
+    	eventMachine.stop();
+    	
     	super.stop(waitfor);
-    	System.exit(0);
+//    	System.exit(0);
     }
 
     @Override
@@ -438,8 +455,6 @@ public class GameController extends Application implements ScreenController, Phy
     }
     
     public void stopGame() {
-    	stopInputSender();
-    	connector.disconnectFromServer();
     	stop();
     }
     
