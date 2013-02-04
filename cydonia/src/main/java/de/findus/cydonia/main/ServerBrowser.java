@@ -19,10 +19,13 @@ import java.net.UnknownHostException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import de.findus.cydonia.server.GameServer;
 
 /**
  * @author Findus
@@ -32,7 +35,7 @@ public class ServerBrowser implements ActionListener {
 
 	public static void main(String[] args) {
 		ServerBrowser s = new ServerBrowser();
-//		s.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		s.show();
 	}
 	
 	private Thread replyListener;
@@ -43,9 +46,13 @@ public class ServerBrowser implements ActionListener {
 	
 	private JList<String> list;
 	
+	private JCheckBox closeCB;
+	
 	public ServerBrowser() {
 		initGUI();
-		frame.pack();
+	}
+	
+	public void show() {
 		frame.setVisible(true);
 		
 		initReplyListener();
@@ -59,6 +66,8 @@ public class ServerBrowser implements ActionListener {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 		        cleanup();
+		        frame.setVisible(false);
+		        frame.dispose();
 		    }
 		});
 		
@@ -74,18 +83,29 @@ public class ServerBrowser implements ActionListener {
 		
 		JButton addButton = new JButton("Add Server");
 		addButton.setActionCommand("add");
-		topPanel.add(addButton, BorderLayout.NORTH);
+		topPanel.add(addButton);
 		addButton.addActionListener(this);
 		
 		JButton refreshButton = new JButton("Refresh List");
 		refreshButton.setActionCommand("refresh");
-		topPanel.add(refreshButton, BorderLayout.NORTH);
+		topPanel.add(refreshButton);
 		refreshButton.addActionListener(this);
+		
+		JButton serverButton = new JButton("Start Server");
+		serverButton.setActionCommand("startServer");
+		topPanel.add(serverButton);
+		serverButton.addActionListener(this);
 		
 		JButton joinButton = new JButton("Join");
 		joinButton.setActionCommand("join");
-		bottomPanel.add(joinButton, BorderLayout.SOUTH);
+		bottomPanel.add(joinButton);
 		joinButton.addActionListener(this);
+		
+		closeCB = new JCheckBox("close after choosing one option");
+		closeCB.setSelected(true);
+		bottomPanel.add(closeCB);
+		
+		frame.pack();
 	}
 	
 	@Override
@@ -94,6 +114,10 @@ public class ServerBrowser implements ActionListener {
 			if(list.getSelectedValue() != null) {
 				joinServer(list.getSelectedValue());
 				cleanup();
+				if(closeCB.isSelected()) {
+					frame.setVisible(false);
+					frame.dispose();
+				}
 			}
 		}else if(e.getActionCommand().equals("add")) {
 			String address = JOptionPane.showInputDialog(frame, "Please insert the name or IP of the server", "");
@@ -103,18 +127,13 @@ public class ServerBrowser implements ActionListener {
 		}else if(e.getActionCommand().equals("refresh")) {
 			list.removeAll();
 			multicastServerRequest();
+		}else if(e.getActionCommand().equals("startServer")) {
+			startServer();
+			multicastServerRequest();
 		}
 	}
 
 	private void joinServer(final String address) {
-//		ProcessBuilder pb = new ProcessBuilder("java", "GameController", address);
-//		try {
-//			pb.start();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
 		new Thread(new Runnable() {
 
 			@Override
@@ -124,16 +143,23 @@ public class ServerBrowser implements ActionListener {
 			}
 		}).start();
 	}
+	
+	private void startServer() {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				GameServer server = new GameServer();
+				server.start();
+			}
+		}).start();
+	}
 
 	private void cleanup() {
 		if(replyListener != null) {
 			if(replyListener.isAlive()) {
 				replyListener.interrupt();
 			}
-		}
-		if(frame != null) {
-			frame.setVisible(false);
-			frame.dispose();
 		}
 	}
 	
