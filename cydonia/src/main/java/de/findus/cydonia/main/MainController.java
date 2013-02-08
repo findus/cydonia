@@ -96,7 +96,7 @@ public abstract class MainController extends Application implements PhysicsColli
 			eventQueue.offer(e);
 		}
 		
-		protected void killPlayer(Player p) {
+		public void killPlayer(Player p) {
 			if(p == null) return;
 			worldController.detachPlayer(p);
 			p.setAlive(false);

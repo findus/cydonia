@@ -33,7 +33,6 @@ public class PickupEvent extends AbstractEvent {
 		super(forward);
 		this.setPlayerid(playerid);
 		this.setMoveableid(moveableid);
-		this.network = forward;
 	}
 
 	/**

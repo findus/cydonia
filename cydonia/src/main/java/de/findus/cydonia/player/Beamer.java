@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 
 import com.jme3.collision.CollisionResult;
 
+import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -50,7 +51,14 @@ public class Beamer extends AbstractEquipment {
 	public void usePrimary() {
 		CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition(), this.player.getViewDir());
 		if(result != null && result.getGeometry().getName() != null && result.getGeometry().getName().startsWith("player")) {
-			Player victim = null;
+			Player victim = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getName().substring(6)));
+			if(victim != null && victim.getTeam() != player.getTeam()) {
+				player.setScores(player.getScores()+1);
+				getMainController().killPlayer(victim);
+				
+				BeamEvent beam = new BeamEvent(player.getId(), victim.getId(), true);
+				getMainController().getEventMachine().fireEvent(beam);
+			}
 		}
 	}
 

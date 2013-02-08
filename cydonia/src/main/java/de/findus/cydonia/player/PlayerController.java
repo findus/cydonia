@@ -21,8 +21,6 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
-import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.MainController;
 
 /**
@@ -48,6 +46,7 @@ public class PlayerController {
 		Player p = new Player(id);
 		p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this.mainController));
 		p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this.mainController));
+		p.getEquips().add(new Beamer("beamer", 30, p, mainController));
 		
 		players.put(p.getId(), p);
 		

@@ -42,6 +42,7 @@ import de.findus.cydonia.appstates.GeneralInputAppState;
 import de.findus.cydonia.appstates.MenuController;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
@@ -506,6 +507,11 @@ public class GameController extends MainController implements ScreenController{
 			Vector3f loc = place.getLocation();
 			long moveableId = place.getMoveableid();
 			place(p, loc, moveableId);
+		}else if (e instanceof BeamEvent) {
+			BeamEvent beam = (BeamEvent) e;
+			Player source = getPlayerController().getPlayer(beam.getSourceid());
+			Player target = getPlayerController().getPlayer(beam.getTargetid());
+			beam(source, target);
 		}else if (e instanceof PlayerJoinEvent) {
 			PlayerJoinEvent join = (PlayerJoinEvent) e;
 			int playerid = join.getPlayerId();
@@ -748,7 +754,7 @@ public class GameController extends MainController implements ScreenController{
 		victim.setHealthpoints(hp);
 	}
 	
-	protected void killPlayer(Player p) {
+	public void killPlayer(Player p) {
 		super.killPlayer(p);
 		
 		if(p == null) return;
@@ -795,6 +801,13 @@ public class GameController extends MainController implements ScreenController{
 		}
 	}
 	
+	private void beam(Player source, Player target) {
+		if(source != null) {
+			source.setScores(source.getScores()+1);
+		}
+		killPlayer(target);
+	}
+
 	protected void respawn(final Player p) {
 		super.respawn(p);
 		
