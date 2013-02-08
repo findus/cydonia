@@ -17,11 +17,10 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 
-import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.level.Flube;
-import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.server.GameServer;
@@ -46,13 +45,13 @@ public class Picker extends AbstractEquipment {
 		
 	}
 	
-	public Picker(String name, float range, int capacity, Player player, WorldController worldController, EventMachine eventMachine) {
+	public Picker(String name, float range, int capacity, Player player, MainController mainController) {
+		super(mainController);
+		
 		this.name = name;
 		this.range = range;
 		this.capacity = capacity;
-		this.worldController = worldController;
 		this.player = player;
-		this.eventMachine = eventMachine;
 		
 		
 		try {
@@ -68,14 +67,14 @@ public class Picker extends AbstractEquipment {
 	
 	public void usePrimary() {
 		if(this.repository.size() < this.capacity) {
-			CollisionResult result = worldController.pickWorld(this.player.getEyePosition(), this.player.getViewDir());
+			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
 			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
-				Flube m = worldController.getFlube((Long) result.getGeometry().getUserData("id"));
-				worldController.detachFlube(m);
+				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
+				getMainController().getWorldController().detachFlube(m);
 				this.repository.add(m);
 
 				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), true);
-				eventMachine.fireEvent(pickup);
+				getMainController().getEventMachine().fireEvent(pickup);
 			}
 		}
 	}
@@ -84,8 +83,8 @@ public class Picker extends AbstractEquipment {
 		if(this.repository.size() > 0) {
 			Flube m = this.repository.get(0);
 			if(m != null) {
-				CollisionResult result = worldController.pickWorld(this.player.getEyePosition(), this.player.getViewDir());
-				if(result != null && result.getDistance() <= this.range && worldController.isPlaceableSurface(result.getGeometry())) {
+				CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
+				if(result != null && result.getDistance() <= this.range && getMainController().getWorldController().isPlaceableSurface(result.getGeometry())) {
 					Vector3f contactnormal = result.getContactNormal();
 					Vector3f contactpos = result.getContactPoint();
 
@@ -96,11 +95,11 @@ public class Picker extends AbstractEquipment {
 						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
 					}
 					m.getControl().setPhysicsLocation(loc);
-					worldController.attachFlube(m);
+					getMainController().getWorldController().attachFlube(m);
 					this.repository.remove(0);
 
 					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, true);
-					eventMachine.fireEvent(place);
+					getMainController().getEventMachine().fireEvent(place);
 				}
 			}
 		}
@@ -109,7 +108,7 @@ public class Picker extends AbstractEquipment {
 	private boolean canPickup(Player p, Spatial g, float distance) {
 		if(distance <= this.range) {
 			if(p != null && g != null) {
-				if(worldController.isFlube(g) && g.getUserData("Type") != null) {
+				if(getMainController().getWorldController().isFlube(g) && g.getUserData("Type") != null) {
 					int type = g.getUserData("Type");
 					if(type == 0 || type == p.getTeam()) {
 						return true;
@@ -139,7 +138,7 @@ public class Picker extends AbstractEquipment {
 			this.capacity = i.getCapacity();
 			this.repository = new LinkedList<Flube>();
 			for (Long id : i.getRepository()) {
-				this.repository.add(worldController.getFlube(id));
+				this.repository.add(getMainController().getWorldController().getFlube(id));
 			}
 		}
 	}

@@ -5,8 +5,7 @@ package de.findus.cydonia.player;
 
 import java.awt.image.BufferedImage;
 
-import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.EquipmentInfo;
 
 /**
@@ -23,9 +22,7 @@ public interface Equipment {
 	
 	public BufferedImage getHUDImage();
 	
-	public void setWorldController(WorldController wc);
-	
-	public void setEventMachine(EventMachine em);
+	public void setMainController(MainController mc);
 	
 	public EquipmentInfo getInfo();
 	

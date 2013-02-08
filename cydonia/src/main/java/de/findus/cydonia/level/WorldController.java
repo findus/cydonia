@@ -3,7 +3,6 @@
  */
 package de.findus.cydonia.level;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -353,6 +352,13 @@ public class WorldController {
 		CollisionResults results = new CollisionResults();
 		Ray ray = new Ray(source, direction);
 		worldNode.collideWith(ray, results);
+		return results.getClosestCollision();
+	}
+	
+	public CollisionResult pickRoot(Vector3f source, Vector3f direction) {
+		CollisionResults results = new CollisionResults();
+		Ray ray = new Ray(source, direction);
+		rootNode.collideWith(ray, results);
 		return results.getClosestCollision();
 	}
 	

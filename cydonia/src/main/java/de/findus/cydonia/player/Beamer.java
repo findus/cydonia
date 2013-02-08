@@ -3,14 +3,14 @@
  */
 package de.findus.cydonia.player;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import de.findus.cydonia.events.EventMachine;
-import de.findus.cydonia.level.WorldController;
+import com.jme3.collision.CollisionResult;
+
+import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.EquipmentInfo;
 
@@ -20,26 +20,27 @@ import de.findus.cydonia.messages.EquipmentInfo;
  */
 public class Beamer extends AbstractEquipment {
 
-	private static Image[] hudImgs;
+	private static BufferedImage hudImg;
 	
 	private String name;
 	
 	private float range;
 	
-	public Beamer(String name, float range, Player player, WorldController worldController, EventMachine eventMachine) {
+	public Beamer() {
+		
+	}
+	
+	public Beamer(String name, float range, Player player, MainController mainController) {
+		super(mainController);
+		
 		this.name = name;
 		this.range = range;
-		this.worldController = worldController;
 		this.player = player;
-		this.eventMachine = eventMachine;
 		
 		
 		try {
-			if(hudImgs == null) {
-				hudImgs = new Image[3];
-				hudImgs[0] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_gold.png"));
-				hudImgs[1] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_blue.png"));
-				hudImgs[2] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_red.png"));
+			if(hudImg == null) {
+				hudImg = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_gold.png"));
 			}
 		} catch (IOException e) {
 		}
@@ -47,8 +48,10 @@ public class Beamer extends AbstractEquipment {
 	
 	@Override
 	public void usePrimary() {
-		// TODO Auto-generated method stub
-
+		CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition(), this.player.getViewDir());
+		if(result != null && result.getGeometry().getName() != null && result.getGeometry().getName().startsWith("player")) {
+			Player victim = null;
+		}
 	}
 
 	@Override
@@ -64,8 +67,7 @@ public class Beamer extends AbstractEquipment {
 
 	@Override
 	public BufferedImage getHUDImage() {
-		// TODO Auto-generated method stub
-		return null;
+		return hudImg;
 	}
 
 	@Override
