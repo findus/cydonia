@@ -23,6 +23,7 @@ import com.jme3.texture.plugins.AWTLoader;
 
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.main.MainController;
 
 /**
  * @author Findus
@@ -32,24 +33,21 @@ public class PlayerController {
 	
 	private AssetManager assetManager;
     
-    private WorldController worldController;
-
-	private EventMachine eventMachine;
+    private MainController mainController;
 
 	private ConcurrentHashMap<Integer, Player> players;
 
-	public PlayerController(AssetManager assetManager, WorldController worldController, EventMachine eventMachine) {
+	public PlayerController(AssetManager assetManager, MainController mainController) {
 		this.assetManager = assetManager;
-		this.worldController = worldController;
-		this.eventMachine = eventMachine;
+		this.mainController = mainController;
         
         players = new ConcurrentHashMap<Integer, Player>();
 	}
 	
 	public Player createNew(int id) {
 		Player p = new Player(id);
-		p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this.worldController, this.eventMachine));
-		p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this.worldController, this.eventMachine));
+		p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this.mainController));
+		p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this.mainController));
 		
 		players.put(p.getId(), p);
 		

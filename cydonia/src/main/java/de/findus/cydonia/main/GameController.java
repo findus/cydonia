@@ -583,8 +583,7 @@ public class GameController extends MainController implements ScreenController{
 			for(EquipmentInfo ei : info.getEquipInfos()) {
 				try {
 					Equipment equip = (Equipment) Class.forName(ei.getClassName()).newInstance();
-					equip.setWorldController(getWorldController());
-					equip.setEventMachine(getEventMachine());
+					equip.setMainController(this);
 					equip.loadInfo(ei);
 					p.getEquips().add(equip);
 				} catch (InstantiationException e) {

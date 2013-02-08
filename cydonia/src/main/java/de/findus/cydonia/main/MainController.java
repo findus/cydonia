@@ -68,7 +68,7 @@ public abstract class MainController extends Application implements PhysicsColli
 	        worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
 	        eventMachine.registerListener(this);
 			
-			playerController = new PlayerController(assetManager, worldController, eventMachine);
+			playerController = new PlayerController(assetManager, this);
 	    }
 	    
 	    protected void cleanup() {
