@@ -127,6 +127,13 @@ public abstract class MainController extends Application implements PhysicsColli
 			playerController.setTeam(p, team);
 		}
 		
+		protected void beam(Player source, Player target) {
+			if(source != null) {
+				source.setScores(source.getScores()+1);
+			}
+			killPlayer(target);
+		}
+		
 		public GameState getGamestate() {
 			return gamestate;
 		}

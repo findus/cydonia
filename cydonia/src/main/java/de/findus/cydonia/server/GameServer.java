@@ -20,6 +20,7 @@ import com.jme3.system.JmeContext;
 
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
@@ -198,6 +199,11 @@ public class GameServer extends MainController{
 					p.setScores(p.getScores() + 1);
 				}
 			}
+		}else if (e instanceof BeamEvent) {
+			BeamEvent beam = (BeamEvent) e;
+			Player source = getPlayerController().getPlayer(beam.getSourceid());
+			Player target = getPlayerController().getPlayer(beam.getTargetid());
+			beam(source, target);
 		}
 	}
 

@@ -800,13 +800,6 @@ public class GameController extends MainController implements ScreenController{
 			}
 		}
 	}
-	
-	private void beam(Player source, Player target) {
-		if(source != null) {
-			source.setScores(source.getScores()+1);
-		}
-		killPlayer(target);
-	}
 
 	protected void respawn(final Player p) {
 		super.respawn(p);

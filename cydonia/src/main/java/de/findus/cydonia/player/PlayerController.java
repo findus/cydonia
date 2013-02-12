@@ -87,7 +87,6 @@ public class PlayerController {
 		model.setQueueBucket(Bucket.Transparent);
 		
 		p.setModel(model);
-		setTransparency(p, 0.5f);
 	}
 	
 	public void setTransparency(Player p, float transparency) {

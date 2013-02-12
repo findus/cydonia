@@ -58,9 +58,6 @@ public class Beamer extends AbstractEquipment {
 		if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
 			Player victim = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
 			if(victim != null && victim.getTeam() != player.getTeam()) {
-				player.setScores(player.getScores()+1);
-				getMainController().killPlayer(victim);
-				
 				BeamEvent beam = new BeamEvent(player.getId(), victim.getId(), true);
 				getMainController().getEventMachine().fireEvent(beam);
 			}
