@@ -54,7 +54,7 @@ public class Beamer extends AbstractEquipment {
 
 	@Override
 	public void useSecondary() {
-		CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition(), this.player.getViewDir());
+		CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition().add(this.player.getViewDir().normalize().mult(0.3f)), this.player.getViewDir());
 		if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
 			Player victim = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
 			if(victim != null && victim.getTeam() != player.getTeam()) {

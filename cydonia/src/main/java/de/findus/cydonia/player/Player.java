@@ -162,12 +162,6 @@ public class Player implements AnimEventListener{
         topchannel.setSpeed(0.1f);
 	}
 	
-	public void reset() {
-		for(Equipment equip : this.equips) {
-			equip.reset();
-		}
-	}
-	
 	public void jump() {
 		control.jump();
 		this.jumping = true;

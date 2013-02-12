@@ -182,7 +182,7 @@ public class GameServer extends MainController{
 				if(p.isAlive()) {
 					killPlayer(p);
 				}
-				p.getCurrentEquipment().reset();
+				getPlayerController().reset(p);
 			}
 			removeAllBullets();
 			getWorldController().resetWorld();

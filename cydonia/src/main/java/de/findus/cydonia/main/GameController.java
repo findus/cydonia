@@ -542,7 +542,7 @@ public class GameController extends MainController implements ScreenController{
 				if(p.isAlive()) {
 					killPlayer(p);
 				}
-				p.reset();
+				getPlayerController().reset(p);
 			}
 			removeAllBullets();
 			getWorldController().resetWorld();

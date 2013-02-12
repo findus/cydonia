@@ -128,10 +128,15 @@ public abstract class MainController extends Application implements PhysicsColli
 		}
 		
 		protected void beam(Player source, Player target) {
-			if(source != null) {
-				source.setScores(source.getScores()+1);
+			target.setHealthpoints(target.getHealthpoints()-10);
+			getPlayerController().setTransparency(target, (float)target.getHealthpoints() / 100f);
+			
+			if(target.getHealthpoints() <= 0) {
+				killPlayer(target);
+				if(source != null) {
+					source.setScores(source.getScores()+1);
+				}
 			}
-			killPlayer(target);
 		}
 		
 		public GameState getGamestate() {
