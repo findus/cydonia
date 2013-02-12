@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
+import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -105,6 +106,7 @@ public class PlayerController {
 				Material m = ((Geometry) s).getMaterial();
 				m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 				m.setTexture("AlphaMap", t);
+				m.setColor("GlowColor", new ColorRGBA(0, 0, 0, cw));
 			}
 		}
 	}
