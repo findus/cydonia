@@ -483,6 +483,12 @@ public class GameServer extends MainController{
 		quitPlayer(p);
 	}
 	
+	public void handleCommand(String command) {
+		if("restartround".equalsIgnoreCase(command)) {
+			gameplayController.endRound(-1, true);
+		}
+	}
+	
 	/**
 	 * This class is used to send the current state of the virtual world to all clients in constant intervals.
 	 * @author Findus
