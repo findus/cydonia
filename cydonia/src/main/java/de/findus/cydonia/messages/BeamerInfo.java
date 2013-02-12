@@ -3,12 +3,15 @@
  */
 package de.findus.cydonia.messages;
 
+import com.jme3.network.serializing.Serializable;
+
 import de.findus.cydonia.player.Beamer;
 
 /**
  * @author Findus
  *
  */
+@Serializable
 public class BeamerInfo implements EquipmentInfo {
 
 	private String name;
