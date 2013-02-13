@@ -3,6 +3,8 @@
  */
 package de.findus.cydonia.player;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -11,6 +13,7 @@ import javax.imageio.ImageIO;
 import com.jme3.collision.CollisionResult;
 
 import de.findus.cydonia.events.BeamEvent;
+import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -46,7 +49,7 @@ public class Beamer extends AbstractEquipment {
 	private void initHUDImgs() {
 		try {
 			if(hudImg == null) {
-				hudImg = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_gold.png"));
+				hudImg = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/beamer.png"));
 			}
 		} catch (IOException e) {
 		}
@@ -70,7 +73,12 @@ public class Beamer extends AbstractEquipment {
 
 	@Override
 	public BufferedImage getHUDImage() {
-		return hudImg;
+		BufferedImage tmpimg = new BufferedImage(35, 35, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D gr = (Graphics2D) tmpimg.getGraphics();
+		
+		gr.drawImage(hudImg, 0, 0, new Color(0, 0, 0, 0), null);
+
+		return tmpimg;
 	}
 
 	@Override
