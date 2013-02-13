@@ -27,8 +27,10 @@ public class Beamer extends AbstractEquipment {
 	
 	private float range;
 	
+	private boolean beaming;
+	
 	public Beamer() {
-		
+		initHUDImgs();
 	}
 	
 	public Beamer(String name, float range, Player player, MainController mainController) {
@@ -38,7 +40,10 @@ public class Beamer extends AbstractEquipment {
 		this.range = range;
 		this.player = player;
 		
-		
+		initHUDImgs();
+	}
+	
+	private void initHUDImgs() {
 		try {
 			if(hudImg == null) {
 				hudImg = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_gold.png"));
@@ -48,25 +53,19 @@ public class Beamer extends AbstractEquipment {
 	}
 	
 	@Override
-	public void usePrimary() {
+	public void usePrimary(boolean activate) {
+		this.setBeaming(activate);
+		
+	}
+
+	@Override
+	public void useSecondary(boolean activate) {
 		// no action yet
 	}
 
 	@Override
-	public void useSecondary() {
-		CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition().add(this.player.getViewDir().normalize().mult(0.3f)), this.player.getViewDir());
-		if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
-			Player victim = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
-			if(victim != null && victim.getTeam() != player.getTeam()) {
-				BeamEvent beam = new BeamEvent(player.getId(), victim.getId(), true);
-				getMainController().getEventMachine().fireEvent(beam);
-			}
-		}
-	}
-
-	@Override
 	public void reset() {
-
+		this.beaming = false;
 	}
 
 	@Override
@@ -114,6 +113,20 @@ public class Beamer extends AbstractEquipment {
 	 */
 	public void setRange(float range) {
 		this.range = range;
+	}
+
+	/**
+	 * @return the beaming
+	 */
+	public boolean isBeaming() {
+		return beaming;
+	}
+
+	/**
+	 * @param beaming the beaming to set
+	 */
+	public void setBeaming(boolean beaming) {
+		this.beaming = beaming;
 	}
 
 }

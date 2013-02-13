@@ -18,6 +18,8 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
+import de.findus.cydonia.main.GameState;
+
 /**
  * @author Findus
  *
@@ -101,6 +103,12 @@ public class Player implements AnimEventListener{
 				this.jump();
 			}
 			break;
+		case USEPRIMARY:
+			getCurrentEquipment().usePrimary(value);
+			break;
+		case USESECONDARY:
+			getCurrentEquipment().useSecondary(value);
+			break;
 		case SWITCHEQUIP:
 			this.switchEquipment(value);
 			break;
@@ -171,6 +179,7 @@ public class Player implements AnimEventListener{
 	
 	public void switchEquipment(boolean up) {
 		if(this.equips.size() > 0) {
+			this.getCurrentEquipment().reset();
 			this.currEquip = (this.currEquip + (up?1:-1)) % this.equips.size();
 		}
 	}

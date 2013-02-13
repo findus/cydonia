@@ -42,7 +42,7 @@ public class Picker extends AbstractEquipment {
 	private List<Flube> repository = new LinkedList<Flube>();
 	
 	public Picker() {
-		
+		initHUDImgs();
 	}
 	
 	public Picker(String name, float range, int capacity, Player player, MainController mainController) {
@@ -53,7 +53,10 @@ public class Picker extends AbstractEquipment {
 		this.capacity = capacity;
 		this.player = player;
 		
-		
+		initHUDImgs();
+	}
+	
+	private void initHUDImgs() {
 		try {
 			if(hudImgs == null) {
 				hudImgs = new Image[3];
@@ -65,7 +68,9 @@ public class Picker extends AbstractEquipment {
 		}
 	}
 	
-	public void usePrimary() {
+	public void usePrimary(boolean activate) {
+		if(!activate) return;
+		
 		if(this.repository.size() < this.capacity) {
 			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
 			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
@@ -73,13 +78,15 @@ public class Picker extends AbstractEquipment {
 				getMainController().getWorldController().detachFlube(m);
 				this.repository.add(m);
 
-				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), true);
+				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), false);
 				getMainController().getEventMachine().fireEvent(pickup);
 			}
 		}
 	}
 	
-	public void useSecondary() {
+	public void useSecondary(boolean activate) {
+		if(!activate) return;
+		
 		if(this.repository.size() > 0) {
 			Flube m = this.repository.get(0);
 			if(m != null) {
@@ -98,7 +105,7 @@ public class Picker extends AbstractEquipment {
 					getMainController().getWorldController().attachFlube(m);
 					this.repository.remove(0);
 
-					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, true);
+					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, false);
 					getMainController().getEventMachine().fireEvent(place);
 				}
 			}

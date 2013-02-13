@@ -37,12 +37,12 @@ public class Flucob extends AbstractEquipment {
 	
 	
 	@Override
-	public void usePrimary() {
+	public void usePrimary(boolean activate) {
 		
 	}
 
 	@Override
-	public void useSecondary() {
+	public void useSecondary(boolean activate) {
 		// TODO Auto-generated method stub
 
 	}

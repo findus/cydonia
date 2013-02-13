@@ -14,15 +14,17 @@ import de.findus.cydonia.messages.EquipmentInfo;
  */
 public interface Equipment {
 	
-	public void usePrimary();
+	public void usePrimary(boolean activate);
 	
-	public void useSecondary();
+	public void useSecondary(boolean activate);
 	
 	public void reset();
 	
 	public BufferedImage getHUDImage();
 	
 	public void setMainController(MainController mc);
+	
+	public void setPlayer(Player p);
 	
 	public EquipmentInfo getInfo();
 	

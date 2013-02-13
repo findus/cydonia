@@ -12,6 +12,7 @@ import org.xml.sax.InputSource;
 
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.collision.CollisionResult;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -42,6 +43,7 @@ import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
@@ -159,6 +161,8 @@ public class GameServer extends MainController{
         // update states
         stateManager.update(tpf);
 
+        computeBeams(tpf);
+        
         // update game specific things
         movePlayers(tpf);
         
@@ -199,11 +203,6 @@ public class GameServer extends MainController{
 					p.setScores(p.getScores() + 1);
 				}
 			}
-		}else if (e instanceof BeamEvent) {
-			BeamEvent beam = (BeamEvent) e;
-			Player source = getPlayerController().getPlayer(beam.getSourceid());
-			Player target = getPlayerController().getPlayer(beam.getTargetid());
-			beam(source, target);
 		}
 	}
 
@@ -228,6 +227,27 @@ public class GameServer extends MainController{
 		}
 	}
 	
+	private void computeBeams(float tpf) {
+		for(Player p : getPlayerController().getAllPlayers()) {
+			if(p.getCurrentEquipment() instanceof Beamer) {
+				Beamer beamer = (Beamer) p.getCurrentEquipment();
+				if(beamer.isBeaming()) {
+					CollisionResult result = getWorldController().pickRoot(beamer.getPlayer().getEyePosition().add(beamer.getPlayer().getViewDir().normalize().mult(0.3f)), beamer.getPlayer().getViewDir());
+					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
+						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
+						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
+							victim.setHealthpoints(victim.getHealthpoints() - 20*tpf);
+							if(victim.getHealthpoints() <= 0) {
+								killPlayer(victim);
+								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	private void removeAllBullets() {
 		for (Bullet b : bullets.values()) {
 			removeBullet(b);
@@ -342,18 +362,6 @@ public class GameServer extends MainController{
 		}
 	}
 	
-	private void usePrimary(Player p) {
-		if(p == null) return;
-		
-		p.getCurrentEquipment().usePrimary();
-	}
-	
-	private void useSecondary(Player p) {
-		if(p == null) return;
-		
-		p.getCurrentEquipment().useSecondary();
-	}
-	
 	protected void joinPlayer(int playerid, String playername) {
 		super.joinPlayer(playerid, playername);
 		
@@ -382,17 +390,23 @@ public class GameServer extends MainController{
 	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {
 		Player p = getPlayerController().getPlayer(playerid);
 		switch (command) {
-		case USESECONDARY:
+		case USEPRIMARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				if(value && p.isAlive()) {
-					usePrimary(p);
+				if(p.isAlive()) {
+					p.handleInput(command, value);
+					InputEvent event = new InputEvent(p.getId(), command, value, true);
+					getEventMachine().fireEvent(event);
+				}else {
+					respawn(p);
 				}
 			}
 			break;
-		case USEPRIMARY:
+		case USESECONDARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				if(value && p.isAlive()) {
-					useSecondary(p);
+				if(p.isAlive()) {
+					p.handleInput(command, value);
+					InputEvent event = new InputEvent(p.getId(), command, value, true);
+					getEventMachine().fireEvent(event);
 				}
 			}
 			break;

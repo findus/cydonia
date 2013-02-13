@@ -45,9 +45,6 @@ public class PlayerController {
 	
 	public Player createNew(int id) {
 		Player p = new Player(id);
-		p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this.mainController));
-		p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this.mainController));
-		p.getEquips().add(new Beamer("beamer", 20, p, mainController));
 		
 		players.put(p.getId(), p);
 		
@@ -100,13 +97,15 @@ public class PlayerController {
 		Image imageJME = loader.load(img, true);
 		Texture t = new Texture2D(imageJME);
 		
+		ColorRGBA glowcolor = new ColorRGBA(0, 0, 0, cw);
+		
 		Node n = (Node) p.getModel();
 		for(Spatial s : n.getChildren()) {
 			if(s instanceof Geometry) {
 				Material m = ((Geometry) s).getMaterial();
 				m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 				m.setTexture("AlphaMap", t);
-				m.setColor("GlowColor", new ColorRGBA(0, 0, 0, cw));
+				m.setColor("GlowColor", glowcolor);
 			}
 		}
 	}

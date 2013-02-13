@@ -13,11 +13,15 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Transform;
+import com.jme3.math.Vector3f;
 
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
+import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.player.Beamer;
+import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerController;
 
@@ -104,6 +108,9 @@ public abstract class MainController extends Application implements PhysicsColli
 		
 		protected void joinPlayer(int playerid, String playername) {
 			Player p = playerController.createNew(playerid);
+			p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this));
+			p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this));
+			p.getEquips().add(new Beamer("beamer", 20, p, this));
 			p.setName(playername);
 		}
 		
@@ -127,14 +134,26 @@ public abstract class MainController extends Application implements PhysicsColli
 			playerController.setTeam(p, team);
 		}
 		
-		protected void beam(Player source, Player target) {
-			target.setHealthpoints(target.getHealthpoints()-10);
-			getPlayerController().setTransparency(target, (float)target.getHealthpoints() / 100f);
-			
-			if(target.getHealthpoints() <= 0) {
-				killPlayer(target);
-				if(source != null) {
-					source.setScores(source.getScores()+1);
+		protected void pickup(Player p, Flube flube) {
+			if(flube != null) {
+				getWorldController().detachFlube(flube);
+				if(p != null) {
+					if(p.getCurrentEquipment() instanceof Picker) {
+						Picker picker = (Picker) p.getCurrentEquipment();
+						picker.getRepository().add(flube);
+					}
+				}
+			}
+		}
+		
+		protected void place(Player p, Vector3f loc, long moveableId) {
+			Flube m = getWorldController().getFlube(moveableId);
+			m.getControl().setPhysicsLocation(loc);
+			getWorldController().attachFlube(m);
+			if(p != null) {
+				if(p.getCurrentEquipment() instanceof Picker) {
+					Picker picker = (Picker) p.getCurrentEquipment();
+					picker.getRepository().remove(m);
 				}
 			}
 		}

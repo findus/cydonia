@@ -17,6 +17,7 @@ import com.jme3.asset.AssetNotFoundException;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.collision.CollisionResult;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
@@ -69,6 +70,7 @@ import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Picker;
@@ -433,6 +435,7 @@ public class GameController extends MainController implements ScreenController{
 
         // update game specific things
         useLatestWorldstate();
+        computeBeams(tpf);
         movePlayers(tpf);
         menuController.updateHUD();
         
@@ -507,11 +510,6 @@ public class GameController extends MainController implements ScreenController{
 			Vector3f loc = place.getLocation();
 			long moveableId = place.getMoveableid();
 			place(p, loc, moveableId);
-		}else if (e instanceof BeamEvent) {
-			BeamEvent beam = (BeamEvent) e;
-			Player source = getPlayerController().getPlayer(beam.getSourceid());
-			Player target = getPlayerController().getPlayer(beam.getTargetid());
-			beam(source, target);
 		}else if (e instanceof PlayerJoinEvent) {
 			PlayerJoinEvent join = (PlayerJoinEvent) e;
 			int playerid = join.getPlayerId();
@@ -584,12 +582,17 @@ public class GameController extends MainController implements ScreenController{
 		getGameConfig().copyFrom(config);
 		
 		for (PlayerInfo info : pinfos) {
-			if(player.getId() == info.getPlayerid()) continue;
-			final Player p = getPlayerController().createNew(info.getPlayerid());
+			final int playerid = info.getPlayerid();
+			Player p = getPlayerController().getPlayer(playerid);
+			if(p == null) {
+				p = getPlayerController().createNew(info.getPlayerid());
+			}
+			p.getEquips().clear();
 			for(EquipmentInfo ei : info.getEquipInfos()) {
 				try {
 					Equipment equip = (Equipment) Class.forName(ei.getClassName()).newInstance();
 					equip.setMainController(this);
+					equip.setPlayer(p);
 					equip.loadInfo(ei);
 					p.getEquips().add(equip);
 				} catch (InstantiationException e) {
@@ -608,11 +611,13 @@ public class GameController extends MainController implements ScreenController{
 			p.setScores(info.getScores());
 			p.setCurrEquip(info.getCurrEquip());
 			
+			if(playerid == this.player.getId()) continue;
+			
 			if(p.isAlive()) {
 				p.getControl().setPhysicsLocation(getWorldController().getSpawnPoint(p.getTeam()).getPosition());
 				enqueue(new Callable<String>() {
 					public String call() {
-						getWorldController().attachPlayer(p);
+						getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
 						return null;
 					}
 				});
@@ -699,6 +704,29 @@ public class GameController extends MainController implements ScreenController{
 		}
 		
     }
+	
+	private void computeBeams(float tpf) {
+		for(Player p : getPlayerController().getAllPlayers()) {
+			if(p.getCurrentEquipment() instanceof Beamer) {
+				Beamer beamer = (Beamer) p.getCurrentEquipment();
+				if(beamer.isBeaming()) {
+					CollisionResult result = getWorldController().pickRoot(beamer.getPlayer().getEyePosition().add(beamer.getPlayer().getViewDir().normalize().mult(0.3f)), beamer.getPlayer().getViewDir());
+					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
+						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
+						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
+							System.out.println("client beam: " + tpf);
+							victim.setHealthpoints(victim.getHealthpoints() - 20*tpf);
+							getPlayerController().setTransparency(victim, (float)victim.getHealthpoints() / 100f);
+							if(victim.getHealthpoints() <= 0) {
+								killPlayer(victim);
+								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
     @Override
 	public void collision(PhysicsCollisionEvent e) {
@@ -775,30 +803,6 @@ public class GameController extends MainController implements ScreenController{
 		
 		throwSound.setLocalTranslation(p.getControl().getPhysicsLocation());
 		throwSound.play();
-	}
-	
-	private void pickup(Player p, Flube flube) {
-		if(flube != null) {
-			getWorldController().detachFlube(flube);
-			if(p != null) {
-				if(p.getCurrentEquipment() instanceof Picker) {
-					Picker picker = (Picker) p.getCurrentEquipment();
-					picker.getRepository().add(flube);
-				}
-			}
-		}
-	}
-	
-	private void place(Player p, Vector3f loc, long moveableId) {
-		Flube m = getWorldController().getFlube(moveableId);
-		m.getControl().setPhysicsLocation(loc);
-		getWorldController().attachFlube(m);
-		if(p != null) {
-			if(p.getCurrentEquipment() instanceof Picker) {
-				Picker picker = (Picker) p.getCurrentEquipment();
-				picker.getRepository().remove(m);
-			}
-		}
 	}
 
 	protected void respawn(final Player p) {
