@@ -43,7 +43,6 @@ import de.findus.cydonia.appstates.GeneralInputAppState;
 import de.findus.cydonia.appstates.MenuController;
 import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.events.AttackEvent;
-import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
@@ -73,7 +72,6 @@ import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
-import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
@@ -367,6 +365,8 @@ public class GameController extends MainController implements ScreenController{
     	player.setName(playername);
     	getPlayerController().setTeam(player, team);
     	
+    	setGamestate(GameState.SPECTATE);
+    	menuController.actualizeScreen();
     	
         JoinMessage join = new JoinMessage(player.getId(), player.getName());
     	connector.sendMessage(join);
@@ -395,9 +395,9 @@ public class GameController extends MainController implements ScreenController{
      */
     public void openMenu() {
     	stateManager.detach(gameInputAppState);
+    	stopInputSender();
     	setGamestate(GameState.MENU);
     	menuController.actualizeScreen();
-    	stopInputSender();
     }
     
     public void stopGame() {
@@ -405,9 +405,9 @@ public class GameController extends MainController implements ScreenController{
     }
     
     public void gameOver() {
+    	stopInputSender();
     	setGamestate(GameState.SPECTATE);
     	menuController.actualizeScreen();
-    	stopInputSender();
     }
 
 	@Override
@@ -633,6 +633,9 @@ public class GameController extends MainController implements ScreenController{
 				}
 			}
 		}
+    	
+    	stateManager.attach(gameInputAppState);
+    	startInputSender();
 	}
 	
 	public void handlePlayerInput(InputCommand command, boolean value) {
@@ -964,8 +967,10 @@ public class GameController extends MainController implements ScreenController{
 	 * Starts the input sender loop.
 	 */
 	public void startInputSender() {
-		inputSender = new Thread(new InputSenderLoop());
-		inputSender.start();
+		if(inputSender == null || !inputSender.isAlive()) {
+			inputSender = new Thread(new InputSenderLoop());
+			inputSender.start();
+		}
 	}
     
     /**

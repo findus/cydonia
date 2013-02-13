@@ -10,10 +10,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import com.jme3.collision.CollisionResult;
-
-import de.findus.cydonia.events.BeamEvent;
-import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.EquipmentInfo;

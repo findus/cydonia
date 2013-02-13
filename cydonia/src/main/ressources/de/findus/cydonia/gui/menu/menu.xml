@@ -13,7 +13,7 @@
 	      <control name="textfield" id="playername" text="Player name" width="100%" align="center" valign="center"/>
 	      <control name="dropDown" id="team" width="100%" align="center" valign="center">
           </control>
-	      <control name="button" label="Connect" width="40%" align="center">
+	      <control name="button" label="Join" width="40%" align="center">
 	      	<interact onClick="joinGame()" />
 	      </control>
 	      <control name="button" label="Quit" width="40%" align="center">
