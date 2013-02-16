@@ -2,10 +2,8 @@
 <map name="Level1">
 	<spawnpoint id="1" posx="0.0" posy="2.0" posz="-17.0" team="1" />
 	<spawnpoint id="2" posx="0.0" posy="2.0" posz="17.0" team="2" />
-	<flube id="6" type="-3" posx="0.0" posy="5.0" posz="0.0" />
-	<flube id="7" type="-3" posx="1.0" posy="5.0" posz="0.0" />
-	<flube id="8" type="-3" posx="0.0" posy="5.0" posz="1.0" />
-	<flube id="9" type="-3" posx="1.0" posy="5.0" posz="1.0" />
+	<flag id="1" team="1" posx="0.0" posy="0.0" posz="-18.0" />
+	<flag id="2" team="2" posx="1.0" posy="0.0" posz="18.0" />
 	<flube id="1000" type="-1" posx="-5.0" posy="-3.0" posz="3.0" />
 	<flube id="1001" type="-1" posx="-5.0" posy="-3.0" posz="-3.0" />
 	<flube id="1002" type="-1" posx="-4.0" posy="-3.0" posz="3.0" />

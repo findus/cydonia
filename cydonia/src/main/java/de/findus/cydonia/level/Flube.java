@@ -45,8 +45,11 @@ public class Flube {
 	    
 	    ColorRGBA color = null;
 	    switch (this.type) {
+	    case -4:
+	    	color = new ColorRGBA(1.0f, 0.8f, 0.8f, 0.5f);
+	    	break;
 	    case -3:
-	    	color = ColorRGBA.Yellow;
+	    	color = new ColorRGBA(0.8f, 0.8f, 1.0f, 0.5f);
 	    	break;
 	    case -2:
 	    	color = ColorRGBA.DarkGray;
@@ -89,7 +92,7 @@ public class Flube {
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
 		model.setUserData("PlaceableSurface", (this.type >= -1));
-		model.setUserData("TargetArea", (this.type == -3));
+		model.setUserData("TargetArea", (this.type <= -3));
 		model.setUserData("Type", this.type);
 		TangentBinormalGenerator.generate(model);
         

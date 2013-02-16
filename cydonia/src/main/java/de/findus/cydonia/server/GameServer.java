@@ -11,10 +11,8 @@ import org.jdom2.JDOMException;
 import org.xml.sax.InputSource;
 
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
@@ -25,13 +23,14 @@ import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
-import de.findus.cydonia.events.HitEvent;
+import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
@@ -202,6 +201,20 @@ public class GameServer extends MainController{
 					p.setScores(p.getScores() + 1);
 				}
 			}
+		}else if(e instanceof FlagEvent) {
+			FlagEvent flagev = (FlagEvent) e;
+			if(flagev.getType() == FlagEvent.TAKE) {
+				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				Player p = getPlayerController().getPlayer(flagev.getPlayerid());
+				takeFlag(p, f);
+			}else if(flagev.getType() == FlagEvent.SCORE) {
+				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				Player p = getPlayerController().getPlayer(flagev.getPlayerid());
+				scoreFlag(p, f);
+			}else if(flagev.getType() == FlagEvent.RETURN) {
+				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				returnFlag(f);
+			}
 		}
 	}
 
@@ -260,85 +273,107 @@ public class GameServer extends MainController{
 
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
-		Spatial bullet = null;
+//		Spatial bullet = null;
 		Spatial other = null;
 		Spatial target = null;
 		
 		if(e.getNodeA() != null) {
-			Boolean sticky = e.getNodeA().getUserData("Sticky");
-			if (sticky != null && sticky.booleanValue() == true) {
-				bullet = e.getNodeA();
-				other = e.getNodeB();
-			}
+//			Boolean sticky = e.getNodeA().getUserData("Sticky");
+//			if (sticky != null && sticky.booleanValue() == true) {
+//				bullet = e.getNodeA();
+//				other = e.getNodeB();
+//			}
 			
-			if(e.getNodeA().getUserData("TargetArea") != null && ((Boolean)e.getNodeA().getUserData("TargetArea")).booleanValue() == true) {
+			if(e.getNodeA().getUserData("FlagBase") != null && ((Boolean)e.getNodeA().getUserData("FlagBase")).booleanValue() == true) {
 				target = e.getNodeA();
 				other = e.getNodeB();
 			}
 		}
 		if (e.getNodeB() != null) {
-			Boolean sticky = e.getNodeB().getUserData("Sticky");
-			if (sticky != null && sticky.booleanValue() == true) {
-				bullet = e.getNodeB();
-				other = e.getNodeA();
-			}
+//			Boolean sticky = e.getNodeB().getUserData("Sticky");
+//			if (sticky != null && sticky.booleanValue() == true) {
+//				bullet = e.getNodeB();
+//				other = e.getNodeA();
+//			}
 			
-			if(e.getNodeB().getUserData("TargetArea") != null && ((Boolean)e.getNodeB().getUserData("TargetArea")).booleanValue() == true) {
+			if(e.getNodeB().getUserData("FlagBase") != null && ((Boolean)e.getNodeB().getUserData("FlagBase")).booleanValue() == true) {
 				target = e.getNodeB();
 				other = e.getNodeA();
 			}
 		}
 
-		if(bullet != null && other != null) {
-			getWorldController().detachObject(bullet);
-			bullet.removeControl(RigidBodyControl.class);
-			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
-				int victimid = Integer.parseInt(other.getName().substring(6));
-				long bulletid = Long.parseLong(bullet.getName().substring(6));
-				Bullet bul = bullets.get(bulletid);
-				this.hitPlayer(bul.getPlayerid(), victimid, 20);
-			}else {
-				if(other != null) {
-					if (other instanceof Node) {
-						((Node) other).attachChild(bullet);
-					}else {
-						other.getParent().attachChild(bullet);
+//		if(bullet != null && other != null) {
+//			getWorldController().detachObject(bullet);
+//			bullet.removeControl(RigidBodyControl.class);
+//			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
+//				int victimid = Integer.parseInt(other.getName().substring(6));
+//				long bulletid = Long.parseLong(bullet.getName().substring(6));
+//				Bullet bul = bullets.get(bulletid);
+//				this.hitPlayer(bul.getPlayerid(), victimid, 20);
+//			}else {
+//				if(other != null) {
+//					if (other instanceof Node) {
+//						((Node) other).attachChild(bullet);
+//					}else {
+//						other.getParent().attachChild(bullet);
+//					}
+//				}
+//			}
+//		}
+		
+		if(target != null && other != null) {
+			if(other.getName().startsWith("player")) {
+				Player p = getPlayerController().getPlayer(Integer.parseInt(other.getName().substring(6)));
+				if(p.getTeam() == (int) target.getUserData("team")) { // own target
+					if(p.getFlag() != null) {
+						int stolenflagid = p.getFlag().getId();
+						p.setFlag(null);
+						Flag f = getWorldController().getFlag((int)target.getUserData("id"));
+						if(f.isInBase()) {
+							System.out.println("Team " + p.getTeam() + " scored");
+							FlagEvent event = new FlagEvent(FlagEvent.SCORE, p.getId(), stolenflagid, true);
+							getEventMachine().fireEvent(event);
+						}
+					}
+				}else { // opponents target
+					if(p.getFlag() == null) {
+						Flag f = getWorldController().getFlag((int)target.getUserData("id"));
+						if(f.isInBase()) {
+							f.setInBase(false);
+							System.out.println("Team " + p.getTeam() + " took flag");
+							FlagEvent event = new FlagEvent(FlagEvent.TAKE, p.getId(), f.getId(), true);
+							getEventMachine().fireEvent(event);
+						}
 					}
 				}
 			}
 		}
-		
-		if(target != null && other != null) {
-			if(other.getName().startsWith("player")) {
-				gameplayController.targetReached(Integer.parseInt(other.getName().substring(6)));
-			}
-		}
 	}
 	
-	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
-		Player victim = getPlayerController().getPlayer(victimid);
-		Player attacker = getPlayerController().getPlayer(sourceid);
-		if(victim == null) {
-			System.out.println("cannot prozess hit. player not available.");
-			return;
-		}
-		if(attacker == null || victim.getTeam() != attacker.getTeam()) {
-			double hp = victim.getHealthpoints();
-			hp -= hitpoints;
-			if(hp <= 0) {
-				hp = 0;
-				this.killPlayer(victim);
-				Player source = getPlayerController().getPlayer(sourceid);
-				if(source != null) {
-					source.setScores(source.getScores() + 1);
-				}
-			}
-			victim.setHealthpoints(hp);
-
-			HitEvent hit = new HitEvent(victimid, sourceid, hitpoints, true);
-			getEventMachine().fireEvent(hit);
-		}
-	}
+//	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
+//		Player victim = getPlayerController().getPlayer(victimid);
+//		Player attacker = getPlayerController().getPlayer(sourceid);
+//		if(victim == null) {
+//			System.out.println("cannot prozess hit. player not available.");
+//			return;
+//		}
+//		if(attacker == null || victim.getTeam() != attacker.getTeam()) {
+//			double hp = victim.getHealthpoints();
+//			hp -= hitpoints;
+//			if(hp <= 0) {
+//				hp = 0;
+//				this.killPlayer(victim);
+//				Player source = getPlayerController().getPlayer(sourceid);
+//				if(source != null) {
+//					source.setScores(source.getScores() + 1);
+//				}
+//			}
+//			victim.setHealthpoints(hp);
+//
+//			HitEvent hit = new HitEvent(victimid, sourceid, hitpoints, true);
+//			getEventMachine().fireEvent(hit);
+//		}
+//	}
 	
 	private void attack(Player p) {
 		if(p == null) return;

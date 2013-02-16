@@ -4,22 +4,15 @@
 package de.findus.cydonia.appstates;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 
-import com.jme3.asset.TextureKey;
 import com.jme3.niftygui.RenderImageJme;
 import com.jme3.texture.Image;
-import com.jme3.texture.Image.Format;
-import com.jme3.texture.Texture;
-import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
 import de.findus.cydonia.main.GameController;
+import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.ImageRenderer;
@@ -80,21 +73,21 @@ public class MenuController {
 			gameController.getNifty().gotoScreen("pausemenu");
 			gameController.getInputManager().setCursorVisible(true);
 			break;
-			
+
 		case SPECTATE:
 			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
 			hideHUD();
 			showMessage("You will join the game next round. Please be patient...");
 			break;
-			
+
 		case RUNNING:
 			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
 			hideMessage();
 			showHUD();
 			break;
-			
+
 		case ROUNDOVER:
 			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
@@ -106,7 +99,7 @@ public class MenuController {
 			}
 			showMessage(message);
 			break;
-			
+
 		default:
 			break;
 		}

@@ -14,10 +14,13 @@ import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
+import de.findus.cydonia.level.Flag;
+import de.findus.cydonia.level.FlagFactory;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.player.Beamer;
@@ -69,6 +72,8 @@ public abstract class MainController extends Application implements PhysicsColli
 	        bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
 	        bulletAppState.getPhysicsSpace().addCollisionListener(this);
 	        
+	        FlagFactory.init(assetManager);
+	        
 	        worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
 	        eventMachine.registerListener(this);
 			
@@ -100,8 +105,36 @@ public abstract class MainController extends Application implements PhysicsColli
 			eventQueue.offer(e);
 		}
 		
-		public void killPlayer(Player p) {
+		protected void returnFlag(Flag flag) {
+			getWorldController().returnFlag(flag);
+		}
+		
+		protected void takeFlag(Player p, Flag flag) {
+			flag.setInBase(false);
+			Node parent = flag.getModel().getParent();
+			if(parent != null) {
+				parent.detachChild(flag.getModel());
+			}
+			p.getModel().attachChild(flag.getModel());
+			p.setFlag(flag);
+			flag.setPlayer(p);
+			System.out.println("takenflag");
+		}
+		
+		protected void scoreFlag(Player p, Flag flag) {
+			p.setFlag(null);
+			flag.setPlayer(null);
+			p.setScores(p.getScores() + 3);
+			returnFlag(flag);
+			// TODO: score team
+			System.out.println("scoredflag");
+		}
+		
+		protected void killPlayer(Player p) {
 			if(p == null) return;
+			if(p.getFlag() != null) {
+				returnFlag(p.getFlag());
+			}
 			worldController.detachPlayer(p);
 			p.setAlive(false);
 		}
@@ -116,6 +149,9 @@ public abstract class MainController extends Application implements PhysicsColli
 		
 		protected void quitPlayer(Player p) {
 			if(p == null) return;
+			if(p.getFlag() != null) {
+				returnFlag(p.getFlag());
+			}
 			worldController.detachPlayer(p);
 			playerController.removePlayer(p.getId());
 		}

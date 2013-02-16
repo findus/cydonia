@@ -54,7 +54,7 @@ public class MapXMLParser {
 		String name = root.getAttributeValue("name");
 
 		Map map = new Map(name);
-		map.setTargetAreas(parseTargetAreas(root));
+		map.setFlags(parseFlags(root));
 		map.setSpawnPoints(parseSpawnPoints(root));
 		map.setFlubes(parseFlubes(root));
 		return map;
@@ -72,7 +72,7 @@ public class MapXMLParser {
 		root.setAttribute("name", level.getName());
 		Document doc = new Document(root);
 		
-		root.addContent(writeTargetAreas(level.getTargetAreas()));
+		root.addContent(writeFlags(level.getFlags()));
 		root.addContent(writeSpawnPoints(level.getSpawnPoints()));
 		root.addContent(writeFlubes(level.getFlubes()));
 		
@@ -82,17 +82,14 @@ public class MapXMLParser {
 		return buffer.toString();
 	}
 
-	private Collection<Element> writeTargetAreas(List<TargetArea> list) {
+	private Collection<Element> writeFlags(List<Flag> list) {
 		Collection<Element> col = new LinkedList<Element>();
-		for(TargetArea ta : list) {
-			Element e = new Element("targetarea");
-			e.setAttribute("id", String.valueOf(ta.getId()));
-			e.setAttribute("width", String.valueOf(ta.getWidth()));
-			e.setAttribute("height", String.valueOf(ta.getHeight()));
-			e.setAttribute("depth", String.valueOf(ta.getDepth()));
-			e.setAttribute("posx", String.valueOf(ta.getPosition().getX()));
-			e.setAttribute("posy", String.valueOf(ta.getPosition().getY()));
-			e.setAttribute("posz", String.valueOf(ta.getPosition().getZ()));
+		for(Flag f : list) {
+			Element e = new Element("flag");
+			e.setAttribute("id", String.valueOf(f.getId()));
+			e.setAttribute("posx", String.valueOf(f.getOrigin().getX()));
+			e.setAttribute("posy", String.valueOf(f.getOrigin().getY()));
+			e.setAttribute("posz", String.valueOf(f.getOrigin().getZ()));
 			col.add(e);
 		}
 		return col;
@@ -126,18 +123,16 @@ public class MapXMLParser {
 		return col;
 	}
 
-	private List<TargetArea> parseTargetAreas(Element root) {
-		LinkedList<TargetArea> list = new LinkedList<TargetArea>();	
-		for(Element e : root.getChildren("targetarea")) {
+	private List<Flag> parseFlags(Element root) {
+		LinkedList<Flag> list = new LinkedList<Flag>();	
+		for(Element e : root.getChildren("flag")) {
 			int id = Integer.parseInt(e.getAttributeValue("id"));
-			int width = Integer.parseInt(e.getAttributeValue("width"));
-			int height = Integer.parseInt(e.getAttributeValue("height"));
-			int depth = Integer.parseInt(e.getAttributeValue("depth"));
+			int team = Integer.parseInt(e.getAttributeValue("team"));
 			float posx = Float.parseFloat(e.getAttributeValue("posx"));
 			float posy = Float.parseFloat(e.getAttributeValue("posy"));
 			float posz = Float.parseFloat(e.getAttributeValue("posz"));
-			TargetArea ta = new TargetArea(id, new Vector3f(posx, posy, posz), width, height, depth, assetManager);
-			list.add(ta);				
+			Flag f = FlagFactory.getInstance().createFlag(id, new Vector3f(posx, posy, posz), team);
+			list.add(f);				
 		}
 		return list;
 	}

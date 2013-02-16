@@ -22,6 +22,8 @@ public class TargetArea {
 
 	private int id;
 	
+	private int team;
+	
 	private Spatial model;
 	
 	private Vector3f position;
@@ -32,8 +34,9 @@ public class TargetArea {
 	
 	private RigidBodyControl control;
 	
-	public TargetArea(int id, Vector3f position, int width, int height, int depth, AssetManager assetManager) {
+	public TargetArea(int id, int team, Vector3f position, int width, int height, int depth, AssetManager assetManager) {
 		this.id = id;
+		this.setTeam(team);
 		this.position = position;
 		this.width = width;
 		this.height = height;
@@ -115,6 +118,20 @@ public class TargetArea {
 	 */
 	public void setPosition(Vector3f position) {
 		this.position = position;
+	}
+
+	/**
+	 * @return the team
+	 */
+	public int getTeam() {
+		return team;
+	}
+
+	/**
+	 * @param team the team to set
+	 */
+	public void setTeam(int team) {
+		this.team = team;
 	}
 	
 	

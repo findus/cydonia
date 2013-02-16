@@ -17,7 +17,7 @@ public class Map {
 	
 	private List<SpawnPoint> spawnPoints;
 	
-	private List<TargetArea> targetAreas;
+	private List<Flag> flags;
 
 	public Map(String name) {
 		this.name = name;
@@ -68,15 +68,15 @@ public class Map {
 	/**
 	 * @return the targetAreas
 	 */
-	public List<TargetArea> getTargetAreas() {
-		return targetAreas;
+	public List<Flag> getFlags() {
+		return flags;
 	}
 
 	/**
 	 * @param targetAreas the targetAreas to set
 	 */
-	public void setTargetAreas(List<TargetArea> targetAreas) {
-		this.targetAreas = targetAreas;
+	public void setFlags(List<Flag> flags) {
+		this.flags = flags;
 	}
 	
 }

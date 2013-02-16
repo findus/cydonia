@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.CharacterControl;
+import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
@@ -54,6 +55,8 @@ public class WorldController {
 	
 	protected ConcurrentHashMap<Long, Flube> flubes;
 	
+	protected ConcurrentHashMap<Integer, Flag> flags;
+	
 	private Map map;
 	
 	/**
@@ -66,6 +69,7 @@ public class WorldController {
 		setUpAmbientLight();
 		
 		this.flubes = new ConcurrentHashMap<Long, Flube>();
+		this.flags = new ConcurrentHashMap<Integer, Flag>();
 	}
 
 	public void loadWorld(Map level) {
@@ -74,13 +78,15 @@ public class WorldController {
 //		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
 //		rootNode.attachChild(sky);
 
-		for(TargetArea ta : level.getTargetAreas()) {
-			worldNode.attachChild(ta.getModel());
-			physicsSpace.addCollisionObject(ta.getControl());
-		}
 		for(Flube f : level.getFlubes()) {
 			this.flubes.put(f.getId(), f);
 			attachFlube(f);
+		}
+		for(Flag flag : level.getFlags()) {
+			this.flags.put(flag.getId(), flag);
+			this.worldNode.attachChild(flag.getBaseModel());
+			this.physicsSpace.addCollisionObject(flag.getBaseControl());
+			flag.getBaseModel().attachChild(flag.getModel());
 		}
 		
 //		addflubestoworld();
@@ -179,6 +185,22 @@ public class WorldController {
 			f.getControl().setPhysicsLocation(f.getOrigin());
 			attachFlube(f);
 		}
+		for(Flag flag : flags.values()) {
+			returnFlag(flag);
+		}
+	}
+	
+	public void returnFlag(Flag flag) {
+		if(flag.getPlayer() != null) {
+			flag.getPlayer().setFlag(null);
+			flag.setPlayer(null);
+		}
+		Node parent = flag.getModel().getParent();
+		if(parent != null) {
+			parent.detachChild(flag.getModel());
+		}
+		flag.getBaseModel().attachChild(flag.getModel());
+		flag.setInBase(true);
 	}
 	
 	/**
@@ -211,9 +233,17 @@ public class WorldController {
 		if(control != null) {
 			physicsSpace.addCollisionObject(control);
 		}
+		GhostControl ghostcontrol = player.getGhostControl();
+		if(ghostcontrol != null) {
+			physicsSpace.addCollisionObject(ghostcontrol);
+		}
 	}
 	
 	public void detachPlayer(Player player) {
+		GhostControl ghostcontrol = player.getGhostControl();
+		if(ghostcontrol != null) {
+			physicsSpace.removeCollisionObject(ghostcontrol);
+		}
 		CharacterControl control = player.getControl();
 		if(control != null) {
 			physicsSpace.removeCollisionObject(control);
@@ -346,6 +376,14 @@ public class WorldController {
 	
 	public Collection<Flube> getAllFlubes() {
 		return flubes.values();
+	}
+	
+	public Flag getFlag(int id) {
+		return flags.get(id);
+	}
+	
+	public Collection<Flag> getAllFlags() {
+		return flags.values();
 	}
 	
 	public CollisionResult pickWorld(Vector3f source, Vector3f direction) {

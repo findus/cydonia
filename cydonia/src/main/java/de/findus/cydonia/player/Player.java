@@ -10,10 +10,14 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.LoopMode;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
+import com.jme3.bullet.control.GhostControl;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Spatial;
+import com.jme3.scene.Node;
+
+import de.findus.cydonia.level.Flag;
 
 /**
  * @author Findus
@@ -39,7 +43,9 @@ public class Player implements AnimEventListener{
 	
 	private CharacterControl control;
 	
-	private Spatial model;
+	private GhostControl ghostControl;
+	
+	private Node model;
 	
 	private AnimChannel basechannel;
 	
@@ -60,6 +66,8 @@ public class Player implements AnimEventListener{
 	private List<Equipment> equips = new ArrayList<Equipment>();
 	
 	private int currEquip;
+	
+	private Flag flag;
 
 	/**
 	 * Constructs a new Player and inits its physics and model.
@@ -68,7 +76,6 @@ public class Player implements AnimEventListener{
 	 */
 	public Player(int id) {
 		this.id = id;
-
 		
 		inputs = new PlayerInputState();
 		
@@ -77,6 +84,11 @@ public class Player implements AnimEventListener{
         control.setJumpSpeed(10);
         control.setFallSpeed(25);
         control.setGravity(25);
+        
+        BoxCollisionShape boxShape = new BoxCollisionShape(new Vector3f(0.25f, 0.25f, 0.25f));
+        ghostControl = new GhostControl(boxShape);
+        ghostControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
+        ghostControl.setCollideWithGroups(GhostControl.COLLISION_GROUP_02);
 	}
 	
 	public void handleInput(InputCommand command, boolean value) {
@@ -154,7 +166,7 @@ public class Player implements AnimEventListener{
 		
 	}
 
-	public void setModel(Spatial s) {
+	public void setModel(Node s) {
 		this.model = s;
 		
 		animcontrol = model.getControl(AnimControl.class);
@@ -199,7 +211,7 @@ public class Player implements AnimEventListener{
 	 * Returns the model for visualization of this player.
 	 * @return model of this player
 	 */
-	public Spatial getModel() {
+	public Node getModel() {
 		return model;
 	}
 
@@ -354,4 +366,24 @@ public class Player implements AnimEventListener{
 		this.equips = equips;
 	}
 
+	/**
+	 * @return the flag
+	 */
+	public Flag getFlag() {
+		return flag;
+	}
+
+	/**
+	 * @param flag the flag to set
+	 */
+	public void setFlag(Flag flag) {
+		this.flag = flag;
+	}
+
+	/**
+	 * @return the ghostControl
+	 */
+	public GhostControl getGhostControl() {
+		return ghostControl;
+	}
 }

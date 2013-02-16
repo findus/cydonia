@@ -47,6 +47,7 @@ import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
+import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -56,6 +57,7 @@ import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
@@ -284,7 +286,7 @@ public class GameController extends MainController implements ScreenController{
     	GeneralInputAppState generalInputAppState = new GeneralInputAppState(this);
     	stateManager.attach(generalInputAppState);
         
-//        getBulletAppState().getPhysicsSpace().enableDebug(assetManager);
+    	getBulletAppState().setDebugEnabled(true);
         
         viewPort.attachScene(getWorldController().getRootNode());
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
@@ -556,6 +558,20 @@ public class GameController extends MainController implements ScreenController{
 			lastScorerId = roundEnded.getWinnerid();
 			setGamestate(GameState.ROUNDOVER);
 			menuController.actualizeScreen();
+		}else if(e instanceof FlagEvent) {
+			FlagEvent flagev = (FlagEvent) e;
+			if(flagev.getType() == FlagEvent.TAKE) {
+				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				Player p = getPlayerController().getPlayer(flagev.getPlayerid());
+				takeFlag(p, f);
+			}else if(flagev.getType() == FlagEvent.SCORE) {
+				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				Player p = getPlayerController().getPlayer(flagev.getPlayerid());
+				scoreFlag(p, f);
+			}else if(flagev.getType() == FlagEvent.RETURN) {
+				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				returnFlag(f);
+			}
 		}
 	}
 	
@@ -634,7 +650,7 @@ public class GameController extends MainController implements ScreenController{
 			}
 		}
     	
-    	stateManager.attach(gameInputAppState);
+//    	stateManager.attach(gameInputAppState);
     	startInputSender();
 	}
 	
