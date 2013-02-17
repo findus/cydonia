@@ -71,22 +71,6 @@ public class Picker extends AbstractEquipment {
 	public void usePrimary(boolean activate) {
 		if(!activate) return;
 		
-		if(this.repository.size() < this.capacity) {
-			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
-			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
-				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
-				getMainController().getWorldController().detachFlube(m);
-				this.repository.add(m);
-
-				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), false);
-				getMainController().getEventMachine().fireEvent(pickup);
-			}
-		}
-	}
-	
-	public void useSecondary(boolean activate) {
-		if(!activate) return;
-		
 		if(this.repository.size() > 0) {
 			Flube m = this.repository.get(0);
 			if(m != null) {
@@ -108,6 +92,22 @@ public class Picker extends AbstractEquipment {
 					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, false);
 					getMainController().getEventMachine().fireEvent(place);
 				}
+			}
+		}
+	}
+	
+	public void useSecondary(boolean activate) {
+		if(!activate) return;
+		
+		if(this.repository.size() < this.capacity) {
+			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
+			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
+				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
+				getMainController().getWorldController().detachFlube(m);
+				this.repository.add(m);
+
+				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), false);
+				getMainController().getEventMachine().fireEvent(pickup);
 			}
 		}
 	}
