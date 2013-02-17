@@ -62,7 +62,7 @@ public class GameServer extends MainController{
 
 	public static final boolean FREE_PLACING = false;
 
-	private static final String MAPFILENAME = "/de/findus/cydonia/level/level3.xml";
+	private static final String MAPFILENAME = "/de/findus/cydonia/level/testlevel1.xml";
 
 	public static void main(String[] args) {
 		GameServer gameServer = new GameServer();

@@ -8,8 +8,10 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
@@ -49,11 +51,14 @@ public class FlagFactory {
 		f.setTeam(team);
 
 		ColorRGBA color = null;
+		ColorRGBA colorbase = null;
 		
 		if(team == 1) {
 			color = ColorRGBA.Blue;
+			colorbase = new ColorRGBA(0, 0, 1, 0.5f);
 		}else if (team == 2) {
 			color = ColorRGBA.Red;
+			colorbase = new ColorRGBA(1, 0, 0, 0.5f);
 		}
 		
 		// flag model
@@ -62,9 +67,9 @@ public class FlagFactory {
 	    mat_lit.setColor("Specular",ColorRGBA.White);
 	    mat_lit.setColor("Diffuse", color);
 	    mat_lit.setColor("Ambient", color);
-	    mat_lit.setFloat("Shininess", 1f);
+	    mat_lit.setFloat("Shininess", 2f);
 	    
-	    Mesh mesh = new Box(Vector3f.ZERO, 1f, 1f, 1f);
+	    Mesh mesh = new Box(0.1f, 0.1f, 0.1f);
         Geometry model = new Geometry("Flag_" + id, mesh);
         model.setMaterial(mat_lit);
 		model.setUserData("id", id);
@@ -78,17 +83,20 @@ public class FlagFactory {
 		Material mat_base = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
 		mat_base.setBoolean("UseMaterialColors",true);    
 		mat_base.setColor("Specular",ColorRGBA.White);
-		mat_base.setColor("Diffuse", ColorRGBA.White);
-		mat_base.setColor("Ambient", ColorRGBA.White);
+		mat_base.setColor("Diffuse", colorbase);
+		mat_base.setColor("Ambient", colorbase);
 		mat_base.setFloat("Shininess", 1f);
+		mat_base.setBoolean("UseAlpha",true);
+		mat_base.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 	    
-		Mesh meshBase = new Box(new Vector3f(0, 1, 0), 1f, 1f, 1f);
+		Mesh meshBase = new Box(0.5f, 0.5f, 0.5f);
         Geometry modelBase = new Geometry("Flag_" + id, meshBase);
         modelBase.setUserData("id", id);
         modelBase.setUserData("FlagBase", true);
         modelBase.setUserData("team", team);
         modelBase.setMaterial(mat_base);
         modelBase.setShadowMode(ShadowMode.CastAndReceive);
+        modelBase.setQueueBucket(Bucket.Transparent);
 		TangentBinormalGenerator.generate(modelBase);
 		
 		Node nodeBase = new Node("Flag_" + id);
@@ -104,7 +112,7 @@ public class FlagFactory {
 		modelBase.addControl(baseControl);
 		System.out.println(baseControl.getUserObject());
 		
-		modelBase.setLocalTranslation(origin);
+		nodeBase.setLocalTranslation(origin);
 		
 		f.setBaseControl(baseControl);
 		f.setBaseModel(nodeBase);

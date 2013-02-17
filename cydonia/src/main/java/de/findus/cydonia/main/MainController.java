@@ -115,6 +115,8 @@ public abstract class MainController extends Application implements PhysicsColli
 			if(parent != null) {
 				parent.detachChild(flag.getModel());
 			}
+			flag.getModel().setLocalTranslation(0, 5, 0);
+			flag.getModel().setLocalScale(Vector3f.UNIT_XYZ.divide(p.getModel().getLocalScale()));
 			p.getModel().attachChild(flag.getModel());
 			p.setFlag(flag);
 			flag.setPlayer(p);

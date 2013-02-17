@@ -515,7 +515,7 @@ public class GameController extends MainController implements ScreenController{
 		}else if (e instanceof PlayerJoinEvent) {
 			PlayerJoinEvent join = (PlayerJoinEvent) e;
 			int playerid = join.getPlayerId();
-			if(player.getId() != playerid) {
+			if(player != null && player.getId() != playerid) {
 				joinPlayer(playerid, join.getPlayername());
 			}
 		}else if (e instanceof ChooseTeamEvent) {
