@@ -15,7 +15,10 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 
 import de.findus.cydonia.level.Flag;
 
@@ -46,6 +49,8 @@ public class Player implements AnimEventListener{
 	private GhostControl ghostControl;
 	
 	private Node model;
+	
+	private Node node;
 	
 	private AnimChannel basechannel;
 	
@@ -79,6 +84,8 @@ public class Player implements AnimEventListener{
 		
 		inputs = new PlayerInputState();
 		
+		this.node = new Node("player" + id);
+		
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
         control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
         control.setJumpSpeed(10);
@@ -89,6 +96,9 @@ public class Player implements AnimEventListener{
         ghostControl = new GhostControl(boxShape);
         ghostControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
         ghostControl.setCollideWithGroups(GhostControl.COLLISION_GROUP_02);
+        
+        node.addControl(control);
+		node.addControl(ghostControl);
 	}
 	
 	public void handleInput(InputCommand command, boolean value) {
@@ -167,7 +177,12 @@ public class Player implements AnimEventListener{
 	}
 
 	public void setModel(Node s) {
+		if(this.node.hasChild(this.model)) {
+			this.node.detachChild(this.model);
+		}
 		this.model = s;
+		this.node.attachChild(this.model);
+		
 		
 		animcontrol = model.getControl(AnimControl.class);
 		animcontrol.addListener(this);
@@ -185,10 +200,7 @@ public class Player implements AnimEventListener{
 	}
 	
 	public void switchEquipment(boolean up) {
-		if(this.equips.size() > 0) {
-			this.getCurrentEquipment().reset();
-			this.currEquip = (this.currEquip + (up?1:-1)) % this.equips.size();
-		}
+		this.setCurrEquip(this.currEquip + (up?1:-1));
 	}
 	
 	public int getCurrEquipIndex() {
@@ -196,7 +208,18 @@ public class Player implements AnimEventListener{
 	}
 	
 	public void setCurrEquip(int index) {
-		this.currEquip = index;
+		if(this.equips.size() > 0) {
+			this.getCurrentEquipment().setActive(false);
+			if(this.getCurrentEquipment().getGeometry() != null) {
+				this.node.detachChild(this.getCurrentEquipment().getGeometry());
+			}
+			this.getCurrentEquipment().reset();
+			this.currEquip = index % this.equips.size();
+			if(this.getCurrentEquipment().getGeometry() != null) {
+				this.node.attachChild(this.getCurrentEquipment().getGeometry());
+			}
+			this.getCurrentEquipment().setActive(true);
+		}
 	}
 	
 	public Equipment getCurrentEquipment() {
@@ -211,8 +234,12 @@ public class Player implements AnimEventListener{
 	 * Returns the model for visualization of this player.
 	 * @return model of this player
 	 */
-	public Node getModel() {
+	public Spatial getModel() {
 		return model;
+	}
+	
+	public Node getNode() {
+		return node;
 	}
 
 	/**

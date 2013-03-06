@@ -10,6 +10,18 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
+import com.jme3.effect.shapes.EmitterSphereShape;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial.CullHint;
+import com.jme3.scene.shape.Box;
+
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -28,6 +40,10 @@ public class Beamer extends AbstractEquipment {
 	
 	private boolean beaming;
 	
+	private Node geom = new Node("Beamer");
+	
+	private ParticleEmitter beam;
+	
 	public Beamer() {
 		initHUDImgs();
 	}
@@ -40,8 +56,32 @@ public class Beamer extends AbstractEquipment {
 		this.player = player;
 		
 		initHUDImgs();
+		
+		initGeometry();
 	}
 	
+	public void initGeometry() {
+		beam = new ParticleEmitter("Beam", Type.Triangle, 30);
+        Material mat_red = new Material(getMainController().getAssetManager(), 
+                "Common/MatDefs/Misc/Particle.j3md");
+        mat_red.setTexture("Texture", getMainController().getAssetManager().loadTexture(
+                "Effects/Explosion/flame.png"));
+        beam.setMaterial(mat_red);
+        beam.setImagesX(2); 
+        beam.setImagesY(2); // 2x2 texture animation
+        beam.setEndColor(  new ColorRGBA(6f, 6f, 1f, 0.5f));   // red
+        beam.setStartColor(new ColorRGBA(3f, 3f, 1f, 1f)); // yellow
+        beam.setStartSize(0.01f);
+        beam.setEndSize(0.005f);
+        beam.setGravity(0, 0, 0);
+        beam.setNumParticles(2000);
+        beam.getParticleInfluencer().setVelocityVariation(1f);
+	    beam.setEnabled(false);
+	    update();
+	    
+	    this.geom.attachChild(beam);
+	}
+
 	private void initHUDImgs() {
 		try {
 			if(hudImg == null) {
@@ -54,7 +94,6 @@ public class Beamer extends AbstractEquipment {
 	@Override
 	public void usePrimary(boolean activate) {
 		this.setBeaming(activate);
-		
 	}
 
 	@Override
@@ -131,6 +170,40 @@ public class Beamer extends AbstractEquipment {
 	 */
 	public void setBeaming(boolean beaming) {
 		this.beaming = beaming;
+		update();
+	}
+	
+	public void setActive(boolean active) {
+		beam.setEnabled(active);
+		geom.setLocalTranslation(0, 0.3f, 0.5f);
+		geom.setCullHint(CullHint.Dynamic);
+	}
+	
+	public void update() {
+		if(beaming) {
+			geom.setLocalTranslation(0, 0.3f, 0.2f);
+			float angle = player.getViewDir().normalize().angleBetween(player.getControl().getViewDirection());
+			if(player.getViewDir().normalize().getY() > 0) angle = -angle;
+			beam.setLocalRotation(new Quaternion().fromAngleAxis(angle, Vector3f.UNIT_X));
+			beam.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 0, 80f));
+			beam.getParticleInfluencer().setVelocityVariation(0.01f);
+			beam.setParticlesPerSec(2000);
+			beam.setShape(new EmitterSphereShape(Vector3f.ZERO, 0.01f));
+			beam.setLowLife(0.06f);
+			beam.setHighLife(0.1f);
+		}else {
+			geom.setLocalTranslation(0, 0.3f, 0.5f);
+			beam.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 0, 0.1f));
+			beam.getParticleInfluencer().setVelocityVariation(1f);
+			beam.setParticlesPerSec(200);
+			beam.setShape(new EmitterSphereShape(Vector3f.ZERO, 0.05f));
+			beam.setLowLife(0.05f);
+	        beam.setHighLife(0.13f);
+		}
+	}
+	
+	public Node getGeometry() {
+		return this.geom;
 	}
 
 }

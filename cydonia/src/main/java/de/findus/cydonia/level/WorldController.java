@@ -230,7 +230,7 @@ public class WorldController {
 	}
 	
 	public void attachPlayer(Player player) {
-		rootNode.attachChild(player.getModel());
+		rootNode.attachChild(player.getNode());
 		CharacterControl control = player.getControl();
 		if(control != null) {
 			physicsSpace.addCollisionObject(control);
@@ -250,7 +250,7 @@ public class WorldController {
 		if(control != null) {
 			physicsSpace.removeCollisionObject(control);
 		}
-		rootNode.detachChild(player.getModel());
+		rootNode.detachChild(player.getNode());
 	}
 	
 	public void attachFlube(Flube flube) {

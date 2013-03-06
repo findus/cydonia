@@ -80,8 +80,6 @@ public class PlayerController {
 		}
 		model.setName("player" + p.getId());
 		model.setLocalScale(0.2f);
-		model.addControl(p.getControl());
-		model.addControl(p.getGhostControl());
 		model.setShadowMode(ShadowMode.Cast);
 		model.setQueueBucket(Bucket.Transparent);
 		

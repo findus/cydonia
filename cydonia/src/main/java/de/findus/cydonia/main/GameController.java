@@ -18,10 +18,15 @@ import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
+import com.jme3.effect.shapes.EmitterSphereShape;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
+import com.jme3.material.Material;
+import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
@@ -32,11 +37,13 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
+import com.jme3.scene.shape.Box;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.EdgeFilteringMode;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
+import com.simplerefraction.SimpleRefractionProcessor;
 
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.GeneralInputAppState;
@@ -61,6 +68,7 @@ import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
+import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -120,6 +128,9 @@ public class GameController extends MainController implements ScreenController{
     protected BitmapFont guiFont;
     protected StatsView statsView;
 
+    private SimpleRefractionProcessor refractionProcessor;
+    private Node beamNode;
+    
     private GameInputAppState gameInputAppState;
     
     private MenuController menuController;
@@ -146,8 +157,7 @@ public class GameController extends MainController implements ScreenController{
     private long roundStartTime;
     
     private int lastScorerId;
-    
-    public void start(String server) {
+	public void start(String server) {
     	this.serverAddress = server;
     	this.start();
     }
@@ -286,7 +296,7 @@ public class GameController extends MainController implements ScreenController{
     	GeneralInputAppState generalInputAppState = new GeneralInputAppState(this);
     	stateManager.attach(generalInputAppState);
         
-    	getBulletAppState().setDebugEnabled(true);
+//    	getBulletAppState().setDebugEnabled(true);
         
         viewPort.attachScene(getWorldController().getRootNode());
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
@@ -320,6 +330,15 @@ public class GameController extends MainController implements ScreenController{
         
         BloomFilter bloom = new BloomFilter(BloomFilter.GlowMode.Objects);
         fpp.addFilter(bloom);
+        
+        beamNode = new Node("Beams");
+        getWorldController().attachObject(beamNode);
+//        refractionProcessor = new SimpleRefractionProcessor(assetManager);
+//        refractionProcessor.setRefractionScene(getWorldController().getRootNode());
+//        refractionProcessor.setDebug(true);
+//        refractionProcessor.setRenderSize(256, 256);
+//        refractionProcessor.getMaterial().getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
+//        viewPort.addProcessor(refractionProcessor);
         
         viewPort.addProcessor(fpp);
         
@@ -603,6 +622,12 @@ public class GameController extends MainController implements ScreenController{
 			if(p == null) {
 				p = getPlayerController().createNew(info.getPlayerid());
 			}
+			p.setName(info.getName());
+			getPlayerController().setTeam(p, info.getTeam());
+			p.setAlive(info.isAlive());
+			p.setHealthpoints(info.getHealthpoints());
+			p.setScores(info.getScores());
+			
 			p.getEquips().clear();
 			for(EquipmentInfo ei : info.getEquipInfos()) {
 				try {
@@ -611,6 +636,9 @@ public class GameController extends MainController implements ScreenController{
 					equip.setPlayer(p);
 					equip.loadInfo(ei);
 					p.getEquips().add(equip);
+					if(equip instanceof Beamer) {
+						((Beamer) equip).initGeometry();
+					}
 				} catch (InstantiationException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
@@ -619,12 +647,6 @@ public class GameController extends MainController implements ScreenController{
 					e.printStackTrace();
 				}
 			}
-			
-			p.setName(info.getName());
-			getPlayerController().setTeam(p, info.getTeam());
-			p.setAlive(info.isAlive());
-			p.setHealthpoints(info.getHealthpoints());
-			p.setScores(info.getScores());
 			p.setCurrEquip(info.getCurrEquip());
 			
 			if(playerid == this.player.getId()) continue;
@@ -680,7 +702,9 @@ public class GameController extends MainController implements ScreenController{
 			break;
 
 		default:
-			player.handleInput(command, value);
+			if(getGamestate() == GameState.RUNNING) {
+				player.handleInput(command, value);
+			}
 			break;
 		}
 	}
@@ -741,7 +765,10 @@ public class GameController extends MainController implements ScreenController{
 								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
 							}
 						}
+						
+						System.out.println("t");
 					}
+					beamer.update();
 				}
 			}
 		}
@@ -977,6 +1004,10 @@ public class GameController extends MainController implements ScreenController{
      */
     public Node getGuiNode() {
         return guiNode;
+    }
+    
+    public Material getRefractionMaterial() {
+    	return refractionProcessor.getMaterial();
     }
 
 	/**
