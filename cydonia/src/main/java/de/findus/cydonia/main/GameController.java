@@ -759,7 +759,7 @@ public class GameController extends MainController implements ScreenController{
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
 							System.out.println("client beam: " + tpf);
 							victim.setHealthpoints(victim.getHealthpoints() - 20*tpf);
-							getPlayerController().setTransparency(victim, (float)victim.getHealthpoints() / 100f);
+							getPlayerController().setTransparency(victim, (float)victim.getHealthpoints() * 0.8f + 0.2f);
 							if(victim.getHealthpoints() <= 0) {
 								killPlayer(victim);
 								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);

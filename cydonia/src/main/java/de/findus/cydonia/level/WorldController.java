@@ -199,7 +199,6 @@ public class WorldController {
 		if(parent != null) {
 			parent.detachChild(flag.getModel());
 		}
-		flag.getModel().setLocalScale(1);
 		flag.getBaseModel().attachChild(flag.getModel());
 		flag.getModel().setLocalTranslation(0, 0, 0);
 		flag.setInBase(true);
