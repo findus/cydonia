@@ -39,6 +39,7 @@ public class MenuController {
 	private GameController gameController;
 	
 	private Element timetext;
+	private Element healthpointstext;
 	private Element	inventoryimg;
 	private Element scoreboardlayer;
 	private Element scorestext;
@@ -54,6 +55,7 @@ public class MenuController {
 		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
 		
 		this.timetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("timetext");
+		this.healthpointstext = gameController.getNifty().getScreen("ingamescreen").findElementByName("healthpointstext");
 		this.inventoryimg = gameController.getNifty().getScreen("ingamescreen").findElementByName("inventoryimg");
 		this.scoreboardlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("scoreboardlayer");
 		this.scorestext = gameController.getNifty().getScreen("ingamescreen").findElementByName("scorestext");
@@ -133,6 +135,7 @@ public class MenuController {
 
 	public void updateHUD() {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
+		
 		if(gameController.getPlayer() != null && gameController.getPlayer().getCurrentEquipment() != null) {
 			BufferedImage img = gameController.getPlayer().getCurrentEquipment().getHUDImage();
 
@@ -144,6 +147,10 @@ public class MenuController {
 			this.inventoryimg.getRenderer(ImageRenderer.class).setImage(nimg);
 			this.inventoryimg.setConstraintWidth(new SizeValue(String.valueOf(nimg.getWidth())));
 			this.hudlayer.layoutElements();
+		}
+		
+		if(gameController.getPlayer() != null) {
+			this.healthpointstext.getRenderer(TextRenderer.class).setText(String.valueOf(Math.round(gameController.getPlayer().getHealthpoints())));
 		}
 	}
 }
