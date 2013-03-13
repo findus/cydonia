@@ -5,7 +5,6 @@ package de.findus.cydonia.server;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jdom2.JDOMException;
 import org.xml.sax.InputSource;
@@ -17,8 +16,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 
-import de.findus.cydonia.bullet.Bullet;
-import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
@@ -74,8 +71,6 @@ public class GameServer extends MainController{
 	
 	private Thread senderLoop;
 	
-    private ConcurrentHashMap<Long, Bullet> bullets;
-    
     private GameplayController gameplayController;
     
     /**
@@ -119,10 +114,6 @@ public class GameServer extends MainController{
         configFrame.pack();
         configFrame.setVisible(true);
         
-        this.bullets = new ConcurrentHashMap<Long, Bullet>();
-        
-        Bullet.setAssetManager(assetManager);
-
         InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(MAPFILENAME));
         MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
         try {
@@ -187,7 +178,6 @@ public class GameServer extends MainController{
 				}
 				getPlayerController().reset(p);
 			}
-			removeAllBullets();
 			getWorldController().resetWorld();
 			for (Player p : getPlayerController().getAllPlayers()) {
 				respawn(p);
@@ -267,17 +257,6 @@ public class GameServer extends MainController{
 		}
 	}
 
-	private void removeAllBullets() {
-		for (Bullet b : bullets.values()) {
-			removeBullet(b);
-		}
-	}
-	
-	private void removeBullet(Bullet b) {
-		b.getModel().removeFromParent();
-		bullets.remove(b.getId());
-	}
-
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
 		Spatial other = null;
@@ -327,27 +306,6 @@ public class GameServer extends MainController{
 		}
 	}
 	
-	private void attack(Player p) {
-		if(p == null) return;
-		long passedTime = System.currentTimeMillis() - p.getLastShot();
-		if(passedTime >= RELOAD_TIME) {
-			p.setLastShot(System.currentTimeMillis());
-			Vector3f pos = p.getControl().getPhysicsLocation();
-			Vector3f dir = p.getViewDir();
-
-			Bullet bul = Bullet.createBullet(p.getId());
-			bul.getModel().setLocalTranslation(pos.add(dir.normalize()));
-			getWorldController().attachObject(bul.getModel());
-			bul.getControl().setPhysicsLocation(pos.add(dir.normalize()));
-			bul.getControl().setLinearVelocity(dir.normalize().mult(25));
-
-			bullets.put(bul.getId(), bul);
-			
-			AttackEvent attack = new AttackEvent(p.getId(), bul.getId(), true);
-			getEventMachine().fireEvent(attack);
-		}
-	}
-	
 	protected void joinPlayer(int playerid, String playername) {
 		super.joinPlayer(playerid, playername);
 		
@@ -393,17 +351,6 @@ public class GameServer extends MainController{
 					p.handleInput(command, value);
 					InputEvent event = new InputEvent(p.getId(), command, value, true);
 					getEventMachine().fireEvent(event);
-				}
-			}
-			break;
-		case ATTACK:
-			if(gameplayController.getGameState() == GameState.RUNNING) {
-				if(value) {
-					if(p.isAlive()) {
-						attack(p);
-					}else {
-						respawn(p);
-					}
 				}
 			}
 			break;
@@ -504,7 +451,7 @@ public class GameServer extends MainController{
 		@Override
 		public void run() {
 			while(!Thread.interrupted()) {
-				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(getPlayerController().getAllPlayers(), bullets.values());
+				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(getPlayerController().getAllPlayers());
 				networkController.broadcast(worldstate);
 				
 				try {

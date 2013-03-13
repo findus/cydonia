@@ -3,7 +3,6 @@ package de.findus.cydonia.main;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,7 +15,6 @@ import com.jme3.app.StatsView;
 import com.jme3.asset.AssetNotFoundException;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
@@ -31,7 +29,6 @@ import com.jme3.post.filters.BloomFilter;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
@@ -43,8 +40,6 @@ import com.simplerefraction.SimpleRefractionProcessor;
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.GeneralInputAppState;
 import de.findus.cydonia.appstates.MenuController;
-import de.findus.cydonia.bullet.Bullet;
-import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
@@ -64,7 +59,6 @@ import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
-import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
@@ -141,7 +135,6 @@ public class GameController extends MainController implements ScreenController{
     private Player player;
     private AudioNode throwSound;
 
-    private ConcurrentHashMap<Long, Bullet> bullets;
     private ServerConnector connector;
     
     private Thread inputSender;
@@ -261,10 +254,6 @@ public class GameController extends MainController implements ScreenController{
         super.initialize();
         
         setPauseOnLostFocus(false);
-        
-        bullets = new ConcurrentHashMap<Long, Bullet>();
-        
-        Bullet.setAssetManager(assetManager);
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -481,20 +470,6 @@ public class GameController extends MainController implements ScreenController{
 					p.setViewDir(physic.getOrientation());
 				}
 			}
-
-			for (BulletPhysic physic : worldState.getBulletPhysics()) {
-				Bullet b = bullets.get(physic.getId());
-				if(b == null) {
-					b = new Bullet(physic.getId(), physic.getSourceid());
-					bullets.put(b.getId(), b);
-					getWorldController().attachObject(b.getModel());
-				}
-				if(b != null) {	
-					b.setExactLoc(physic.getTranslation());
-					b.getControl().setPhysicsLocation(physic.getTranslation());
-					b.getControl().setLinearVelocity(physic.getVelocity());
-				}
-			}
 		}
 	}
 
@@ -507,10 +482,6 @@ public class GameController extends MainController implements ScreenController{
 			connector.disconnectFromServer();
 		}else if (e instanceof ConnectionInitEvent) {
 			startGame(((ConnectionInitEvent) e).getLevel());
-		}else if (e instanceof AttackEvent) {
-			AttackEvent attack = (AttackEvent) e;
-			Player p = getPlayerController().getPlayer(attack.getPlayerid());
-			attack(p, attack.getBulletid());
 		}else if (e instanceof KillEvent) {
 			KillEvent kill = (KillEvent) e;
 			Player p = getPlayerController().getPlayer(kill.getPlayerid());
@@ -558,7 +529,6 @@ public class GameController extends MainController implements ScreenController{
 				}
 				getPlayerController().reset(p);
 			}
-			removeAllBullets();
 			getWorldController().resetWorld();
 			this.roundStartTime = System.currentTimeMillis();
 		}else if (e instanceof RoundEndedEvent) {
@@ -587,17 +557,6 @@ public class GameController extends MainController implements ScreenController{
 				returnFlag(f);
 			}
 		}
-	}
-	
-	private void removeAllBullets() {
-		for (Bullet b : bullets.values()) {
-			removeBullet(b);
-		}
-	}
-	
-	private void removeBullet(Bullet b) {
-		b.getModel().removeFromParent();
-		bullets.remove(b.getId());
 	}
 
 	private void clean() {
@@ -763,57 +722,8 @@ public class GameController extends MainController implements ScreenController{
 
     @Override
 	public void collision(PhysicsCollisionEvent e) {
-    	Spatial bullet = null;
-    	Spatial other = null;
-
-    	if(e.getNodeA() != null) {
-    		Boolean sticky = e.getNodeA().getUserData("Sticky");
-    		if (sticky != null && sticky.booleanValue() == true) {
-    			bullet = e.getNodeA();
-    			other = e.getNodeB();
-    		}
-    	}
-    	if (e.getNodeB() != null) {
-    		Boolean sticky = e.getNodeB().getUserData("Sticky");
-    		if (sticky != null && sticky.booleanValue() == true) {
-    			bullet = e.getNodeB();
-    			other = e.getNodeA();
-    		}
-    	}
-
-    	if(bullet != null && other != null) {
-    		getWorldController().detachObject(bullet);
-			bullet.removeControl(RigidBodyControl.class);
-    		if(other.getName().startsWith("player")) {
-    			// Hit Player not here. only when message from server.
-    		}else {
-    			if (other instanceof Node) {
-    				((Node) other).attachChild(bullet);
-    			}else {
-    				other.getParent().attachChild(bullet);
-    			}
-    		}
-    	}
+    	
     }
-
-	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
-		Player victim = getPlayerController().getPlayer(victimid);
-		if(victim == null) {
-			return;
-		}
-		double hp = victim.getHealthpoints();
-		hp -= hitpoints;
-		System.out.println("hit - new hp: " + hp);
-		if(hp <= 0) {
-			hp = 0;
-			this.killPlayer(victim);
-			Player source = getPlayerController().getPlayer(sourceid);
-			if(source != null) {
-				source.setScores(source.getScores() + 1);
-			}
-		}
-		victim.setHealthpoints(hp);
-	}
 	
 	public void killPlayer(Player p) {
 		super.killPlayer(p);
@@ -822,20 +732,6 @@ public class GameController extends MainController implements ScreenController{
 		if(p.getId() == player.getId()) {
 			gameOver();
 		}
-	}
-	
-	private void attack(Player p, long bulletid) {
-		if(p == null) return;
-
-		p.setLastShot(System.currentTimeMillis());
-		Bullet b = new Bullet(bulletid, p.getId());
-		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation());
-		b.getControl().setPhysicsLocation(p.getControl().getPhysicsLocation().add(p.getControl().getViewDirection().normalize()));
-		bullets.put(b.getId(), b);
-		getWorldController().attachObject(b.getModel());
-		
-		throwSound.setLocalTranslation(p.getControl().getPhysicsLocation());
-		throwSound.play();
 	}
 
 	protected void respawn(final Player p) {

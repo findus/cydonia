@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
-import de.findus.cydonia.bullet.Bullet;
 import de.findus.cydonia.player.Player;
 
 /**
@@ -19,7 +18,7 @@ import de.findus.cydonia.player.Player;
 @Serializable
 public class WorldStateUpdatedMessage extends AbstractMessage {
 
-	public static WorldStateUpdatedMessage getUpdate(Collection<Player> playerlist, Collection<Bullet> bulletlist) {
+	public static WorldStateUpdatedMessage getUpdate(Collection<Player> playerlist) {
 		WorldStateUpdatedMessage upd = new WorldStateUpdatedMessage();
 		
 		LinkedList<PlayerPhysic> plist = new LinkedList<PlayerPhysic>();
@@ -34,24 +33,10 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 		PlayerPhysic[] playerphys = plist.toArray(new PlayerPhysic[0]);
 		upd.setPlayerPhysics(playerphys);
 		
-		LinkedList<BulletPhysic> blist = new LinkedList<BulletPhysic>();
-		for (Bullet b : bulletlist) {
-			BulletPhysic physic = new BulletPhysic();
-			physic.setId(b.getId());
-			physic.setSourceid(b.getPlayerid());
-			physic.setTranslation(b.getControl().getPhysicsLocation());
-			physic.setVelocity(b.getControl().getLinearVelocity());
-			
-			blist.add(physic);
-		}
-		BulletPhysic[] bulletphys = blist.toArray(new BulletPhysic[0]);
-		upd.setBulletPhysics(bulletphys);
-		
 		return upd;
 	}
 	
 	private PlayerPhysic[] players;
-	private BulletPhysic[] bullets;
 	
 	public WorldStateUpdatedMessage() {
 		setReliable(false);
@@ -63,13 +48,5 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 	
 	public PlayerPhysic[] getPlayerPhysics() {
 		return this.players;
-	}
-	
-	public void setBulletPhysics(BulletPhysic[] b) {
-		this.bullets = b;
-	}
-	
-	public BulletPhysic[] getBulletPhysics() {
-		return this.bullets;
 	}
 }
