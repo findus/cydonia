@@ -175,15 +175,21 @@ public class MenuController {
 		
 		PanelBuilder pb;
 		for(Player p : gameController.getPlayerController().getAllPlayers()) {
-			final String name = p.getName();
-			final String score = String.valueOf(p.getScores());
-			
-			
-			pb = new ScoreLineBuilder(name, score, "#8888", "#ffff");
+			String name = p.getName();
+			String score = String.valueOf(p.getScores());
+			String color = "#8888";
 			
 			if(p.getTeam() == 1) {
+				if(p.getId() == gameController.getPlayer().getId()) {
+					color = "#7798";
+				}
+				pb = new ScoreLineBuilder(name, score, color, "#ffff");
 				pb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team1);
 			}else if(p.getTeam() == 2){
+				if(p.getId() == gameController.getPlayer().getId()) {
+					color = "#9778";
+				}
+				pb = new ScoreLineBuilder(name, score, color, "#ffff");
 				pb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team2);
 			}
 		}
