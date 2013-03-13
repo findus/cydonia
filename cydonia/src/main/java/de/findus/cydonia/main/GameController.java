@@ -18,15 +18,11 @@ import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh.Type;
-import com.jme3.effect.shapes.EmitterSphereShape;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
@@ -37,7 +33,6 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.shape.Box;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.EdgeFilteringMode;
@@ -55,7 +50,6 @@ import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
-import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -69,7 +63,6 @@ import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
-import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -759,12 +752,7 @@ public class GameController extends MainController implements ScreenController{
 					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
 						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
-							victim.setHealthpoints(Math.max(0, victim.getHealthpoints() - 20*tpf));
-							getPlayerController().setTransparency(victim, (float)victim.getHealthpoints() * 0.008f + 0.2f);
-//							if(victim.getHealthpoints() <= 0) {
-//								killPlayer(victim);
-//								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
-//							}
+							getPlayerController().setHealthpoints(victim, Math.max(0, victim.getHealthpoints() - 20*tpf));
 						}
 					}
 					beamer.update();

@@ -253,7 +253,7 @@ public class GameServer extends MainController{
 					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
 						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
-							victim.setHealthpoints(victim.getHealthpoints() - 20*tpf);
+							getPlayerController().setHealthpoints(victim, victim.getHealthpoints() - 20*tpf);
 							if(victim.getHealthpoints() <= 0) {
 								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
 								

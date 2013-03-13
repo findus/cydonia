@@ -87,6 +87,8 @@ public class PlayerController {
 	}
 	
 	public void setTransparency(Player p, float transparency) {
+		transparency = Math.max(0f, Math.min(1f, transparency));
+		
 		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 		int cw = Math.round(255*transparency);
 		Color c = new Color(cw, cw, cw);
@@ -107,6 +109,12 @@ public class PlayerController {
 				m.setColor("GlowColor", glowcolor);
 			}
 		}
+	}
+	
+	public void setHealthpoints(Player p, double health) {
+		if(p == null) return;
+		p.setHealthpoints(health);
+		setTransparency(p, (float)p.getHealthpoints() * 0.008f + 0.2f);
 	}
 	
 	public void reset(Player p) {
