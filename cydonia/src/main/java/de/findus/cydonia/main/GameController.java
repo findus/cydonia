@@ -57,6 +57,7 @@ import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
+import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
@@ -517,9 +518,10 @@ public class GameController extends MainController implements ScreenController{
 			AttackEvent attack = (AttackEvent) e;
 			Player p = getPlayerController().getPlayer(attack.getPlayerid());
 			attack(p, attack.getBulletid());
-		}else if (e instanceof HitEvent) {
-			HitEvent hit = (HitEvent) e;
-			hitPlayer(hit.getAttackerPlayerid(), hit.getVictimPlayerid(), hit.getHitpoints());
+		}else if (e instanceof KillEvent) {
+			KillEvent kill = (KillEvent) e;
+			Player p = getPlayerController().getPlayer(kill.getPlayerid());
+			killPlayer(p);
 		}else if (e instanceof PickupEvent) {
 			PickupEvent pickup = (PickupEvent) e;
 			Player p = getPlayerController().getPlayer(pickup.getPlayerid());
@@ -757,16 +759,13 @@ public class GameController extends MainController implements ScreenController{
 					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
 						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
-							System.out.println("client beam: " + tpf);
-							victim.setHealthpoints(victim.getHealthpoints() - 20*tpf);
-							getPlayerController().setTransparency(victim, (float)victim.getHealthpoints() * 0.8f + 0.2f);
-							if(victim.getHealthpoints() <= 0) {
-								killPlayer(victim);
-								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
-							}
+							victim.setHealthpoints(Math.max(0, victim.getHealthpoints() - 20*tpf));
+							getPlayerController().setTransparency(victim, (float)victim.getHealthpoints() * 0.008f + 0.2f);
+//							if(victim.getHealthpoints() <= 0) {
+//								killPlayer(victim);
+//								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
+//							}
 						}
-						
-						System.out.println("t");
 					}
 					beamer.update();
 				}

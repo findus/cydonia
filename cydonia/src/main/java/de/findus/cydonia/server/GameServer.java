@@ -25,6 +25,7 @@ import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.InputEvent;
+import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
@@ -215,6 +216,10 @@ public class GameServer extends MainController{
 				Flag f = getWorldController().getFlag(flagev.getFlagid());
 				returnFlag(f);
 			}
+		}else if(e instanceof KillEvent) {
+			KillEvent kill = (KillEvent) e;
+			Player p = getPlayerController().getPlayer(kill.getPlayerid());
+			killPlayer(p);
 		}
 	}
 
@@ -250,8 +255,10 @@ public class GameServer extends MainController{
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
 							victim.setHealthpoints(victim.getHealthpoints() - 20*tpf);
 							if(victim.getHealthpoints() <= 0) {
-								killPlayer(victim);
 								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
+								
+								KillEvent kill = new KillEvent(victim.getId(), true);
+								getEventMachine().fireEvent(kill);
 							}
 						}
 					}
@@ -273,16 +280,10 @@ public class GameServer extends MainController{
 
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
-//		Spatial bullet = null;
 		Spatial other = null;
 		Spatial target = null;
 		
 		if(e.getNodeA() != null) {
-//			Boolean sticky = e.getNodeA().getUserData("Sticky");
-//			if (sticky != null && sticky.booleanValue() == true) {
-//				bullet = e.getNodeA();
-//				other = e.getNodeB();
-//			}
 			
 			if(e.getNodeA().getUserData("FlagBase") != null && ((Boolean)e.getNodeA().getUserData("FlagBase")).booleanValue() == true) {
 				target = e.getNodeA();
@@ -290,36 +291,12 @@ public class GameServer extends MainController{
 			}
 		}
 		if (e.getNodeB() != null) {
-//			Boolean sticky = e.getNodeB().getUserData("Sticky");
-//			if (sticky != null && sticky.booleanValue() == true) {
-//				bullet = e.getNodeB();
-//				other = e.getNodeA();
-//			}
 			
 			if(e.getNodeB().getUserData("FlagBase") != null && ((Boolean)e.getNodeB().getUserData("FlagBase")).booleanValue() == true) {
 				target = e.getNodeB();
 				other = e.getNodeA();
 			}
 		}
-
-//		if(bullet != null && other != null) {
-//			getWorldController().detachObject(bullet);
-//			bullet.removeControl(RigidBodyControl.class);
-//			if(other.getName().startsWith("player") && bullet.getName().startsWith("bullet")) {
-//				int victimid = Integer.parseInt(other.getName().substring(6));
-//				long bulletid = Long.parseLong(bullet.getName().substring(6));
-//				Bullet bul = bullets.get(bulletid);
-//				this.hitPlayer(bul.getPlayerid(), victimid, 20);
-//			}else {
-//				if(other != null) {
-//					if (other instanceof Node) {
-//						((Node) other).attachChild(bullet);
-//					}else {
-//						other.getParent().attachChild(bullet);
-//					}
-//				}
-//			}
-//		}
 		
 		if(target != null && other != null) {
 			if(other.getName().startsWith("player")) {
@@ -349,31 +326,6 @@ public class GameServer extends MainController{
 			}
 		}
 	}
-	
-//	private void hitPlayer(int sourceid, int victimid, double hitpoints) {
-//		Player victim = getPlayerController().getPlayer(victimid);
-//		Player attacker = getPlayerController().getPlayer(sourceid);
-//		if(victim == null) {
-//			System.out.println("cannot prozess hit. player not available.");
-//			return;
-//		}
-//		if(attacker == null || victim.getTeam() != attacker.getTeam()) {
-//			double hp = victim.getHealthpoints();
-//			hp -= hitpoints;
-//			if(hp <= 0) {
-//				hp = 0;
-//				this.killPlayer(victim);
-//				Player source = getPlayerController().getPlayer(sourceid);
-//				if(source != null) {
-//					source.setScores(source.getScores() + 1);
-//				}
-//			}
-//			victim.setHealthpoints(hp);
-//
-//			HitEvent hit = new HitEvent(victimid, sourceid, hitpoints, true);
-//			getEventMachine().fireEvent(hit);
-//		}
-//	}
 	
 	private void attack(Player p) {
 		if(p == null) return;

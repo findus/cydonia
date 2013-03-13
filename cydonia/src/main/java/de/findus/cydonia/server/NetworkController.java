@@ -19,7 +19,6 @@ import com.jme3.network.Server;
 import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.events.AttackEvent;
-import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
@@ -29,6 +28,7 @@ import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
+import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
@@ -164,7 +164,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(HitEvent.class);
 		Serializer.registerClass(PickupEvent.class);
 		Serializer.registerClass(PlaceEvent.class);
-		Serializer.registerClass(BeamEvent.class);
+		Serializer.registerClass(KillEvent.class);
 		Serializer.registerClass(FlagEvent.class);
 		Serializer.registerClass(RespawnEvent.class);
 		Serializer.registerClass(RestartRoundEvent.class);
