@@ -17,7 +17,7 @@ public class GameConfig {
 	private static final HashMap<String, Object> defaults = new HashMap<String, Object>();
 	
 	static{
-		defaults.put("mp_roundtime", 3*60L);
+		defaults.put("mp_roundtime", 10*60L);
 	}
 	
 	private HashMap<String, Object> map = new HashMap<String, Object>();

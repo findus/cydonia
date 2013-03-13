@@ -70,6 +70,7 @@ import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
+import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
@@ -531,6 +532,7 @@ public class GameController extends MainController implements ScreenController{
 			}
 			getWorldController().resetWorld();
 			this.roundStartTime = System.currentTimeMillis();
+			menuController.updateScoreboard();
 		}else if (e instanceof RoundEndedEvent) {
 			RoundEndedEvent roundEnded = (RoundEndedEvent) e;
 			for (Player p : getPlayerController().getAllPlayers()) {
@@ -552,6 +554,7 @@ public class GameController extends MainController implements ScreenController{
 				Flag f = getWorldController().getFlag(flagev.getFlagid());
 				Player p = getPlayerController().getPlayer(flagev.getPlayerid());
 				scoreFlag(p, f);
+				menuController.updateScoreboard();
 			}else if(flagev.getType() == FlagEvent.RETURN) {
 				Flag f = getWorldController().getFlag(flagev.getFlagid());
 				returnFlag(f);
@@ -742,6 +745,11 @@ public class GameController extends MainController implements ScreenController{
 			p.getModel().setCullHint(CullHint.Always);
 			resumeGame();
 		}
+	}
+	
+	protected void joinPlayer(int playerid, String playername) {
+		super.joinPlayer(playerid, playername);
+		menuController.updateScoreboard();
 	}
 	
 	public long getRemainingTime() {

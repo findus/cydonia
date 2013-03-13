@@ -118,7 +118,7 @@ public class PlayerController {
 	}
 	
 	public void reset(Player p) {
-		setTransparency(p, 1);
+		p.setScores(0);
 		
 		for(Equipment equip : p.getEquips()) {
 			equip.reset();

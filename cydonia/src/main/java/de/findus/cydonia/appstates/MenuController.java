@@ -12,8 +12,10 @@ import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
 import de.findus.cydonia.main.GameController;
-import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.player.Player;
+import de.lessvoid.nifty.EndNotify;
+import de.lessvoid.nifty.builder.PanelBuilder;
+import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.ImageRenderer;
 import de.lessvoid.nifty.elements.render.TextRenderer;
@@ -42,10 +44,10 @@ public class MenuController {
 	private Element healthpointstext;
 	private Element	inventoryimg;
 	private Element scoreboardlayer;
-	private Element scorestext;
 	private Element messagelayer;
 	private Element messagetext;
 	private Element hudlayer;
+	private Element scoresPanel;
 	
 	
 	public MenuController(GameController game) {
@@ -58,10 +60,10 @@ public class MenuController {
 		this.healthpointstext = gameController.getNifty().getScreen("ingamescreen").findElementByName("healthpointstext");
 		this.inventoryimg = gameController.getNifty().getScreen("ingamescreen").findElementByName("inventoryimg");
 		this.scoreboardlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("scoreboardlayer");
-		this.scorestext = gameController.getNifty().getScreen("ingamescreen").findElementByName("scorestext");
 		this.messagelayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("messagelayer");
 		this.messagetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("messagetext");
 		this.hudlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("hudlayer");
+		this.scoresPanel = gameController.getNifty().getScreen("ingamescreen").findElementByName("scorespanel");
 	}
 	
 	public void actualizeScreen() {
@@ -108,7 +110,7 @@ public class MenuController {
 	}
 	
 	public void showScoreboard() {
-		scorestext.getRenderer(TextRenderer.class).setText(gameController.getScores());
+		updateScoreboard();
 		scoreboardlayer.setVisible(true);
 	}
 	
@@ -153,4 +155,71 @@ public class MenuController {
 			this.healthpointstext.getRenderer(TextRenderer.class).setText(String.valueOf(Math.round(gameController.getPlayer().getHealthpoints())));
 		}
 	}
+	
+	public void updateScoreboard() {
+		Element team1 = this.scoresPanel.findElementByName("team1");
+		for(Element e : team1.getElements()) {
+			e.markForRemoval();
+		}
+		
+		Element team2 = this.scoresPanel.findElementByName("team2");
+		for(Element e : team2.getElements()) {
+			e.markForRemoval();
+		}
+		
+		PanelBuilder teampb = new ScoreLineBuilder("Team 1", "", "#4488", "ffff");
+		teampb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team1);
+		
+		teampb = new ScoreLineBuilder("Team 2", "", "#8448", "ffff");
+		teampb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team2);
+		
+		PanelBuilder pb;
+		for(Player p : gameController.getPlayerController().getAllPlayers()) {
+			final String name = p.getName();
+			final String score = String.valueOf(p.getScores());
+			
+			
+			pb = new ScoreLineBuilder(name, score, "#8888", "#ffff");
+			
+			if(p.getTeam() == 1) {
+				pb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team1);
+			}else if(p.getTeam() == 2){
+				pb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team2);
+			}
+		}
+	}
+	
+	private class ScoreLineBuilder extends PanelBuilder {
+		
+		private ScoreLineBuilder(final String name, final String score, final String bgcolor, final String fontcolor)
+		{
+			padding("2px");
+			childLayoutHorizontal();
+			panel(new PanelBuilder(){{
+				childLayoutHorizontal();
+				backgroundColor(bgcolor);
+				width("90%");
+				padding("2px");
+				text(new TextBuilder(){{
+					textHAlignLeft();
+					color(fontcolor);
+					font("aurulent-sans-16.fnt");
+					text(name);
+				}});
+			}});
+			panel(new PanelBuilder(){{
+				childLayoutHorizontal();
+				backgroundColor(bgcolor);
+				width("10%");
+				padding("2px");
+				text(new TextBuilder(){{
+					textHAlignRight();
+					color(fontcolor);
+					font("aurulent-sans-16.fnt");
+					text(score);
+				}});
+			}});
+		}
+	}
+	
 }

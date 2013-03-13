@@ -160,7 +160,7 @@ public abstract class MainController extends Application implements PhysicsColli
 		
 		protected void respawn(final Player p) {
 			if(p == null) return;
-			p.setHealthpoints(100);
+			playerController.setHealthpoints(p, 100);
 			p.setAlive(true);
 
 			p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
