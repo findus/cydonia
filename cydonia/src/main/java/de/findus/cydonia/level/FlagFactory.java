@@ -3,9 +3,10 @@
  */
 package de.findus.cydonia.level;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimationFactory;
+import com.jme3.animation.LoopMode;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -13,9 +14,9 @@ import com.jme3.bullet.control.GhostControl;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh.Type;
 import com.jme3.effect.shapes.EmitterBoxShape;
-import com.jme3.effect.shapes.EmitterMeshFaceShape;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
@@ -24,7 +25,10 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
+import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
+
+import de.findus.cydonia.main.GameController;
 
 /**
  * @author Findus
@@ -58,18 +62,20 @@ public class FlagFactory {
 		f.setTeam(team);
 
 		ColorRGBA color = null;
-		ColorRGBA colorbase = null;
 		
 		if(team == 1) {
 			color = ColorRGBA.Blue;
-			colorbase = new ColorRGBA(0, 0, 1, 0.5f);
 		}else if (team == 2) {
 			color = ColorRGBA.Red;
-			colorbase = new ColorRGBA(1, 0, 0, 0.5f);
 		}
 		
-		// flag model
+		Node flagNode = new Node("Flag_" + id);
+		flagNode.setUserData("id", id);
+		flagNode.setLocalTranslation(0, 0.5f, 0);
+		
+		Texture tex_box = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_white.png");
 		Material mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+		mat_lit.setTexture("DiffuseMap", tex_box);
 	    mat_lit.setBoolean("UseMaterialColors",true);    
 	    mat_lit.setColor("Specular",ColorRGBA.White);
 	    mat_lit.setColor("Diffuse", color);
@@ -77,14 +83,26 @@ public class FlagFactory {
 	    mat_lit.setFloat("Shininess", 2f);
 	    
 	    Mesh mesh = new Box(0.1f, 0.1f, 0.1f);
-        Geometry model = new Geometry("Flag_" + id, mesh);
+        Geometry model = new Geometry("FlagModel", mesh);
         model.setMaterial(mat_lit);
-		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
 		TangentBinormalGenerator.generate(model);
-		model.setLocalTranslation(0, 0.5f, 0);
+		
+		AnimationFactory af = new AnimationFactory(4, "Rotate", 1);
+		af.addKeyFrameRotationAngles(0, 1f, 0f, 1f);
+		af.addKeyFrameRotationAngles(1, 1, FastMath.HALF_PI, 1);
+		af.addKeyFrameRotationAngles(2, 1, FastMath.PI, 1);
+		af.addKeyFrameRotationAngles(3, 1, FastMath.PI+FastMath.HALF_PI, 1);
+		af.addKeyFrameRotationAngles(4, 1, FastMath.TWO_PI, 1);
+		AnimControl ac = new AnimControl();
+		ac.addAnim(af.buildAnimation());
+		model.addControl(ac);
+		AnimChannel chan = ac.createChannel();
+		chan.setLoopMode(LoopMode.Loop);
+		chan.setAnim("Rotate");
         
-		f.setModel(model);
+		flagNode.attachChild(model);
+		f.setModel(flagNode);
 		
 		Node nodeBase = new Node("Flag_" + id);
 		nodeBase.setUserData("id", id);
@@ -112,9 +130,18 @@ public class FlagFactory {
 	    glitterBase.setParticlesPerSec(100f);
 	    glitterBase.setLowLife(1f);
 	    glitterBase.setHighLife(3f);
-	    nodeBase.attachChild(glitterBase);
 		glitterBase.setEnabled(true);
+	    nodeBase.attachChild(glitterBase);
 		
+	    Mesh m = new Quad(1f, 1f);
+        Geometry floor = new Geometry("FlagFloor", m);
+        floor.setMaterial(mat_lit);
+		floor.setShadowMode(ShadowMode.Receive);
+		TangentBinormalGenerator.generate(floor);
+		floor.setLocalRotation(new Quaternion(0, 1f, 1f, 0));
+		floor.setLocalTranslation(0.5f, -0.99f, -0.5f);
+		nodeBase.attachChild(floor);
+	    
 		CollisionShape collisionShape = new BoxCollisionShape(new Vector3f(0.5f, 1f, 0.5f));
 		GhostControl baseControl = new GhostControl(collisionShape);
 		baseControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
