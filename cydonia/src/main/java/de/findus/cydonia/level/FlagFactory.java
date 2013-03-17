@@ -119,7 +119,7 @@ public class FlagFactory {
 		GhostControl baseControl = new GhostControl(collisionShape);
 		baseControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
 		baseControl.setCollideWithGroups(GhostControl.COLLISION_GROUP_02);
-		glitterBase.addControl(baseControl);
+		nodeBase.addControl(baseControl);
 		
 		nodeBase.setLocalTranslation(origin);
 	    
