@@ -20,7 +20,6 @@ import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
@@ -35,7 +34,6 @@ import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.EdgeFilteringMode;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
-import com.simplerefraction.SimpleRefractionProcessor;
 
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.GeneralInputAppState;
@@ -70,7 +68,6 @@ import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
-import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
@@ -117,7 +114,6 @@ public class GameController extends MainController implements ScreenController{
     protected BitmapFont guiFont;
     protected StatsView statsView;
 
-    private SimpleRefractionProcessor refractionProcessor;
     private Node beamNode;
     
     private GameInputAppState gameInputAppState;
@@ -895,10 +891,6 @@ public class GameController extends MainController implements ScreenController{
      */
     public Node getGuiNode() {
         return guiNode;
-    }
-    
-    public Material getRefractionMaterial() {
-    	return refractionProcessor.getMaterial();
     }
 
 	/**
