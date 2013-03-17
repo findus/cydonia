@@ -3,20 +3,27 @@
  */
 package de.findus.cydonia.level;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jme3.asset.AssetManager;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.GhostControl;
-import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
+import com.jme3.effect.shapes.EmitterBoxShape;
+import com.jme3.effect.shapes.EmitterMeshFaceShape;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Quad;
 import com.jme3.util.TangentBinormalGenerator;
 
 /**
@@ -75,45 +82,47 @@ public class FlagFactory {
 		model.setUserData("id", id);
 		model.setShadowMode(ShadowMode.CastAndReceive);
 		TangentBinormalGenerator.generate(model);
+		model.setLocalTranslation(0, 0.5f, 0);
         
 		f.setModel(model);
-		
-		
-		// base model
-		Material mat_base = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-		mat_base.setBoolean("UseMaterialColors",true);    
-		mat_base.setColor("Specular",ColorRGBA.White);
-		mat_base.setColor("Diffuse", colorbase);
-		mat_base.setColor("Ambient", colorbase);
-		mat_base.setFloat("Shininess", 1f);
-		mat_base.setBoolean("UseAlpha",true);
-		mat_base.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-	    
-		Mesh meshBase = new Box(0.5f, 0.5f, 0.5f);
-        Geometry modelBase = new Geometry("Flag_" + id, meshBase);
-        modelBase.setUserData("id", id);
-        modelBase.setUserData("FlagBase", true);
-        modelBase.setUserData("team", team);
-        modelBase.setMaterial(mat_base);
-        modelBase.setShadowMode(ShadowMode.CastAndReceive);
-        modelBase.setQueueBucket(Bucket.Transparent);
-		TangentBinormalGenerator.generate(modelBase);
 		
 		Node nodeBase = new Node("Flag_" + id);
 		nodeBase.setUserData("id", id);
 		nodeBase.setUserData("FlagBase", true);
-		modelBase.setUserData("team", team);
-		nodeBase.attachChild(modelBase);
+		nodeBase.setUserData("team", team);
 		
-		CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(modelBase);
+		ParticleEmitter glitterBase = new ParticleEmitter("Glitter", Type.Triangle, 30);
+        Material mat_red = new Material(assetManager, 
+                "Common/MatDefs/Misc/Particle.j3md");
+        mat_red.setTexture("Texture", assetManager.loadTexture(
+                "Effects/Explosion/flame.png"));
+        glitterBase.setMaterial(mat_red);
+        glitterBase.setImagesX(2); 
+        glitterBase.setImagesY(2); // 2x2 texture animation
+        glitterBase.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.5f));
+        glitterBase.setStartColor(color);
+        glitterBase.setStartSize(0.03f);
+        glitterBase.setEndSize(0.001f);
+        glitterBase.setGravity(0, 0, 0);
+        glitterBase.setNumParticles(400);
+	    glitterBase.setShape(new EmitterBoxShape(new Vector3f(-0.5f, -1f, -0.5f), new Vector3f(0.5f, 1f, 0.5f)));
+	    glitterBase.getParticleInfluencer().setInitialVelocity(new Vector3f(0.01f, 0.01f, 0.01f));
+	    glitterBase.getParticleInfluencer().setVelocityVariation(1f);
+	    glitterBase.setRandomAngle(true);
+	    glitterBase.setParticlesPerSec(100f);
+	    glitterBase.setLowLife(1f);
+	    glitterBase.setHighLife(3f);
+	    nodeBase.attachChild(glitterBase);
+		glitterBase.setEnabled(true);
+		
+		CollisionShape collisionShape = new BoxCollisionShape(new Vector3f(0.5f, 1f, 0.5f));
 		GhostControl baseControl = new GhostControl(collisionShape);
 		baseControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
 		baseControl.setCollideWithGroups(GhostControl.COLLISION_GROUP_02);
-		modelBase.addControl(baseControl);
-		System.out.println(baseControl.getUserObject());
+		glitterBase.addControl(baseControl);
 		
 		nodeBase.setLocalTranslation(origin);
-		
+	    
 		f.setBaseControl(baseControl);
 		f.setBaseModel(nodeBase);
 		

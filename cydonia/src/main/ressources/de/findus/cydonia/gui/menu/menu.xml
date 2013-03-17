@@ -74,7 +74,7 @@
 			visible="false">
 			<panel height="50%" width="80%" align="center" valign="center"
 				style="nifty-panel-trans" childLayout="vertical">
-				<text id="text" font="aurulent-sans-16.fnt" color="#000f" text="Scoreboard"
+				<text id="text" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#000f" text="Scoreboard"
 					height="5%" align="center" valign="center" />
 				<panel id="scorespanel" childLayout="horizontal">
 					<panel id="team1" width="50%" childLayout="vertical"></panel>
@@ -86,7 +86,7 @@
 			visible="false">
 			<panel height="10%" width="90%" align="center" valign="top"
 				style="nifty-panel-colored-no-shadow-trans" childLayout="vertical">
-				<text id="messagetext" font="aurulent-sans-16.fnt" color="#000f"
+				<text id="messagetext" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#000f"
 					text="Round is over. New round will start automatically in a view seconds..."
 					height="100%" textVAlign="center" align="center" valign="center" />
 			</panel>

@@ -29,7 +29,7 @@
   </style>
 
   <style id="nifty-drop-down#icon">
-    <attributes filename="scrollbar/scrollbar.png" width="23px" height="23px" imageMode="sprite:23,23,0" />
+    <attributes filename="de/findus/cydonia/niftystyle/violett/scrollbar/scrollbar.png" width="23px" height="23px" imageMode="sprite:23,23,0" />
     <effect>
       <onClick name="focus" targetElement="#parent" />
       <onClick name="imageOverlay" filename="de/findus/cydonia/niftystyle/violett/scrollbar/scrollbar.png" imageMode="sprite:23,23,2" post="true" />

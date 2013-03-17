@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nifty-styles>
   <!-- The Tabs require the Nifty-Panel to be displayed properly. -->
-  <useStyles filename="panel/nifty-panel.xml"/>
+  <useStyles filename="de/findus/cydonia/niftystyle/violett/panel/nifty-panel.xml"/>
 
   <!-- This style is applied to the panel that holds the content of each tab. -->
   <style id="nifty-tabs#panel">

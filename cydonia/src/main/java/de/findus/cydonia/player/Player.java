@@ -15,8 +15,6 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
@@ -92,7 +90,7 @@ public class Player implements AnimEventListener{
         control.setFallSpeed(25);
         control.setGravity(25);
         
-        BoxCollisionShape boxShape = new BoxCollisionShape(new Vector3f(0.25f, 0.25f, 0.25f));
+        BoxCollisionShape boxShape = new BoxCollisionShape(new Vector3f(0.25f, 0.8f, 0.25f));
         ghostControl = new GhostControl(boxShape);
         ghostControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
         ghostControl.setCollideWithGroups(GhostControl.COLLISION_GROUP_02);

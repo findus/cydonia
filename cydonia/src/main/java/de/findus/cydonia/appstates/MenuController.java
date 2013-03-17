@@ -209,7 +209,7 @@ public class MenuController {
 				text(new TextBuilder(){{
 					textHAlignLeft();
 					color(fontcolor);
-					font("aurulent-sans-16.fnt");
+					font("de/findus/cydonia/gui/fonts/aurulent-sans-16.fnt");
 					text(name);
 				}});
 			}});
@@ -221,7 +221,7 @@ public class MenuController {
 				text(new TextBuilder(){{
 					textHAlignRight();
 					color(fontcolor);
-					font("aurulent-sans-16.fnt");
+					font("de/findus/cydonia/gui/fonts/aurulent-sans-16.fnt");
 					text(score);
 				}});
 			}});

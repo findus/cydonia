@@ -69,8 +69,8 @@ public class Beamer extends AbstractEquipment {
         beam.setMaterial(mat_red);
         beam.setImagesX(2); 
         beam.setImagesY(2); // 2x2 texture animation
-        beam.setEndColor(  new ColorRGBA(6f, 6f, 1f, 0.5f));   // red
-        beam.setStartColor(new ColorRGBA(3f, 3f, 1f, 1f)); // yellow
+        beam.setEndColor(  new ColorRGBA(6f, 6f, 1f, 0.5f));
+        beam.setStartColor(new ColorRGBA(3f, 3f, 1f, 1f));
         beam.setStartSize(0.01f);
         beam.setEndSize(0.005f);
         beam.setGravity(0, 0, 0);
