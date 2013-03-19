@@ -13,7 +13,6 @@ import com.jme3.texture.plugins.AWTLoader;
 
 import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.player.Player;
-import de.lessvoid.nifty.EndNotify;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.elements.Element;

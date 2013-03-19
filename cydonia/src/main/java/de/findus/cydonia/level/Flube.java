@@ -41,7 +41,7 @@ public class Flube {
 		this.type = type;
 		this.origin = origin;
 		
-		Mesh mesh = new Box(Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
+		Mesh mesh = new Box(0.5f, 0.5f, 0.5f);
 	    
 	    ColorRGBA color = null;
 	    switch (this.type) {

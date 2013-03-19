@@ -45,7 +45,7 @@ public class TargetArea {
 		Material mat_red =  new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		mat_red.setColor("Color", ColorRGBA.Yellow);
 		
-		Box box = new Box(Vector3f.ZERO, width/2, height/2, depth/2);
+		Box box = new Box(width/2, height/2, depth/2);
         model = new Geometry("TargetArea", box);
         model.setMaterial(mat_red);
         model.setUserData("PlaceableSurface", true);
