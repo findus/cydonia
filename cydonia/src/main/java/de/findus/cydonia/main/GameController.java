@@ -688,7 +688,7 @@ public class GameController extends MainController implements ScreenController{
 			
 			walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
 			
-			Vector3f correction = p.getExactLoc().subtract(p.getControl().getPhysicsLocation()).divide(SMOOTHING);
+			Vector3f correction = p.getExactLoc().subtract(p.getControl().getPhysicsLocation()).mult(SMOOTHING);
 			walkDirection.addLocal(correction);
 
 			walkDirection.multLocal(PHYSICS_ACCURACY);
