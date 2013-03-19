@@ -23,6 +23,8 @@ import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
+import de.findus.cydonia.events.PickupEvent;
+import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
 import de.findus.cydonia.events.RespawnEvent;
@@ -38,7 +40,7 @@ import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
-import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
@@ -69,7 +71,7 @@ public class GameServer extends MainController{
 	
 	private ServerConfigFrame configFrame;
 	
-	private Thread senderLoop;
+	private Thread locationSenderLoop;
 	
     private GameplayController gameplayController;
     
@@ -100,7 +102,7 @@ public class GameServer extends MainController{
 	protected void cleanup() {
 		super.cleanup();
 		networkController.stop();
-		senderLoop.interrupt();
+		locationSenderLoop.interrupt();
 		gameplayController.dispose();
 		configFrame.setVisible(false);
 		configFrame.dispose();
@@ -132,8 +134,8 @@ public class GameServer extends MainController{
         networkController = new NetworkController(this, getEventMachine());
 		
         getBulletAppState().setEnabled(true);
-		senderLoop = new Thread(new WorldStateSenderLoop());
-		senderLoop.start();
+		locationSenderLoop = new Thread(new LocationSenderLoop());
+		locationSenderLoop.start();
 		
 		gameplayController = new GameplayController(getEventMachine(), getGameConfig());
 		gameplayController.restartRound();
@@ -210,6 +212,17 @@ public class GameServer extends MainController{
 			KillEvent kill = (KillEvent) e;
 			Player p = getPlayerController().getPlayer(kill.getPlayerid());
 			killPlayer(p);
+		}else if(e instanceof PickupEvent) {
+			PickupEvent pickup = (PickupEvent) e;
+			Player p = getPlayerController().getPlayer(pickup.getPlayerid());
+			Flube f = getWorldController().getFlube(pickup.getMoveableid());
+			pickup(p, f);
+		}else if(e instanceof PlaceEvent) {
+			PlaceEvent place = (PlaceEvent) e;
+			Player p = getPlayerController().getPlayer(place.getPlayerid());
+			Flube f = getWorldController().getFlube(place.getMoveableid());
+			Vector3f loc = place.getLocation();
+			place(p, f, loc);
 		}
 	}
 
@@ -447,11 +460,11 @@ public class GameServer extends MainController{
 	 * @author Findus
 	 *
 	 */
-	private class WorldStateSenderLoop implements Runnable {
+	private class LocationSenderLoop implements Runnable {
 		@Override
 		public void run() {
 			while(!Thread.interrupted()) {
-				WorldStateUpdatedMessage worldstate = WorldStateUpdatedMessage.getUpdate(getPlayerController().getAllPlayers());
+				LocationUpdatedMessage worldstate = LocationUpdatedMessage.getUpdate(getPlayerController().getAllPlayers());
 				networkController.broadcast(worldstate);
 				
 				try {
@@ -461,7 +474,5 @@ public class GameServer extends MainController{
 				}
 			}
 		}
-		
 	}
-
 }

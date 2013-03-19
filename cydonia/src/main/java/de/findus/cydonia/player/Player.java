@@ -325,7 +325,7 @@ public class Player implements AnimEventListener{
 		return healthpoints;
 	}
 
-	public void setHealthpoints(double healthpoints) {
+	void setHealthpoints(double healthpoints) {
 		this.healthpoints = healthpoints;
 	}
 	

@@ -49,7 +49,7 @@ import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
-import de.findus.cydonia.messages.WorldStateUpdatedMessage;
+import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -151,7 +151,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(PickerInfo.class);
 		Serializer.registerClass(BeamerInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
-		Serializer.registerClass(WorldStateUpdatedMessage.class);
+		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
 		Serializer.registerClass(BulletPhysic.class);
@@ -169,7 +169,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(RespawnEvent.class);
 		Serializer.registerClass(RestartRoundEvent.class);
 		Serializer.registerClass(RoundEndedEvent.class);
-		Serializer.registerClass(WorldStateUpdatedMessage.class);
+		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(PlayerJoinEvent.class);
 		Serializer.registerClass(PlayerQuitEvent.class);
 		Serializer.registerClass(ChooseTeamEvent.class);

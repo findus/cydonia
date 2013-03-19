@@ -15,7 +15,6 @@ import com.jme3.app.StatsView;
 import com.jme3.asset.AssetNotFoundException;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.collision.CollisionResult;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
@@ -60,11 +59,11 @@ import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
+import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
-import de.findus.cydonia.messages.WorldStateUpdatedMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.InputCommand;
@@ -136,7 +135,7 @@ public class GameController extends MainController implements ScreenController{
     
     private Thread inputSender;
     
-    private WorldStateUpdatedMessage latestWorldState;
+    private LocationUpdatedMessage latestLocationUpdate;
     
     private long roundStartTime;
     
@@ -435,7 +434,7 @@ public class GameController extends MainController implements ScreenController{
         stateManager.update(tpf);
 
         // update game specific things
-        useLatestWorldstate();
+        useLatestLocationUpdate();
         computeBeams(tpf);
         movePlayers(tpf);
         menuController.updateHUD();
@@ -452,12 +451,12 @@ public class GameController extends MainController implements ScreenController{
         stateManager.postRender();
     }
     
-	private void useLatestWorldstate() {
-		WorldStateUpdatedMessage worldState;
-		if(latestWorldState != null) {
-			synchronized (latestWorldState) {
-				worldState = latestWorldState;
-				latestWorldState = null;
+	private void useLatestLocationUpdate() {
+		LocationUpdatedMessage worldState;
+		if(latestLocationUpdate != null) {
+			synchronized (latestLocationUpdate) {
+				worldState = latestLocationUpdate;
+				latestLocationUpdate = null;
 			}
 
 			for (PlayerPhysic physic : worldState.getPlayerPhysics()) {
@@ -465,6 +464,7 @@ public class GameController extends MainController implements ScreenController{
 				if(p != null) {
 					p.setExactLoc(physic.getTranslation());
 					p.setViewDir(physic.getOrientation());
+					getPlayerController().setHealthpoints(p, physic.getHealthpoints());
 				}
 			}
 		}
@@ -491,9 +491,9 @@ public class GameController extends MainController implements ScreenController{
 		}else if (e instanceof PlaceEvent) {
 			PlaceEvent place = (PlaceEvent) e;
 			Player p = getPlayerController().getPlayer(place.getPlayerid());
+			Flube f = getWorldController().getFlube(place.getMoveableid());
 			Vector3f loc = place.getLocation();
-			long moveableId = place.getMoveableid();
-			place(p, loc, moveableId);
+			place(p, f, loc);
 		}else if (e instanceof PlayerJoinEvent) {
 			PlayerJoinEvent join = (PlayerJoinEvent) e;
 			int playerid = join.getPlayerId();
@@ -562,8 +562,8 @@ public class GameController extends MainController implements ScreenController{
 		getPlayerController().removeAllPlayers();
 	}
 	
-	public void setlatestWorldstate(WorldStateUpdatedMessage update) {
-		latestWorldState = update;
+	public void setlatestLocationUpdate(LocationUpdatedMessage update) {
+		latestLocationUpdate = update;
 	}
 	
 	public void setInitialState(GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos) {
@@ -578,7 +578,7 @@ public class GameController extends MainController implements ScreenController{
 			p.setName(info.getName());
 			getPlayerController().setTeam(p, info.getTeam());
 			p.setAlive(info.isAlive());
-			p.setHealthpoints(info.getHealthpoints());
+			getPlayerController().setHealthpoints(p, info.getHealthpoints());
 			p.setScores(info.getScores());
 			
 			p.getEquips().clear();
@@ -655,7 +655,7 @@ public class GameController extends MainController implements ScreenController{
 			break;
 
 		default:
-			if(getGamestate() == GameState.RUNNING) {
+			if(getGamestate() == GameState.RUNNING && InputCommand.usedirect.contains(command)) {
 				player.handleInput(command, value);
 			}
 			break;
@@ -705,16 +705,16 @@ public class GameController extends MainController implements ScreenController{
 		for(Player p : getPlayerController().getAllPlayers()) {
 			if(p.getCurrentEquipment() instanceof Beamer) {
 				Beamer beamer = (Beamer) p.getCurrentEquipment();
-				if(beamer.isBeaming()) {
-					CollisionResult result = getWorldController().pickRoot(beamer.getPlayer().getEyePosition().add(beamer.getPlayer().getViewDir().normalize().mult(0.3f)), beamer.getPlayer().getViewDir());
-					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
-						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
-						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
-							getPlayerController().setHealthpoints(victim, Math.max(0, victim.getHealthpoints() - 20*tpf));
-						}
-					}
-					beamer.update();
-				}
+//				if(beamer.isBeaming()) {
+//					CollisionResult result = getWorldController().pickRoot(beamer.getPlayer().getEyePosition().add(beamer.getPlayer().getViewDir().normalize().mult(0.3f)), beamer.getPlayer().getViewDir());
+//					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
+//						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
+//						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
+//							getPlayerController().setHealthpoints(victim, Math.max(0, victim.getHealthpoints() - 20*tpf));
+//						}
+//					}
+//				}
+				beamer.update();
 			}
 		}
 	}

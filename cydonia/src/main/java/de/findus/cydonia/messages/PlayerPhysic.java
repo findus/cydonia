@@ -15,6 +15,7 @@ public class PlayerPhysic {
 	private int id;
 	private Vector3f translation;
 	private Vector3f orientation;
+	private double healthpoints;
 	
 	public int getId() {
 		return id;
@@ -33,5 +34,11 @@ public class PlayerPhysic {
 	}
 	public void setOrientation(Vector3f orientation) {
 		this.orientation = orientation;
+	}
+	public double getHealthpoints() {
+		return healthpoints;
+	}
+	public void setHealthpoints(double healthpoints) {
+		this.healthpoints = healthpoints;
 	}
 }

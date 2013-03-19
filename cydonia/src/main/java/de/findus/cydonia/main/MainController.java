@@ -184,16 +184,16 @@ public abstract class MainController extends Application implements PhysicsColli
 			}
 		}
 		
-		protected void place(Player p, Vector3f loc, long moveableId) {
-			Flube m = getWorldController().getFlube(moveableId);
-			m.getControl().setPhysicsLocation(loc);
-			getWorldController().attachFlube(m);
+		protected void place(Player p, Flube f, Vector3f loc) {
+			f.getControl().setPhysicsLocation(loc);
+			getWorldController().attachFlube(f);
 			if(p != null) {
 				if(p.getCurrentEquipment() instanceof Picker) {
 					Picker picker = (Picker) p.getCurrentEquipment();
-					picker.getRepository().remove(m);
+					picker.getRepository().remove(f);
 				}
 			}
+			System.out.println("Place");
 		}
 		
 		public GameState getGamestate() {

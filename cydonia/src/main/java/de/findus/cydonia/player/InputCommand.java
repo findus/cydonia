@@ -18,7 +18,7 @@ public enum InputCommand {
 	
 	public static final Set<InputCommand> forwarded = new HashSet<InputCommand>();
 	
-	public static final Set<InputCommand> local = new HashSet<InputCommand>();
+	public static final Set<InputCommand> usedirect = new HashSet<InputCommand>();
 	
 	static {
 		forwarded.add(USEPRIMARY);
@@ -34,6 +34,14 @@ public enum InputCommand {
 		forwarded.add(QUITGAME);
 		forwarded.add(CHOOSETEAM1);
 		forwarded.add(CHOOSETEAM2);
+	}
+	
+	static {
+		usedirect.add(MOVEFRONT);
+		usedirect.add(MOVEBACK);
+		usedirect.add(STRAFELEFT);
+		usedirect.add(STRAFERIGHT);
+		usedirect.add(JUMP);
 	}
 	
 	private final String code;

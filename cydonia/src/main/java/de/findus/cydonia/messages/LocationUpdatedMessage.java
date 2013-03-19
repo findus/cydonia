@@ -16,10 +16,10 @@ import de.findus.cydonia.player.Player;
  *
  */
 @Serializable
-public class WorldStateUpdatedMessage extends AbstractMessage {
+public class LocationUpdatedMessage extends AbstractMessage {
 
-	public static WorldStateUpdatedMessage getUpdate(Collection<Player> playerlist) {
-		WorldStateUpdatedMessage upd = new WorldStateUpdatedMessage();
+	public static LocationUpdatedMessage getUpdate(Collection<Player> playerlist) {
+		LocationUpdatedMessage upd = new LocationUpdatedMessage();
 		
 		LinkedList<PlayerPhysic> plist = new LinkedList<PlayerPhysic>();
 		for (Player p : playerlist) {
@@ -27,6 +27,7 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 			physic.setId(p.getId());
 			physic.setTranslation(p.getControl().getPhysicsLocation());
 			physic.setOrientation(p.getViewDir());
+			physic.setHealthpoints(p.getHealthpoints());
 			
 			plist.add(physic);
 		}
@@ -38,7 +39,7 @@ public class WorldStateUpdatedMessage extends AbstractMessage {
 	
 	private PlayerPhysic[] players;
 	
-	public WorldStateUpdatedMessage() {
+	public LocationUpdatedMessage() {
 		setReliable(false);
 	}
 	

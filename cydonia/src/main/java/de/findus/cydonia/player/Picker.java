@@ -86,11 +86,11 @@ public class Picker extends AbstractEquipment {
 					}else {
 						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
 					}
-					m.getControl().setPhysicsLocation(loc);
-					getMainController().getWorldController().attachFlube(m);
-					this.repository.remove(0);
+//					m.getControl().setPhysicsLocation(loc);
+//					getMainController().getWorldController().attachFlube(m);
+//					this.repository.remove(0);
 
-					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, false);
+					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, true);
 					getMainController().getEventMachine().fireEvent(place);
 				}
 			}
@@ -104,10 +104,10 @@ public class Picker extends AbstractEquipment {
 			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
 			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
 				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
-				getMainController().getWorldController().detachFlube(m);
-				this.repository.add(m);
+//				getMainController().getWorldController().detachFlube(m);
+//				this.repository.add(m);
 
-				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), false);
+				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), true);
 				getMainController().getEventMachine().fireEvent(pickup);
 			}
 		}
