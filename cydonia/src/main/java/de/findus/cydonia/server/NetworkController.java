@@ -19,6 +19,7 @@ import com.jme3.network.Server;
 import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.events.AttackEvent;
+import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
@@ -162,6 +163,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(InputEvent.class);
 		Serializer.registerClass(AttackEvent.class);
 		Serializer.registerClass(HitEvent.class);
+		Serializer.registerClass(BeamEvent.class);
 		Serializer.registerClass(PickupEvent.class);
 		Serializer.registerClass(PlaceEvent.class);
 		Serializer.registerClass(KillEvent.class);

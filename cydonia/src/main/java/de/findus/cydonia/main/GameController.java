@@ -37,6 +37,7 @@ import com.jme3.system.JmeSystem;
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.GeneralInputAppState;
 import de.findus.cydonia.appstates.MenuController;
+import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
@@ -515,7 +516,7 @@ public class GameController extends MainController implements ScreenController{
 		}else if (e instanceof InputEvent) {
 			InputEvent input = (InputEvent) e;
 			// only use inputs from other players, not our own inputs, that are sent back to us from the server
-			if(player.getId() != input.getPlayerid()) {
+			if(player.getId() != input.getPlayerid() || !InputCommand.usedirect.contains(input.getClass())) {
 				Player p = getPlayerController().getPlayer(input.getPlayerid());
 				p.handleInput(input.getCommand(), input.isValue());
 			}
@@ -555,6 +556,11 @@ public class GameController extends MainController implements ScreenController{
 				Flag f = getWorldController().getFlag(flagev.getFlagid());
 				returnFlag(f);
 			}
+		}else if(e instanceof BeamEvent) {
+			BeamEvent beam = (BeamEvent) e;
+			Player p = getPlayerController().getPlayer(beam.getSourceid());
+			Player victim = getPlayerController().getPlayer(beam.getTargetid());
+			beam(p, victim);
 		}
 	}
 
@@ -705,15 +711,6 @@ public class GameController extends MainController implements ScreenController{
 		for(Player p : getPlayerController().getAllPlayers()) {
 			if(p.getCurrentEquipment() instanceof Beamer) {
 				Beamer beamer = (Beamer) p.getCurrentEquipment();
-//				if(beamer.isBeaming()) {
-//					CollisionResult result = getWorldController().pickRoot(beamer.getPlayer().getEyePosition().add(beamer.getPlayer().getViewDir().normalize().mult(0.3f)), beamer.getPlayer().getViewDir());
-//					if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
-//						Player victim = getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
-//						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
-//							getPlayerController().setHealthpoints(victim, Math.max(0, victim.getHealthpoints() - 20*tpf));
-//						}
-//					}
-//				}
 				beamer.update();
 			}
 		}

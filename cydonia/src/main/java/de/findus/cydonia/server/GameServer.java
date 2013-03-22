@@ -16,6 +16,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 
+import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
@@ -38,9 +39,9 @@ import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
+import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
-import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
@@ -258,10 +259,7 @@ public class GameServer extends MainController{
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
 							getPlayerController().setHealthpoints(victim, victim.getHealthpoints() - 20*tpf);
 							if(victim.getHealthpoints() <= 0) {
-								beamer.getPlayer().setScores(beamer.getPlayer().getScores() + 1);
-								
-								KillEvent kill = new KillEvent(victim.getId(), true);
-								getEventMachine().fireEvent(kill);
+								beam(p, victim);
 							}
 						}
 					}
@@ -344,6 +342,14 @@ public class GameServer extends MainController{
 		getEventMachine().fireEvent(respawn);
 	}
 	
+	
+	protected void beam(Player p, Player victim) {
+		super.beam(p, victim);
+		
+		BeamEvent ev = new BeamEvent(p.getId(), victim.getId(), true);
+		getEventMachine().fireEvent(ev);
+	}
+
 	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {
 		Player p = getPlayerController().getPlayer(playerid);
 		switch (command) {
@@ -351,8 +357,6 @@ public class GameServer extends MainController{
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
 					p.handleInput(command, value);
-					InputEvent event = new InputEvent(p.getId(), command, value, true);
-					getEventMachine().fireEvent(event);
 				}else {
 					respawn(p);
 				}
@@ -362,8 +366,6 @@ public class GameServer extends MainController{
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
 					p.handleInput(command, value);
-					InputEvent event = new InputEvent(p.getId(), command, value, true);
-					getEventMachine().fireEvent(event);
 				}
 			}
 			break;

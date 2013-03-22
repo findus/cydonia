@@ -83,7 +83,7 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 
 			@Override
 			public void run() {
-				GameController controller = new GameController();
+				MainController controller = new GameController();
 				controller.start();
 			}
 		}).start();
