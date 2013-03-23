@@ -18,6 +18,8 @@ public class Map {
 	private List<SpawnPoint> spawnPoints;
 	
 	private List<Flag> flags;
+	
+	private float bottomHeight;
 
 	public Map(String name) {
 		this.name = name;
@@ -77,6 +79,20 @@ public class Map {
 	 */
 	public void setFlags(List<Flag> flags) {
 		this.flags = flags;
+	}
+
+	/**
+	 * @return the bottomHeight
+	 */
+	public float getBottomHeight() {
+		return bottomHeight;
+	}
+
+	/**
+	 * @param bottomHeight the bottomHeight to set
+	 */
+	public void setBottomHeight(float bottomHeight) {
+		this.bottomHeight = bottomHeight;
 	}
 	
 }

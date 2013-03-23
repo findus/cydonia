@@ -52,8 +52,10 @@ public class MapXMLParser {
 		}
 
 		String name = root.getAttributeValue("name");
+		float bottomHeight = Float.parseFloat(root.getAttributeValue("bottomHeight"));
 
 		Map map = new Map(name);
+		map.setBottomHeight(bottomHeight);
 		map.setFlags(parseFlags(root));
 		map.setSpawnPoints(parseSpawnPoints(root));
 		map.setFlubes(parseFlubes(root));
@@ -70,6 +72,7 @@ public class MapXMLParser {
 	public String writeMap(Map level) throws IOException {
 		Element root = new Element("map");
 		root.setAttribute("name", level.getName());
+		root.setAttribute("bottomHeight", String.valueOf(level.getBottomHeight()));
 		Document doc = new Document(root);
 		
 		root.addContent(writeFlags(level.getFlags()));

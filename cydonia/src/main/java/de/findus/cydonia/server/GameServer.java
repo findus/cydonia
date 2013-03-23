@@ -245,6 +245,11 @@ public class GameServer extends MainController{
 			walkdirection.normalizeLocal().multLocal(PHYSICS_ACCURACY * PLAYER_SPEED);
 
 			p.getControl().setWalkDirection(walkdirection);
+			
+			if(getWorldController().isBelowBottomOfPlayground(p)) {
+				KillEvent ev = new KillEvent(p.getId(), true);
+				getEventMachine().fireEvent(ev);
+			}
 		}
 	}
 	

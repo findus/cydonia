@@ -179,6 +179,14 @@ public class WorldController {
 		return null;
 	}
 	
+	public boolean isBelowBottomOfPlayground(Player p) {
+		if(p == null || this.map == null) return false;
+		if(this.map.getBottomHeight() > p.getControl().getPhysicsLocation().getY()) {
+			return true;
+		}
+		return false;
+	}
+	
 	public void resetWorld() {
 		for (Flube f : flubes.values()) {
 			detachFlube(f);
