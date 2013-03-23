@@ -364,6 +364,9 @@ public class GameServer extends MainController{
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
 					p.handleInput(command, value);
+					
+					InputEvent event = new InputEvent(p.getId(), command, value, true);
+					getEventMachine().fireEvent(event);
 				}else {
 					respawn(p);
 				}
@@ -373,6 +376,9 @@ public class GameServer extends MainController{
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
 					p.handleInput(command, value);
+					
+					InputEvent event = new InputEvent(p.getId(), command, value, true);
+					getEventMachine().fireEvent(event);
 				}
 			}
 			break;

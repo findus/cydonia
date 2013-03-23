@@ -5,6 +5,7 @@ package de.findus.cydonia.messages;
 
 import com.jme3.network.serializing.Serializable;
 
+import de.findus.cydonia.equipment.beamer.BeamerModel;
 import de.findus.cydonia.player.Beamer;
 
 /**
@@ -23,6 +24,12 @@ public class BeamerInfo implements EquipmentInfo {
 	}
 	
 	public BeamerInfo(Beamer beamer) {
+		this.name = beamer.getName();
+		this.range = beamer.getRange();
+		this.playerid = beamer.getPlayer().getId();
+	}
+	
+	public BeamerInfo(BeamerModel beamer) {
 		this.name = beamer.getName();
 		this.range = beamer.getRange();
 		this.playerid = beamer.getPlayer().getId();

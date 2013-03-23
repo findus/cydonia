@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.jme3.network.serializing.Serializable;
 
+import de.findus.cydonia.equipment.picker.PickerModel;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.player.Picker;
 
@@ -22,6 +23,17 @@ public class PickerInfo implements EquipmentInfo {
 	}
 	
 	public PickerInfo(Picker picker) {
+		this.name = picker.getName();
+		this.range = picker.getRange();
+		this.capacity = picker.getCapacity();
+		this.repository = new LinkedList<Long>();
+		for (Flube f : picker.getRepository()) {
+			this.repository.add(f.getId());
+		}
+		this.playerid = picker.getPlayer().getId();
+	}
+	
+	public PickerInfo(PickerModel picker) {
 		this.name = picker.getName();
 		this.range = picker.getRange();
 		this.capacity = picker.getCapacity();
