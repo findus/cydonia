@@ -182,9 +182,9 @@ public class GameServer extends MainController{
 				getPlayerController().reset(p);
 			}
 			getWorldController().resetWorld();
-			for (Player p : getPlayerController().getAllPlayers()) {
-				respawn(p);
-			}
+//			for (Player p : getPlayerController().getAllPlayers()) {
+//				respawn(p);
+//			}
 			getBulletAppState().setEnabled(true);
 		}else if (e instanceof RoundEndedEvent) {
 			getBulletAppState().setEnabled(false);
