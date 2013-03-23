@@ -81,7 +81,7 @@ public class MenuController {
 			gameController.getNifty().gotoScreen("ingamescreen");
 			gameController.getInputManager().setCursorVisible(false);
 			hideHUD();
-			showMessage("You will join the game next round. Please be patient...");
+			showMessage("Press 'Fire' to join the game!");
 			break;
 
 		case RUNNING:

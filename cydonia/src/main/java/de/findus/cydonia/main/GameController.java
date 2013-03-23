@@ -409,6 +409,7 @@ public class GameController extends MainController implements ScreenController{
     	stopInputSender();
     	setGamestate(GameState.SPECTATE);
     	menuController.actualizeScreen();
+    	menuController.showMessage("You were beamed into another dimension.\nPress 'Fire' to respawn at your base!");
     }
 
 	@Override

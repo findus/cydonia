@@ -85,7 +85,7 @@
 		<layer id="messagelayer" backgroundColor="#fff0" childLayout="center"
 			visible="false">
 			<panel height="10%" width="90%" align="center" valign="top"
-				style="nifty-panel-colored-no-shadow-trans" childLayout="vertical">
+				style="nifty-panel-colored-no-shadow" childLayout="vertical">
 				<text id="messagetext" font="de/findus/cydonia/gui/fonts/ComicSansMS20.fnt" color="#000f"
 					text="Round is over. New round will start automatically in a view seconds..."
 					height="100%" textVAlign="center" align="center" valign="center" />
