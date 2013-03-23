@@ -87,6 +87,9 @@ public class PlayerController {
 	}
 	
 	public void setTransparency(Player p, float transparency) {
+		Node n = (Node) p.getModel();
+		if(n == null) return;
+		
 		transparency = Math.max(0f, Math.min(1f, transparency));
 		
 		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
@@ -100,7 +103,6 @@ public class PlayerController {
 		
 		ColorRGBA glowcolor = new ColorRGBA(0, 0, 0, cw);
 		
-		Node n = (Node) p.getModel();
 		for(Spatial s : n.getChildren()) {
 			if(s instanceof Geometry) {
 				Material m = ((Geometry) s).getMaterial();

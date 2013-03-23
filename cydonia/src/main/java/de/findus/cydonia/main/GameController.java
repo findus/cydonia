@@ -746,6 +746,16 @@ public class GameController extends MainController implements ScreenController{
 		menuController.updateScoreboard();
 	}
 	
+	@Override
+	protected void chooseTeam(Player p, int team) {
+		super.chooseTeam(p, team);
+		
+		if(p.getId() == player.getId()) {
+			stateManager.attach(gameInputAppState);
+	    	startInputSender();
+		}
+	}
+	
 	public long getRemainingTime() {
 		long passedTime = System.currentTimeMillis() - roundStartTime;
 		return getGameConfig().getLong("mp_roundtime") * 1000 - passedTime;
