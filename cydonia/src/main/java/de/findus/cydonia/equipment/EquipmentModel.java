@@ -12,6 +12,8 @@ import de.findus.cydonia.player.Player;
  *
  */
 public interface EquipmentModel {
+	
+	public String getControllerName();
 
 	public void setPlayer(Player p);
 	

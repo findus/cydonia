@@ -100,4 +100,9 @@ public class PickerModel extends AbstractEquipmentModel {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String getControllerName() {
+		return "PickerController";
+	}
 }

@@ -73,4 +73,8 @@ private String name;
 		this.beaming = activate;
 	}
 
+	@Override
+	public String getControllerName() {
+		return "BeamerController";
+	}
 }
