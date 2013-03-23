@@ -232,23 +232,25 @@ public class GameServer extends MainController{
 			return;
 		}
 		for (Player p : this.getPlayerController().getAllPlayers()) {
-			Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
-			Vector3f viewLeft = new Vector3f();
-			ROTATE90LEFT.transformVector(viewDir, viewLeft);
-			
-			walkdirection.set(0, 0, 0);
-			if(p.getInputState().isLeft()) walkdirection.addLocal(viewLeft);
-			if(p.getInputState().isRight()) walkdirection.addLocal(viewLeft.negate());
-			if(p.getInputState().isForward()) walkdirection.addLocal(viewDir);
-			if(p.getInputState().isBack()) walkdirection.addLocal(viewDir.negate());
+			if(p.isAlive()) {
+				Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
+				Vector3f viewLeft = new Vector3f();
+				ROTATE90LEFT.transformVector(viewDir, viewLeft);
 
-			walkdirection.normalizeLocal().multLocal(PHYSICS_ACCURACY * PLAYER_SPEED);
+				walkdirection.set(0, 0, 0);
+				if(p.getInputState().isLeft()) walkdirection.addLocal(viewLeft);
+				if(p.getInputState().isRight()) walkdirection.addLocal(viewLeft.negate());
+				if(p.getInputState().isForward()) walkdirection.addLocal(viewDir);
+				if(p.getInputState().isBack()) walkdirection.addLocal(viewDir.negate());
 
-			p.getControl().setWalkDirection(walkdirection);
-			
-			if(getWorldController().isBelowBottomOfPlayground(p)) {
-				KillEvent ev = new KillEvent(p.getId(), true);
-				getEventMachine().fireEvent(ev);
+				walkdirection.normalizeLocal().multLocal(PHYSICS_ACCURACY * PLAYER_SPEED);
+
+				p.getControl().setWalkDirection(walkdirection);
+
+				if(getWorldController().isBelowBottomOfPlayground(p)) {
+					KillEvent ev = new KillEvent(p.getId(), true);
+					getEventMachine().fireEvent(ev);
+				}
 			}
 		}
 	}
