@@ -45,7 +45,7 @@ public class PickerInfo implements EquipmentInfo {
 	}
 	
 	public String getClassName() {
-		return Picker.class.getName();
+		return PickerModel.class.getName();
 	}
 
 	/**

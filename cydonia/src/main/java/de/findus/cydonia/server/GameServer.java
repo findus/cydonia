@@ -16,6 +16,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 
+import de.findus.cydonia.equipment.EquipmentControllerFactory;
 import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
@@ -45,7 +46,9 @@ import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerController;
 import de.findus.cydonia.player.PlayerInputState;
+import de.findus.cydonia.player.ServerPlayerController;
 
 /**
  * @author Findus
@@ -75,6 +78,8 @@ public class GameServer extends MainController{
 	private Thread locationSenderLoop;
 	
     private GameplayController gameplayController;
+    
+    private ServerPlayerController playerController;
     
     /**
      * Used for moving players.
@@ -113,6 +118,10 @@ public class GameServer extends MainController{
     public void initialize() {
         super.initialize();
 
+        EquipmentControllerFactory.addType("Server", this);
+        
+        this.playerController = new ServerPlayerController(this);
+        
         configFrame = new ServerConfigFrame(this);
         configFrame.pack();
         configFrame.setVisible(true);
@@ -363,7 +372,7 @@ public class GameServer extends MainController{
 		case USEPRIMARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
-					p.handleInput(command, value);
+					getPlayerController().handleInput(p, command, value);
 					
 					InputEvent event = new InputEvent(p.getId(), command, value, true);
 					getEventMachine().fireEvent(event);
@@ -375,7 +384,7 @@ public class GameServer extends MainController{
 		case USESECONDARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
-					p.handleInput(command, value);
+					getPlayerController().handleInput(p, command, value);
 					
 					InputEvent event = new InputEvent(p.getId(), command, value, true);
 					getEventMachine().fireEvent(event);
@@ -394,7 +403,7 @@ public class GameServer extends MainController{
 
 		default:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				p.handleInput(command, value);
+				getPlayerController().handleInput(p, command, value);
 				InputEvent event = new InputEvent(p.getId(), command, value, true);
 				getEventMachine().fireEvent(event);
 			}
@@ -489,5 +498,10 @@ public class GameServer extends MainController{
 				}
 			}
 		}
+	}
+
+	@Override
+	public PlayerController getPlayerController() {
+		return this.playerController;
 	}
 }

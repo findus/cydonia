@@ -16,8 +16,6 @@ import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.main.MainController;
-import de.findus.cydonia.messages.EquipmentInfo;
-import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.server.GameServer;
 
@@ -106,15 +104,6 @@ public class ServerPickerController implements ServerEquipmentController {
 
 		PickerModel picker = (PickerModel) e;
 		picker.repository = new LinkedList<Flube>();
-	}
-
-	@Override
-	public EquipmentInfo getInfo(EquipmentModel e) {
-		if(!(e instanceof PickerModel)) {
-			throw new InvalidParameterException("e must be of type " + PickerModel.class.getName());
-		}
-		PickerModel picker = (PickerModel) e;
-		return new PickerInfo(picker);
 	}
 
 	@Override

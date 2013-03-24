@@ -37,6 +37,9 @@ import com.jme3.system.JmeSystem;
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.GeneralInputAppState;
 import de.findus.cydonia.appstates.MenuController;
+import de.findus.cydonia.equipment.ClientEquipmentController;
+import de.findus.cydonia.equipment.EquipmentControllerFactory;
+import de.findus.cydonia.equipment.EquipmentModel;
 import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
@@ -66,9 +69,10 @@ import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.player.Beamer;
-import de.findus.cydonia.player.Equipment;
+import de.findus.cydonia.player.ClientPlayerController;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerController;
 import de.findus.cydonia.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.controls.DropDown;
@@ -119,6 +123,7 @@ public class GameController extends MainController implements ScreenController{
     private GameInputAppState gameInputAppState;
     
     private MenuController menuController;
+    private ClientPlayerController playerController;
     
     private Vector3f walkDirection = new Vector3f();
     private boolean left=false, right=false, up=false, down=false;
@@ -251,6 +256,10 @@ public class GameController extends MainController implements ScreenController{
         super.initialize();
         
         setPauseOnLostFocus(false);
+        
+        EquipmentControllerFactory.addType("Client", this);
+        
+        this.playerController = new ClientPlayerController(this);
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -519,7 +528,7 @@ public class GameController extends MainController implements ScreenController{
 			// only use inputs from other players, not our own inputs, that are sent back to us from the server
 			if(player.getId() != input.getPlayerid() || !InputCommand.usedirect.contains(input.getClass())) {
 				Player p = getPlayerController().getPlayer(input.getPlayerid());
-				p.handleInput(input.getCommand(), input.isValue());
+				getPlayerController().handleInput(p, input.getCommand(), input.isValue());
 			}
 		}else if (e instanceof RestartRoundEvent) {
 			for (Player p : getPlayerController().getAllPlayers()) {
@@ -591,10 +600,9 @@ public class GameController extends MainController implements ScreenController{
 			p.getEquips().clear();
 			for(EquipmentInfo ei : info.getEquipInfos()) {
 				try {
-					Equipment equip = (Equipment) Class.forName(ei.getClassName()).newInstance();
-					equip.setMainController(this);
+					EquipmentModel equip = (EquipmentModel) Class.forName(ei.getClassName()).newInstance();
 					equip.setPlayer(p);
-					equip.loadInfo(ei);
+					((ClientEquipmentController) equip.getController("Client", this)).loadInfo(equip, ei);
 					p.getEquips().add(equip);
 					if(equip instanceof Beamer) {
 						((Beamer) equip).initGeometry();
@@ -607,7 +615,7 @@ public class GameController extends MainController implements ScreenController{
 					e.printStackTrace();
 				}
 			}
-			p.setCurrEquip(info.getCurrEquip());
+			getPlayerController().setCurrEquip(p, info.getCurrEquip());
 			
 			if(playerid == this.player.getId()) continue;
 			
@@ -663,7 +671,7 @@ public class GameController extends MainController implements ScreenController{
 
 		default:
 			if(getGamestate() == GameState.RUNNING && InputCommand.usedirect.contains(command)) {
-				player.handleInput(command, value);
+				getPlayerController().handleInput(player, command, value);
 			}
 			break;
 		}
@@ -944,5 +952,10 @@ public class GameController extends MainController implements ScreenController{
 			}
 		}
 		
+	}
+
+	@Override
+	public PlayerController getPlayerController() {
+		return this.playerController;
 	}
 }

@@ -26,7 +26,6 @@ import de.findus.cydonia.equipment.EquipmentModel;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.EquipmentInfo;
-import de.findus.cydonia.messages.PickerInfo;
 
 
 /**
@@ -162,6 +161,10 @@ public class ClientBeamerController implements ClientEquipmentController {
 		}
 	}
 
+	@Override
+	public void setMainController(MainController mc) {
+		this.maincontroller = mc;
+	}
 
 	@Override
 	public void loadInfo(EquipmentModel e, EquipmentInfo info) {
@@ -173,13 +176,8 @@ public class ClientBeamerController implements ClientEquipmentController {
 		}
 
 		BeamerModel beamer = (BeamerModel) e;
-		PickerInfo i = (PickerInfo) info;
+		BeamerInfo i = (BeamerInfo) info;
 		beamer.setName(i.getName());
 		beamer.setRange(i.getRange());
-	}
-
-	@Override
-	public void setMainController(MainController mc) {
-		this.maincontroller = mc;
 	}
 }

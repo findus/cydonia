@@ -3,7 +3,10 @@
  */
 package de.findus.cydonia.equipment;
 
+import java.security.InvalidParameterException;
 import java.util.HashMap;
+
+import de.findus.cydonia.main.MainController;
 
 /**
  * @author Findus
@@ -11,29 +14,42 @@ import java.util.HashMap;
  */
 public class EquipmentControllerFactory {
 
-	private static EquipmentControllerFactory instance;
+	private static HashMap<String, EquipmentControllerFactory> instances = new HashMap<String, EquipmentControllerFactory>();
 	
-	private HashMap<Class<? extends EquipmentModel>, EquipmentController> controller;
+	public static void addType(String type, MainController mc) {
+		EquipmentControllerFactory instance = new EquipmentControllerFactory(type, mc);
+		instances.put(type, instance);
+	}
 	
-	public static EquipmentControllerFactory getInstance() {
+	public static EquipmentControllerFactory getInstance(String type) {
+		EquipmentControllerFactory instance = instances.get(type);
 		if(instance == null) {
-			instance = new EquipmentControllerFactory();
+			throw new InvalidParameterException("No instance for type '" + type + "' is available.");
 		}
 		return instance;
 	}
+	
+	private HashMap<String, EquipmentController> controller;
+	private MainController maincontroller;
+	private String type;
+	
 	/**
 	 * 
 	 */
-	public EquipmentControllerFactory() {
-		controller = new HashMap<Class<? extends EquipmentModel>, EquipmentController>();
+	public EquipmentControllerFactory(String type, MainController mc) {
+		this.maincontroller = mc;
+		this.type = type;
+		controller = new HashMap<String, EquipmentController>();
 	}
 	
-	public EquipmentController getController(EquipmentModel e, String type) {
+	public EquipmentController getController(EquipmentModel e) {
 		EquipmentController con = controller.get(e);
 		if(con == null) {
 			try {
-				con = (EquipmentController) Class.forName(type + e.getControllerName()).newInstance();
-				controller.put(e.getClass(), con);
+				String classname = type + e.getControllerName();
+				con = (EquipmentController) Class.forName(classname).newInstance();
+				con.setMainController(maincontroller);
+				controller.put(classname, con);
 			} catch (InstantiationException e1) {
 				e1.printStackTrace();
 			} catch (IllegalAccessException e1) {

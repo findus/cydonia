@@ -37,7 +37,7 @@ public class BeamerInfo implements EquipmentInfo {
 	
 	@Override
 	public String getClassName() {
-		return Beamer.class.getName();
+		return BeamerModel.class.getName();
 	}
 
 	/**

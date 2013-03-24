@@ -3,13 +3,18 @@
  */
 package de.findus.cydonia.equipment.picker;
 
+import java.security.InvalidParameterException;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.jme3.scene.Node;
 
 import de.findus.cydonia.equipment.AbstractEquipmentModel;
+import de.findus.cydonia.equipment.EquipmentController;
 import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.main.MainController;
+import de.findus.cydonia.messages.EquipmentInfo;
+import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.player.Player;
 
 /**
@@ -102,7 +107,21 @@ public class PickerModel extends AbstractEquipmentModel {
 	}
 
 	@Override
-	public String getControllerName() {
-		return "PickerController";
+	public EquipmentInfo getInfo() {
+		return new PickerInfo(this);
+	}
+
+	@Override
+	public EquipmentController getController(String type, MainController mc) {
+		EquipmentController con;
+		if("Client".equals(type)) {
+			con = new ClientPickerController();
+		} else if("Server".equals(type)) {
+			con = new ServerPickerController();
+		}else {
+			throw new InvalidParameterException();
+		}
+		con.setMainController(mc);
+		return con;
 	}
 }

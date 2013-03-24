@@ -3,17 +3,22 @@
  */
 package de.findus.cydonia.player;
 
+import de.findus.cydonia.main.MainController;
+
 /**
  * @author Findus
  *
  */
-public class ServerPlayerController {
+public class ServerPlayerController extends PlayerController {
+    
 
-	/**
-	 * 
-	 */
-	public ServerPlayerController() {
-		// TODO Auto-generated constructor stub
+	public ServerPlayerController(MainController mainController) {
+		super(mainController);
+	}
+
+	@Override
+	protected String getType() {
+		return "Server";
 	}
 
 }

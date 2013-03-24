@@ -16,6 +16,8 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 
+import de.findus.cydonia.equipment.beamer.BeamerModel;
+import de.findus.cydonia.equipment.picker.PickerModel;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.EventListener;
 import de.findus.cydonia.events.EventMachine;
@@ -23,7 +25,6 @@ import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.FlagFactory;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
-import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerController;
@@ -44,8 +45,6 @@ public abstract class MainController extends Application implements PhysicsColli
 	    private GameConfig gameConfig;
 	    
 	    private WorldController worldController;
-	    
-	    private PlayerController playerController;
 	    
 	    private BulletAppState bulletAppState;
 	    
@@ -76,8 +75,6 @@ public abstract class MainController extends Application implements PhysicsColli
 	        
 	        worldController = new WorldController(assetManager, bulletAppState.getPhysicsSpace());
 	        eventMachine.registerListener(this);
-			
-			playerController = new PlayerController(assetManager, this);
 	    }
 	    
 	    protected void cleanup() {
@@ -147,10 +144,10 @@ public abstract class MainController extends Application implements PhysicsColli
 		}
 
 		protected void joinPlayer(int playerid, String playername) {
-			Player p = playerController.createNew(playerid);
-			p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this));
-			p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this));
-			p.getEquips().add(new Beamer("beamer", 20, p, this));
+			Player p = getPlayerController().createNew(playerid);
+			p.getEquips().add(new PickerModel("defaultPicker1", 15, 1, p));
+			p.getEquips().add(new PickerModel("defaultPicker3", 5, 3, p));
+			p.getEquips().add(new BeamerModel("beamer", 20, p));
 			p.setName(playername);
 		}
 		
@@ -160,12 +157,12 @@ public abstract class MainController extends Application implements PhysicsColli
 				returnFlag(p.getFlag());
 			}
 			worldController.detachPlayer(p);
-			playerController.removePlayer(p.getId());
+			getPlayerController().removePlayer(p.getId());
 		}
 		
 		protected void respawn(final Player p) {
 			if(p == null) return;
-			playerController.setHealthpoints(p, 100);
+			getPlayerController().setHealthpoints(p, 100);
 			p.setAlive(true);
 
 			p.getControl().setPhysicsLocation(worldController.getSpawnPoint(p.getTeam()).getPosition());
@@ -174,7 +171,7 @@ public abstract class MainController extends Application implements PhysicsColli
 		
 		protected void chooseTeam(Player p, int team) {
 			if(p == null) return;
-			playerController.setTeam(p, team);
+			getPlayerController().setTeam(p, team);
 		}
 		
 		protected void pickup(Player p, Flube flube) {
@@ -236,9 +233,7 @@ public abstract class MainController extends Application implements PhysicsColli
 		/**
 		 * @return the playerController
 		 */
-		public PlayerController getPlayerController() {
-			return playerController;
-		}
+		public abstract PlayerController getPlayerController();
 
 		/**
 		 * @return the eventMachine

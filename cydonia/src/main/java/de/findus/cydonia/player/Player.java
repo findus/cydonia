@@ -18,6 +18,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
+import de.findus.cydonia.equipment.EquipmentModel;
 import de.findus.cydonia.level.Flag;
 
 /**
@@ -38,7 +39,7 @@ public class Player implements AnimEventListener{
 	
 	private boolean alive = false;
 
-	private PlayerInputState inputs;
+	PlayerInputState inputs;
 	
 	private Vector3f exactLoc = new Vector3f();
 	
@@ -48,7 +49,7 @@ public class Player implements AnimEventListener{
 	
 	private Node model;
 	
-	private Node node;
+	Node node;
 	
 	private AnimChannel basechannel;
 	
@@ -66,9 +67,9 @@ public class Player implements AnimEventListener{
 
 	private boolean jumping = false;
 	
-	private List<Equipment> equips = new ArrayList<Equipment>();
+	List<EquipmentModel> equips = new ArrayList<EquipmentModel>();
 	
-	private int currEquip;
+	int currEquip;
 	
 	private Flag flag;
 
@@ -99,40 +100,7 @@ public class Player implements AnimEventListener{
 		node.addControl(ghostControl);
 	}
 	
-	public void handleInput(InputCommand command, boolean value) {
-		switch (command) {
-		case MOVEFRONT:
-			inputs.setForward(value);
-			break;
-		case MOVEBACK:
-			inputs.setBack(value);
-			break;
-		case STRAFELEFT:
-			inputs.setLeft(value);
-			break;
-		case STRAFERIGHT:
-			inputs.setRight(value);
-			break;
-		case JUMP:
-			if(value) {
-				this.jump();
-			}
-			break;
-		case USEPRIMARY:
-			getCurrentEquipment().usePrimary(value);
-			break;
-		case USESECONDARY:
-			getCurrentEquipment().useSecondary(value);
-			break;
-		case SWITCHEQUIP:
-			this.switchEquipment(value);
-			break;
-		default:
-			break;
-		}
-		
-		updateAnimationState();
-	}
+	
 	
 	public void updateAnimationState() {
 		// Update Animation
@@ -197,30 +165,13 @@ public class Player implements AnimEventListener{
 		basechannel.setLoopMode(LoopMode.Loop);
 	}
 	
-	public void switchEquipment(boolean up) {
-		this.setCurrEquip(this.currEquip + (up?1:-1));
-	}
-	
 	public int getCurrEquipIndex() {
 		return this.currEquip;
 	}
 	
-	public void setCurrEquip(int index) {
-		if(this.equips.size() > 0) {
-			this.getCurrentEquipment().setActive(false);
-			if(this.getCurrentEquipment().getGeometry() != null) {
-				this.node.detachChild(this.getCurrentEquipment().getGeometry());
-			}
-			this.getCurrentEquipment().reset();
-			this.currEquip = index % this.equips.size();
-			if(this.getCurrentEquipment().getGeometry() != null) {
-				this.node.attachChild(this.getCurrentEquipment().getGeometry());
-			}
-			this.getCurrentEquipment().setActive(true);
-		}
-	}
 	
-	public Equipment getCurrentEquipment() {
+	
+	public EquipmentModel getCurrentEquipment() {
 		if(this.equips.size() > this.currEquip) {
 			return this.equips.get(this.currEquip);
 		}else {
@@ -377,14 +328,14 @@ public class Player implements AnimEventListener{
 	/**
 	 * @return the equips
 	 */
-	public List<Equipment> getEquips() {
+	public List<EquipmentModel> getEquips() {
 		return equips;
 	}
 
 	/**
 	 * @param equips the equips to set
 	 */
-	public void setEquips(List<Equipment> equips) {
+	public void setEquips(List<EquipmentModel> equips) {
 		if(equips.size() <= this.currEquip) {
 			this.currEquip = equips.size()-1;
 		}

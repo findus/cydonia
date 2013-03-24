@@ -3,10 +3,18 @@
  */
 package de.findus.cydonia.equipment.beamer;
 
+import java.security.InvalidParameterException;
+
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.scene.Node;
 
 import de.findus.cydonia.equipment.AbstractEquipmentModel;
+import de.findus.cydonia.equipment.EquipmentController;
+import de.findus.cydonia.equipment.picker.ClientPickerController;
+import de.findus.cydonia.equipment.picker.ServerPickerController;
+import de.findus.cydonia.main.MainController;
+import de.findus.cydonia.messages.BeamerInfo;
+import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.player.Player;
 
 /**
@@ -74,7 +82,21 @@ private String name;
 	}
 
 	@Override
-	public String getControllerName() {
-		return "BeamerController";
+	public EquipmentInfo getInfo() {
+		return new BeamerInfo(this);
+	}
+
+	@Override
+	public EquipmentController getController(String type, MainController mc) {
+		EquipmentController con;
+		if("Client".equals(type)) {
+			con = new ClientBeamerController();
+		} else if("Server".equals(type)) {
+			con = new ServerBeamerController();
+		}else {
+			throw new InvalidParameterException();
+		}
+		con.setMainController(mc);
+		return con;
 	}
 }

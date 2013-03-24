@@ -8,8 +8,6 @@ import java.security.InvalidParameterException;
 import de.findus.cydonia.equipment.EquipmentModel;
 import de.findus.cydonia.equipment.ServerEquipmentController;
 import de.findus.cydonia.main.MainController;
-import de.findus.cydonia.messages.BeamerInfo;
-import de.findus.cydonia.messages.EquipmentInfo;
 
 /**
  * @author Findus
@@ -50,15 +48,6 @@ public class ServerBeamerController implements ServerEquipmentController {
 		
 		BeamerModel beamer = (BeamerModel) e;
 		beamer.beaming = false;
-	}
-
-	@Override
-	public EquipmentInfo getInfo(EquipmentModel e) {
-		if(!(e instanceof BeamerModel)) {
-			throw new InvalidParameterException("e must be of type " + BeamerModel.class.getName());
-		}
-		BeamerModel beamer = (BeamerModel) e;
-		return new BeamerInfo(beamer);
 	}
 
 	@Override

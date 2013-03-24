@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.findus.cydonia.player.Equipment;
+import de.findus.cydonia.equipment.EquipmentModel;
 import de.findus.cydonia.player.Player;
 
 
@@ -60,7 +60,7 @@ public class PlayerInfo {
 		this.scores = p.getScores();
 		this.setCurrEquip(p.getCurrEquipIndex());
 		List<EquipmentInfo> eis = new LinkedList<EquipmentInfo>();
-		for(Equipment e : p.getEquips()) {
+		for(EquipmentModel e : p.getEquips()) {
 			eis.add(e.getInfo());
 		}
 		this.equipInfos = eis;

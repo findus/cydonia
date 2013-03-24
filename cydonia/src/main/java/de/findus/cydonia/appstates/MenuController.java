@@ -11,6 +11,7 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
+import de.findus.cydonia.equipment.ClientEquipmentController;
 import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.builder.PanelBuilder;
@@ -138,7 +139,7 @@ public class MenuController {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
 		
 		if(gameController.getPlayer() != null && gameController.getPlayer().getCurrentEquipment() != null) {
-			BufferedImage img = gameController.getPlayer().getCurrentEquipment().getHUDImage();
+			BufferedImage img = ((ClientEquipmentController) gameController.getPlayer().getCurrentEquipment().getController("Client", gameController)).getHUDImage(gameController.getPlayer().getCurrentEquipment());
 
 			AWTLoader loader =new AWTLoader();
 			Image imageJME = loader.load(img, true);
