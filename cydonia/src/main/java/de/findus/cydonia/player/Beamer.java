@@ -28,8 +28,10 @@ import de.findus.cydonia.messages.EquipmentInfo;
  * @author Findus
  *
  */
-public class Beamer extends AbstractEquipment {
+public abstract class Beamer extends AbstractEquipment {
 
+	private static final String TYPENAME = "Beamer"; 
+	
 	private static BufferedImage hudImg;
 	
 	private String name;
@@ -58,6 +60,7 @@ public class Beamer extends AbstractEquipment {
 		initGeometry();
 	}
 	
+	@Override
 	public void initGeometry() {
 		beam = new ParticleEmitter("Beam", Type.Triangle, 30);
         Material mat_red = new Material(getMainController().getAssetManager(), 
@@ -202,6 +205,11 @@ public class Beamer extends AbstractEquipment {
 	
 	public Node getGeometry() {
 		return this.geom;
+	}
+
+	@Override
+	public String getTypeName() {
+		return TYPENAME;
 	}
 
 }

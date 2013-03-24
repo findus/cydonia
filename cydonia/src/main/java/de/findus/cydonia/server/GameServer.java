@@ -43,9 +43,11 @@ import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.player.Beamer;
+import de.findus.cydonia.player.EquipmentFactory;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
+import de.findus.cydonia.player.EquipmentFactory.ServiceType;
 
 /**
  * @author Findus
@@ -83,6 +85,8 @@ public class GameServer extends MainController{
     private Vector3f walkdirection = new Vector3f();
     
 	private NetworkController networkController;
+
+	private EquipmentFactory equipmentFactory;
 	
 	@Override
 	public void start() {
@@ -113,6 +117,8 @@ public class GameServer extends MainController{
     public void initialize() {
         super.initialize();
 
+        this.equipmentFactory = new EquipmentFactory(ServiceType.SERVER, this);
+        
         configFrame = new ServerConfigFrame(this);
         configFrame.pack();
         configFrame.setVisible(true);
@@ -364,6 +370,9 @@ public class GameServer extends MainController{
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
 					p.handleInput(command, value);
+					
+					InputEvent event = new InputEvent(p.getId(), command, value, true);
+					getEventMachine().fireEvent(event);
 				}else {
 					respawn(p);
 				}
@@ -373,6 +382,9 @@ public class GameServer extends MainController{
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
 					p.handleInput(command, value);
+					
+					InputEvent event = new InputEvent(p.getId(), command, value, true);
+					getEventMachine().fireEvent(event);
 				}
 			}
 			break;
@@ -483,5 +495,10 @@ public class GameServer extends MainController{
 				}
 			}
 		}
+	}
+
+	@Override
+	public EquipmentFactory getEquipmentFactory() {
+		return this.equipmentFactory;
 	}
 }

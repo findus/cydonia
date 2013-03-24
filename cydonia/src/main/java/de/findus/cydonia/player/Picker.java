@@ -30,8 +30,10 @@ import de.findus.cydonia.server.GameServer;
  * @author Findus
  *
  */
-public class Picker extends AbstractEquipment {
+public abstract class Picker extends AbstractEquipment {
 
+	private static final String TYPENAME = "Picker";
+	
 	private static Image[] hudImgs;
 	
 	private String name;
@@ -231,6 +233,17 @@ public class Picker extends AbstractEquipment {
 
 	@Override
 	public void setActive(boolean active) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getTypeName() {
+		return TYPENAME;
+	}
+
+	@Override
+	public void initGeometry() {
 		// TODO Auto-generated method stub
 		
 	}

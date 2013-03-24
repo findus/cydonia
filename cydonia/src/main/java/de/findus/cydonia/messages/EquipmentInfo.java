@@ -12,5 +12,5 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public interface EquipmentInfo {
 
-	public abstract String getClassName();
+	public abstract String getTypeName();
 }

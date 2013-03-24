@@ -16,6 +16,7 @@ public class PickerInfo implements EquipmentInfo {
 	private int capacity;
 	private List<Long> repository;
 	private int playerid;
+	private String typeName;
 	
 	public PickerInfo() {
 
@@ -30,10 +31,11 @@ public class PickerInfo implements EquipmentInfo {
 			this.repository.add(f.getId());
 		}
 		this.playerid = picker.getPlayer().getId();
+		this.typeName = picker.getTypeName();
 	}
 	
-	public String getClassName() {
-		return Picker.class.getName();
+	public String getTypeName() {
+		return this.typeName;
 	}
 
 	/**

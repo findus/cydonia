@@ -24,6 +24,7 @@ import de.findus.cydonia.level.FlagFactory;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.player.Beamer;
+import de.findus.cydonia.player.EquipmentFactory;
 import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerController;
@@ -148,10 +149,27 @@ public abstract class MainController extends Application implements PhysicsColli
 
 		protected void joinPlayer(int playerid, String playername) {
 			Player p = playerController.createNew(playerid);
-			p.getEquips().add(new Picker("defaultPicker1", 15, 1, p, this));
-			p.getEquips().add(new Picker("defaultPicker3", 5, 3, p, this));
-			p.getEquips().add(new Beamer("beamer", 20, p, this));
 			p.setName(playername);
+			
+			Picker picker1 = (Picker) getEquipmentFactory().create("Picker");
+			picker1.setName("LongRangePicker");
+			picker1.setRange(15);
+			picker1.setCapacity(1);
+			picker1.setPlayer(p);
+			p.getEquips().add(picker1);
+			
+			Picker picker2 = (Picker) getEquipmentFactory().create("Picker");
+			picker2.setName("ShortRangePicker");
+			picker2.setRange(5);
+			picker2.setCapacity(3);
+			picker2.setPlayer(p);
+			p.getEquips().add(picker2);
+			
+			Beamer beamer = (Beamer) getEquipmentFactory().create("Beamer");
+			beamer.setName("Beamer");
+			beamer.setRange(20);
+			beamer.setPlayer(p);
+			p.getEquips().add(beamer);
 		}
 		
 		protected void quitPlayer(Player p) {
@@ -239,6 +257,8 @@ public abstract class MainController extends Application implements PhysicsColli
 		public PlayerController getPlayerController() {
 			return playerController;
 		}
+		
+		public abstract EquipmentFactory getEquipmentFactory();
 
 		/**
 		 * @return the eventMachine

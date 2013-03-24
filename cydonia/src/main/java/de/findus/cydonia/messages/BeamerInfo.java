@@ -17,6 +17,7 @@ public class BeamerInfo implements EquipmentInfo {
 	private String name;
 	private float range;
 	private int playerid;
+	private String typeName;
 	
 	public BeamerInfo() {
 		
@@ -26,11 +27,12 @@ public class BeamerInfo implements EquipmentInfo {
 		this.name = beamer.getName();
 		this.range = beamer.getRange();
 		this.playerid = beamer.getPlayer().getId();
+		this.typeName = beamer.getTypeName();
 	}
 	
 	@Override
-	public String getClassName() {
-		return Beamer.class.getName();
+	public String getTypeName() {
+		return this.typeName;
 	}
 
 	/**

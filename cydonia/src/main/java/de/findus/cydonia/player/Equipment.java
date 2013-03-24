@@ -16,6 +16,10 @@ import de.findus.cydonia.messages.EquipmentInfo;
  */
 public interface Equipment {
 	
+	public String getTypeName();
+	
+	public void initGeometry();
+	
 	public void usePrimary(boolean activate);
 	
 	public void useSecondary(boolean activate);

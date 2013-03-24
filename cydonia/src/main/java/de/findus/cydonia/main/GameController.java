@@ -67,6 +67,8 @@ import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
+import de.findus.cydonia.player.EquipmentFactory;
+import de.findus.cydonia.player.EquipmentFactory.ServiceType;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
@@ -120,7 +122,9 @@ public class GameController extends MainController implements ScreenController{
     
     private MenuController menuController;
     
-    private Vector3f walkDirection = new Vector3f();
+    private EquipmentFactory equipmentFactory;
+    
+	private Vector3f walkDirection = new Vector3f();
     private boolean left=false, right=false, up=false, down=false;
     
     private String serverAddress = "";
@@ -251,6 +255,8 @@ public class GameController extends MainController implements ScreenController{
         super.initialize();
         
         setPauseOnLostFocus(false);
+        
+        this.equipmentFactory = new EquipmentFactory(ServiceType.CLIENT, this);
         
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -590,21 +596,11 @@ public class GameController extends MainController implements ScreenController{
 			
 			p.getEquips().clear();
 			for(EquipmentInfo ei : info.getEquipInfos()) {
-				try {
-					Equipment equip = (Equipment) Class.forName(ei.getClassName()).newInstance();
-					equip.setMainController(this);
+				Equipment equip = getEquipmentFactory().create(ei.getTypeName());
+				if(equip != null) {
 					equip.setPlayer(p);
 					equip.loadInfo(ei);
 					p.getEquips().add(equip);
-					if(equip instanceof Beamer) {
-						((Beamer) equip).initGeometry();
-					}
-				} catch (InstantiationException e) {
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
 				}
 			}
 			p.setCurrEquip(info.getCurrEquip());
@@ -944,5 +940,10 @@ public class GameController extends MainController implements ScreenController{
 			}
 		}
 		
+	}
+
+	@Override
+	public EquipmentFactory getEquipmentFactory() {
+		return this.equipmentFactory;
 	}
 }
