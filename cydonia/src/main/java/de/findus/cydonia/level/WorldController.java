@@ -80,6 +80,7 @@ public class WorldController {
 
 		for(Flube f : level.getFlubes()) {
 			this.flubes.put(f.getId(), f);
+			f.getControl().setPhysicsLocation(f.getOrigin());
 			attachFlube(f);
 		}
 		for(Flag flag : level.getFlags()) {

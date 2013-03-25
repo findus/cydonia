@@ -93,6 +93,7 @@ public class GameController extends MainController implements ScreenController{
 	 * The time in seconds it should take to compensate a deviation from the accurate (=server defined) physical location of an object. 
 	 */
 	private static final float SMOOTHING = 0.2f;
+	private static final float MAXPOSDEVIATION = 1f;
 	
     public static void main(String[] args) {
     	String ip = "";
@@ -605,10 +606,12 @@ public class GameController extends MainController implements ScreenController{
 			}
 			p.setCurrEquip(info.getCurrEquip());
 			
-			if(playerid == this.player.getId()) continue;
+//			if(playerid == this.player.getId()) continue;
+			
+			p.getControl().setPhysicsLocation(info.getLocation());
+			p.getControl().setViewDirection(info.getOrientation());
 			
 			if(p.isAlive()) {
-				p.getControl().setPhysicsLocation(getWorldController().getSpawnPoint(p.getTeam()).getPosition());
 				enqueue(new Callable<String>() {
 					public String call() {
 						getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
@@ -677,26 +680,34 @@ public class GameController extends MainController implements ScreenController{
 				listener.setLocation(cam.getLocation());
 			    listener.setRotation(cam.getRotation());
 			}
-			
-			Vector3f viewDir = p.getControl().getViewDirection();
-			Vector3f viewLeft = new Vector3f();
-			ROTATE90LEFT.transformVector(viewDir, viewLeft);
 
-			walkDirection.set(0, 0, 0);
-			if(p.getInputState().isLeft()) walkDirection.addLocal(viewLeft);
-			if(p.getInputState().isRight()) walkDirection.addLocal(viewLeft.negate());
-			if(p.getInputState().isForward()) walkDirection.addLocal(viewDir);
-			if(p.getInputState().isBack()) walkDirection.addLocal(viewDir.negate());
+			if(p.isAlive()) {
+				Vector3f viewDir = p.getControl().getViewDirection();
+				Vector3f viewLeft = new Vector3f();
+				ROTATE90LEFT.transformVector(viewDir, viewLeft);
 
-			
-			walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
-			
-			Vector3f correction = p.getExactLoc().subtract(p.getControl().getPhysicsLocation()).mult(SMOOTHING);
-			walkDirection.addLocal(correction);
+				walkDirection.set(0, 0, 0);
+				if(p.getInputState().isLeft()) walkDirection.addLocal(viewLeft);
+				if(p.getInputState().isRight()) walkDirection.addLocal(viewLeft.negate());
+				if(p.getInputState().isForward()) walkDirection.addLocal(viewDir);
+				if(p.getInputState().isBack()) walkDirection.addLocal(viewDir.negate());
 
-			walkDirection.multLocal(PHYSICS_ACCURACY);
-			p.getControl().setWalkDirection(walkDirection);
-			
+
+				walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
+
+				Vector3f deviation = p.getExactLoc().subtract(p.getControl().getPhysicsLocation());
+				if(deviation.length() > MAXPOSDEVIATION) {
+					
+					p.getControl().warp(p.getExactLoc());
+				}else {
+					Vector3f correction = p.getExactLoc().subtract(p.getControl().getPhysicsLocation()).mult(SMOOTHING);
+					walkDirection.addLocal(correction);
+				}
+
+				walkDirection.multLocal(PHYSICS_ACCURACY);
+				p.getControl().setWalkDirection(walkDirection);
+			}
+
 			if(p.getId() == connector.getConnectionId()) {
 				cam.setLocation(p.getEyePosition());
 			}

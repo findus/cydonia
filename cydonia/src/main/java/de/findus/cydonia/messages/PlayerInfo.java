@@ -7,10 +7,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
 import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.Player;
+import de.findus.cydonia.player.PlayerInputState;
 
 
 /**
@@ -36,19 +38,14 @@ public class PlayerInfo {
 
 	private Collection<EquipmentInfo> equipInfos;
 	
+	private PlayerInputState inputs;
+
+	private Vector3f orientation;
+	private Vector3f location;
+	
+	
 	public PlayerInfo() {
 		
-	}
-
-	public PlayerInfo(int playerid, String name, int team, boolean alive, double healthpoints, int kills, int deaths, int currEquip, Collection<EquipmentInfo> equipInfos) {
-		this.playerid = playerid;
-		this.name = name;
-		this.team = team;
-		this.alive = alive;
-		this.healthpoints = healthpoints;
-		this.scores = kills;
-		this.setCurrEquip(currEquip);
-		this.equipInfos = equipInfos;
 	}
 	
 	public PlayerInfo(Player p) {
@@ -64,6 +61,12 @@ public class PlayerInfo {
 			eis.add(e.getInfo());
 		}
 		this.equipInfos = eis;
+		this.inputs = p.getInputState();
+		
+		if(p.getControl() != null) {
+			this.orientation = p.getControl().getViewDirection();
+			this.location = p.getControl().getPhysicsLocation();
+		}
 	}
 	
 	/**
@@ -176,5 +179,47 @@ public class PlayerInfo {
 	 */
 	public void setEquipInfos(Collection<EquipmentInfo> equipInfos) {
 		this.equipInfos = equipInfos;
+	}
+
+	/**
+	 * @return the orientation
+	 */
+	public Vector3f getOrientation() {
+		return orientation;
+	}
+
+	/**
+	 * @param orientation the orientation to set
+	 */
+	public void setOrientation(Vector3f orientation) {
+		this.orientation = orientation;
+	}
+
+	/**
+	 * @return the location
+	 */
+	public Vector3f getLocation() {
+		return location;
+	}
+
+	/**
+	 * @param location the location to set
+	 */
+	public void setLocation(Vector3f location) {
+		this.location = location;
+	}
+
+	/**
+	 * @return the inputs
+	 */
+	public PlayerInputState getInputs() {
+		return inputs;
+	}
+
+	/**
+	 * @param inputs the inputs to set
+	 */
+	public void setInputs(PlayerInputState inputs) {
+		this.inputs = inputs;
 	}
 }
