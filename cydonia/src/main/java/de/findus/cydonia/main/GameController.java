@@ -286,7 +286,7 @@ public class GameController extends MainController implements ScreenController{
     	GeneralInputAppState generalInputAppState = new GeneralInputAppState(this);
     	stateManager.attach(generalInputAppState);
         
-    	getBulletAppState().setDebugEnabled(true);
+//    	getBulletAppState().setDebugEnabled(true);
         
         viewPort.attachScene(getWorldController().getRootNode());
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
