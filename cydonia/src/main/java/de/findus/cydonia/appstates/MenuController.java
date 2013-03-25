@@ -11,6 +11,7 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
+import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.main.GameController;
 import de.findus.cydonia.player.Player;
 import de.lessvoid.nifty.builder.PanelBuilder;
@@ -40,6 +41,8 @@ public class MenuController {
 	private GameController gameController;
 	
 	private Element timetext;
+	private Element flagredtext;
+	private Element flagbluetext;
 	private Element healthpointstext;
 	private Element	inventoryimg;
 	private Element scoreboardlayer;
@@ -56,6 +59,8 @@ public class MenuController {
 		gameController.getNifty().fromXmlWithoutStartScreen(MENU_PATH + "menu.xml");
 		
 		this.timetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("timetext");
+		this.flagbluetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("flagbluetext");
+		this.flagredtext = gameController.getNifty().getScreen("ingamescreen").findElementByName("flagredtext");
 		this.healthpointstext = gameController.getNifty().getScreen("ingamescreen").findElementByName("healthpointstext");
 		this.inventoryimg = gameController.getNifty().getScreen("ingamescreen").findElementByName("inventoryimg");
 		this.scoreboardlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("scoreboardlayer");
@@ -136,6 +141,14 @@ public class MenuController {
 
 	public void updateHUD() {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
+		
+		for(Flag f : gameController.getWorldController().getAllFlags()) {
+			if(f.getTeam() == 1) {
+				this.flagbluetext.setVisible(!f.isInBase());
+			}else if(f.getTeam() == 2) {
+				this.flagredtext.setVisible(!f.isInBase());
+			}
+		}
 		
 		if(gameController.getPlayer() != null && gameController.getPlayer().getCurrentEquipment() != null) {
 			BufferedImage img = gameController.getPlayer().getCurrentEquipment().getHUDImage();

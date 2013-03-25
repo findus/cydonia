@@ -54,8 +54,21 @@
 			visible="false">
 			<panel width="100%" align="center" valign="top"
 				backgroundColor="#fff0" childLayout="center" padding="10px">
-				<text id="timetext" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt"
-					color="#80f9" text="0:00" align="center" valign="top" />
+				<panel align="center" valign="top"
+					backgroundColor="#fff0" childLayout="horizontal">
+					<panel padding="0px,20px" childLayout="center">
+						<text id="flagbluetext" font="de/findus/cydonia/gui/fonts/ComicSansMS20.fnt" 
+							color="#00fa" text="Blue flag taken!" align="left" valign="top" visible="false" />
+					</panel>
+					<panel padding="0px,20px" childLayout="center">
+						<text id="timetext" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt"
+							color="#80f9" text="0:00" align="center" valign="top" />
+					</panel>
+					<panel padding="0px,20px" childLayout="center">
+						<text id="flagredtext" font="de/findus/cydonia/gui/fonts/ComicSansMS20.fnt" 
+							color="#f00a" text="Red flag taken!" align="right" valign="top" visible="false" />
+					</panel>
+				</panel>
 			</panel>
 			<panel width="98%" align="center" valign="bottom"
 				backgroundColor="#fff0" childLayout="center" padding="10px">
