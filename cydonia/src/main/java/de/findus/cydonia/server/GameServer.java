@@ -38,6 +38,7 @@ import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
+import de.findus.cydonia.messages.FlagInfo;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
@@ -335,8 +336,6 @@ public class GameServer extends MainController{
 		
 		PlayerJoinEvent join = new PlayerJoinEvent(playerid, playername, true);
 		getEventMachine().fireEvent(join);
-		
-		sendInitialState(playerid);
 	}
 	
 	protected void quitPlayer(Player p) {
@@ -374,7 +373,9 @@ public class GameServer extends MainController{
 					InputEvent event = new InputEvent(p.getId(), command, value, true);
 					getEventMachine().fireEvent(event);
 				}else {
-					respawn(p);
+					if(value && p.getTeam() > 0) {
+						respawn(p);
+					}
 				}
 			}
 			break;
@@ -421,7 +422,7 @@ public class GameServer extends MainController{
 		}
 	}
 	
-	private void sendInitialState(int playerid) {
+	public void sendInitialState(int playerid) {
 		PlayerInfo[] playerinfos = new PlayerInfo[getPlayerController().getPlayerCount()];
 		int i=0;
 		for (Player p : getPlayerController().getAllPlayers()) {
@@ -429,17 +430,26 @@ public class GameServer extends MainController{
 			i++;
 		}
 		
-		Collection<Flube> list = getWorldController().getAllFlubes();
-		MoveableInfo[] moveableinfos = new MoveableInfo[list.size()];
+		Collection<Flube> flubes = getWorldController().getAllFlubes();
+		MoveableInfo[] moveableinfos = new MoveableInfo[flubes.size()];
 		int j=0;
-		for (Flube m : list) {
+		for (Flube m : flubes) {
 			moveableinfos[j] = new MoveableInfo(m);
 			j++;
+		}
+		
+		Collection<Flag> flags = getWorldController().getAllFlags();
+		FlagInfo[] flaginfos = new FlagInfo[flags.size()];
+		int k=0;
+		for (Flag f : flags) {
+			flaginfos[k] = new FlagInfo(f);
+			k++;
 		}
 		
 		InitialStateMessage msg = new InitialStateMessage();
 		msg.setPlayers(playerinfos);
 		msg.setMoveables(moveableinfos);
+		msg.setFlags(flaginfos);
 		msg.setconfig(getGameConfig());
 		networkController.sendMessage(msg, playerid);
 	}
@@ -469,7 +479,7 @@ public class GameServer extends MainController{
 		Player p = getPlayerController().getPlayer(clientid);
 		quitPlayer(p);
 	}
-	
+
 	public void handleCommand(String command) {
 		if("restartround".equalsIgnoreCase(command)) {
 			gameplayController.endRound(-1, true);

@@ -32,15 +32,16 @@ import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
+import de.findus.cydonia.messages.FlagInfo;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
+import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
-import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -100,6 +101,7 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(PickerInfo.class);
 		Serializer.registerClass(BeamerInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
+		Serializer.registerClass(FlagInfo.class);
 		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
@@ -170,7 +172,7 @@ public class ServerConnector implements MessageListener<Client> {
 			}
 		}else if (m instanceof InitialStateMessage) {
 			InitialStateMessage iniState = (InitialStateMessage) m;
-			gameController.setInitialState(iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables());
+			gameController.setInitialState(iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables(), iniState.getFlags());
 		}
 	}
 }

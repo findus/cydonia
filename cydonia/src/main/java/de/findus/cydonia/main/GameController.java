@@ -58,6 +58,8 @@ import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
+import de.findus.cydonia.messages.FlagInfo;
+import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
 import de.findus.cydonia.messages.LocationUpdatedMessage;
@@ -274,6 +276,7 @@ public class GameController extends MainController implements ScreenController{
     	guiViewPort.addProcessor(niftyDisplay);
 
     	menuController = new MenuController(this);
+    	this.setGamestate(GameState.LOADING);
     	menuController.actualizeScreen();
     	
     	connector = new ServerConnector(this, getEventMachine());
@@ -283,7 +286,7 @@ public class GameController extends MainController implements ScreenController{
     	GeneralInputAppState generalInputAppState = new GeneralInputAppState(this);
     	stateManager.attach(generalInputAppState);
         
-//    	getBulletAppState().setDebugEnabled(true);
+    	getBulletAppState().setDebugEnabled(true);
         
         viewPort.attachScene(getWorldController().getRootNode());
 //        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
@@ -362,28 +365,113 @@ public class GameController extends MainController implements ScreenController{
 		}
     	
     	getBulletAppState().setEnabled(true);
-    	setGamestate(GameState.LOBBY);
+    	setGamestate(GameState.LOADING);
     	menuController.actualizeScreen();
+    	
+    	InitialStateMessage init = new InitialStateMessage();
+    	connector.sendMessage(init);
     }
     
-    public void joinGame() {
+    public void setInitialState(GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos, FlagInfo[] finfos) {
+			getGameConfig().copyFrom(config);
+			
+			for (PlayerInfo info : pinfos) {
+				final int playerid = info.getPlayerid();
+				Player p = getPlayerController().getPlayer(playerid);
+				if(p == null) {
+					p = getPlayerController().createNew(info.getPlayerid());
+				}
+				p.setName(info.getName());
+				getPlayerController().setTeam(p, info.getTeam());
+				p.setAlive(info.isAlive());
+				getPlayerController().setHealthpoints(p, info.getHealthpoints());
+				p.setScores(info.getScores());
+				
+				p.getEquips().clear();
+				for(EquipmentInfo ei : info.getEquipInfos()) {
+					Equipment equip = getEquipmentFactory().create(ei.getTypeName());
+					if(equip != null) {
+						equip.setPlayer(p);
+						equip.loadInfo(ei);
+						p.getEquips().add(equip);
+					}
+				}
+				p.setCurrEquip(info.getCurrEquip());
+				
+				p.getControl().setPhysicsLocation(info.getLocation());
+				p.getControl().setViewDirection(info.getOrientation());
+				
+				if(p.isAlive()) {
+					enqueue(new Callable<String>() {
+						public String call() {
+							getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
+							return null;
+						}
+					});
+					
+				}
+			}
+			for (MoveableInfo info : minfos) {
+				final Vector3f loc = info.getLocation();
+				final boolean inWorld = info.isInWorld();
+				final Flube m = getWorldController().getFlube(info.getId());
+				if(m != null) {
+					enqueue(new Callable<String>() {
+						public String call() {
+							getWorldController().detachFlube(m);
+							m.getControl().setPhysicsLocation(loc);
+							if(inWorld) {
+								getWorldController().attachFlube(m);
+							}
+							return null;
+						}
+					});
+				}
+			}
+			
+			for (FlagInfo info : finfos) {
+				final int flagid = info.getId();
+				final int playerid = info.getPlayerid();
+				Flag f = getWorldController().getFlag(flagid);
+				if(f != null) {
+					if(!info.isInBase() && playerid >= 0) {
+						enqueue(new Callable<String>() {
+							public String call() {
+								takeFlag(getPlayerController().getPlayer(playerid), getWorldController().getFlag(flagid));
+								return null;
+							}
+						});
+					}else if(info.isInBase()) {
+						enqueue(new Callable<String>() {
+							public String call() {
+								returnFlag(getWorldController().getFlag(flagid));
+								return null;
+							}
+						});
+					}
+				}
+			}
+	    	
+	    	
+	    	setGamestate(GameState.LOBBY);
+	    	menuController.actualizeScreen();
+		}
+
+	public void joinGame() {
     	String playername = this.playerNameInput.getRealText();
     	int team = this.teamInput.getSelectedIndex() + 1;
-    	player = getPlayerController().createNew(connector.getConnectionId());
-    	player.setName(playername);
-    	getPlayerController().setTeam(player, team);
     	
     	setGamestate(GameState.SPECTATE);
     	menuController.actualizeScreen();
     	
-        JoinMessage join = new JoinMessage(player.getId(), player.getName());
+        JoinMessage join = new JoinMessage(connector.getConnectionId(), playername);
     	connector.sendMessage(join);
         
     	InputMessage chooseteam = null;
     	if(team == 1) {
-    		chooseteam = new InputMessage(player.getId(), InputCommand.CHOOSETEAM1, true);
+    		chooseteam = new InputMessage(connector.getConnectionId(), InputCommand.CHOOSETEAM1, true);
     	}else if(team == 2) {
-    		chooseteam = new InputMessage(player.getId(), InputCommand.CHOOSETEAM2, true);
+    		chooseteam = new InputMessage(connector.getConnectionId(), InputCommand.CHOOSETEAM2, true);
     	}
     	connector.sendMessage(chooseteam);
     }
@@ -506,9 +594,7 @@ public class GameController extends MainController implements ScreenController{
 		}else if (e instanceof PlayerJoinEvent) {
 			PlayerJoinEvent join = (PlayerJoinEvent) e;
 			int playerid = join.getPlayerId();
-			if(player != null && player.getId() != playerid) {
-				joinPlayer(playerid, join.getPlayername());
-			}
+			joinPlayer(playerid, join.getPlayername());
 		}else if (e instanceof ChooseTeamEvent) {
 			ChooseTeamEvent choose = (ChooseTeamEvent) e;
 			Player p = getPlayerController().getPlayer(choose.getPlayerId());
@@ -580,61 +666,6 @@ public class GameController extends MainController implements ScreenController{
 		latestLocationUpdate = update;
 	}
 	
-	public void setInitialState(GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos) {
-		getGameConfig().copyFrom(config);
-		
-		for (PlayerInfo info : pinfos) {
-			final int playerid = info.getPlayerid();
-			Player p = getPlayerController().getPlayer(playerid);
-			if(p == null) {
-				p = getPlayerController().createNew(info.getPlayerid());
-			}
-			p.setName(info.getName());
-			getPlayerController().setTeam(p, info.getTeam());
-			p.setAlive(info.isAlive());
-			getPlayerController().setHealthpoints(p, info.getHealthpoints());
-			p.setScores(info.getScores());
-			
-			p.getEquips().clear();
-			for(EquipmentInfo ei : info.getEquipInfos()) {
-				Equipment equip = getEquipmentFactory().create(ei.getTypeName());
-				if(equip != null) {
-					equip.setPlayer(p);
-					equip.loadInfo(ei);
-					p.getEquips().add(equip);
-				}
-			}
-			p.setCurrEquip(info.getCurrEquip());
-			
-//			if(playerid == this.player.getId()) continue;
-			
-			p.getControl().setPhysicsLocation(info.getLocation());
-			p.getControl().setViewDirection(info.getOrientation());
-			
-			if(p.isAlive()) {
-				enqueue(new Callable<String>() {
-					public String call() {
-						getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
-						return null;
-					}
-				});
-				
-			}
-		}
-		for (MoveableInfo info : minfos) {
-			Flube m = getWorldController().getFlube(info.getId());
-			if(m != null) {
-				m.getControl().setPhysicsLocation(info.getLocation());
-				if(!info.isInWorld()) {
-					getWorldController().detachFlube(m);
-				}
-			}
-		}
-    	
-//    	stateManager.attach(gameInputAppState);
-    	startInputSender();
-	}
-	
 	public void handlePlayerInput(InputCommand command, boolean value) {
 		// send input to server if necessary
 		if(InputCommand.forwarded.contains(command)) {
@@ -675,7 +706,7 @@ public class GameController extends MainController implements ScreenController{
 	private void movePlayers(float tpf) {
         
 		for (Player p : getPlayerController().getAllPlayers()) {
-			if(p.getId() == player.getId()) {
+			if(player != null && p.getId() == player.getId()) {
 				p.setViewDir(cam.getDirection());
 				listener.setLocation(cam.getLocation());
 			    listener.setRotation(cam.getRotation());
@@ -750,17 +781,17 @@ public class GameController extends MainController implements ScreenController{
 	
 	protected void joinPlayer(int playerid, String playername) {
 		super.joinPlayer(playerid, playername);
+		if(playerid == connector.getConnectionId()) {
+			player = getPlayerController().getPlayer(playerid);
+			stateManager.attach(gameInputAppState);
+	    	startInputSender();
+		}
 		menuController.updateScoreboard();
 	}
 	
 	@Override
 	protected void chooseTeam(Player p, int team) {
 		super.chooseTeam(p, team);
-		
-		if(p.getId() == player.getId()) {
-			stateManager.attach(gameInputAppState);
-	    	startInputSender();
-		}
 	}
 	
 	public long getRemainingTime() {

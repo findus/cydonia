@@ -42,15 +42,16 @@ import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EventMessage;
+import de.findus.cydonia.messages.FlagInfo;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
+import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
 import de.findus.cydonia.messages.ViewDirMessage;
-import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
 /**
@@ -152,6 +153,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(PickerInfo.class);
 		Serializer.registerClass(BeamerInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
+		Serializer.registerClass(FlagInfo.class);
 		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
@@ -190,6 +192,8 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		}else if (m instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) m;
 			gameserver.joinPlayer(msg.getPlayerid(), msg.getPlayername());
+		}else if(m instanceof InitialStateMessage) {
+			gameserver.sendInitialState(con.getId());
 		}
 	}
 

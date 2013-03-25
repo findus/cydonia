@@ -19,6 +19,8 @@ public class InitialStateMessage extends AbstractMessage {
 	
 	private MoveableInfo[] moveables;
 	
+	private FlagInfo[] flags;
+	
 	private GameConfig config;
 
 	
@@ -66,5 +68,19 @@ public class InitialStateMessage extends AbstractMessage {
 	 */
 	public void setconfig(GameConfig config) {
 		this.config = config;
+	}
+
+	/**
+	 * @return the flags
+	 */
+	public FlagInfo[] getFlags() {
+		return flags;
+	}
+
+	/**
+	 * @param flags the flags to set
+	 */
+	public void setFlags(FlagInfo[] flags) {
+		this.flags = flags;
 	}
 }
