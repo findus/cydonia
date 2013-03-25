@@ -35,6 +35,8 @@ public class GameplayController {
 	
 	private TimerTask restartRoundTask;
 	
+	private long roundStartTime;
+	
 	public GameplayController(EventMachine em, GameConfig gameConfig) {
 		this.eventMachine = em;
 		this.gameConfig = gameConfig;
@@ -54,6 +56,7 @@ public class GameplayController {
 			}
 		};
 		timer.schedule(endRoundTask, gameConfig.getLong("mp_roundtime") * 1000);
+		roundStartTime = System.currentTimeMillis();
 		gameState = GameState.RUNNING;
 		RestartRoundEvent start = new RestartRoundEvent(true);
 		eventMachine.fireEvent(start);
@@ -98,5 +101,9 @@ public class GameplayController {
 		if(gameState == GameState.RUNNING) {
 			this.endRound(playerid, true);
 		}
+	}
+	
+	public long getRoundStartTime() {
+		return this.roundStartTime;
 	}
 }

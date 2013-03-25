@@ -15,6 +15,8 @@ import de.findus.cydonia.main.GameConfig;
 @Serializable
 public class InitialStateMessage extends AbstractMessage {
 
+	private long passedRoundTime;
+	
 	private PlayerInfo[] players;
 	
 	private MoveableInfo[] moveables;
@@ -28,6 +30,20 @@ public class InitialStateMessage extends AbstractMessage {
 		setReliable(true);
 	}
 	
+	/**
+	 * @return the passedRoundTime
+	 */
+	public long getPassedRoundTime() {
+		return passedRoundTime;
+	}
+
+	/**
+	 * @param passedRoundTime the passedRoundTime to set
+	 */
+	public void setPassedRoundTime(long passedRoundTime) {
+		this.passedRoundTime = passedRoundTime;
+	}
+
 	/**
 	 * @return the players
 	 */

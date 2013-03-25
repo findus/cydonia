@@ -172,7 +172,7 @@ public class ServerConnector implements MessageListener<Client> {
 			}
 		}else if (m instanceof InitialStateMessage) {
 			InitialStateMessage iniState = (InitialStateMessage) m;
-			gameController.setInitialState(iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables(), iniState.getFlags());
+			gameController.setInitialState(iniState.getPassedRoundTime(), iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables(), iniState.getFlags());
 		}
 	}
 }

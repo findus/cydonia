@@ -372,90 +372,92 @@ public class GameController extends MainController implements ScreenController{
     	connector.sendMessage(init);
     }
     
-    public void setInitialState(GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos, FlagInfo[] finfos) {
-			getGameConfig().copyFrom(config);
-			
-			for (PlayerInfo info : pinfos) {
-				final int playerid = info.getPlayerid();
-				Player p = getPlayerController().getPlayer(playerid);
-				if(p == null) {
-					p = getPlayerController().createNew(info.getPlayerid());
-				}
-				p.setName(info.getName());
-				getPlayerController().setTeam(p, info.getTeam());
-				p.setAlive(info.isAlive());
-				getPlayerController().setHealthpoints(p, info.getHealthpoints());
-				p.setScores(info.getScores());
-				
-				p.getEquips().clear();
-				for(EquipmentInfo ei : info.getEquipInfos()) {
-					Equipment equip = getEquipmentFactory().create(ei.getTypeName());
-					if(equip != null) {
-						equip.setPlayer(p);
-						equip.loadInfo(ei);
-						p.getEquips().add(equip);
-					}
-				}
-				p.setCurrEquip(info.getCurrEquip());
-				
-				p.getControl().setPhysicsLocation(info.getLocation());
-				p.getControl().setViewDirection(info.getOrientation());
-				
-				if(p.isAlive()) {
-					enqueue(new Callable<String>() {
-						public String call() {
-							getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
-							return null;
-						}
-					});
-					
-				}
-			}
-			for (MoveableInfo info : minfos) {
-				final Vector3f loc = info.getLocation();
-				final boolean inWorld = info.isInWorld();
-				final Flube m = getWorldController().getFlube(info.getId());
-				if(m != null) {
-					enqueue(new Callable<String>() {
-						public String call() {
-							getWorldController().detachFlube(m);
-							m.getControl().setPhysicsLocation(loc);
-							if(inWorld) {
-								getWorldController().attachFlube(m);
-							}
-							return null;
-						}
-					});
-				}
-			}
-			
-			for (FlagInfo info : finfos) {
-				final int flagid = info.getId();
-				final int playerid = info.getPlayerid();
-				Flag f = getWorldController().getFlag(flagid);
-				if(f != null) {
-					if(!info.isInBase() && playerid >= 0) {
-						enqueue(new Callable<String>() {
-							public String call() {
-								takeFlag(getPlayerController().getPlayer(playerid), getWorldController().getFlag(flagid));
-								return null;
-							}
-						});
-					}else if(info.isInBase()) {
-						enqueue(new Callable<String>() {
-							public String call() {
-								returnFlag(getWorldController().getFlag(flagid));
-								return null;
-							}
-						});
-					}
-				}
-			}
-	    	
-	    	
-	    	setGamestate(GameState.LOBBY);
-	    	menuController.actualizeScreen();
-		}
+    public void setInitialState(long passedRoundTime, GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos, FlagInfo[] finfos) {
+    	this.roundStartTime= System.currentTimeMillis() - passedRoundTime;
+
+    	getGameConfig().copyFrom(config);
+
+    	for (PlayerInfo info : pinfos) {
+    		final int playerid = info.getPlayerid();
+    		Player p = getPlayerController().getPlayer(playerid);
+    		if(p == null) {
+    			p = getPlayerController().createNew(info.getPlayerid());
+    		}
+    		p.setName(info.getName());
+    		getPlayerController().setTeam(p, info.getTeam());
+    		p.setAlive(info.isAlive());
+    		getPlayerController().setHealthpoints(p, info.getHealthpoints());
+    		p.setScores(info.getScores());
+
+    		p.getEquips().clear();
+    		for(EquipmentInfo ei : info.getEquipInfos()) {
+    			Equipment equip = getEquipmentFactory().create(ei.getTypeName());
+    			if(equip != null) {
+    				equip.setPlayer(p);
+    				equip.loadInfo(ei);
+    				p.getEquips().add(equip);
+    			}
+    		}
+    		p.setCurrEquip(info.getCurrEquip());
+
+    		p.getControl().setPhysicsLocation(info.getLocation());
+    		p.getControl().setViewDirection(info.getOrientation());
+
+    		if(p.isAlive()) {
+    			enqueue(new Callable<String>() {
+    				public String call() {
+    					getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
+    					return null;
+    				}
+    			});
+
+    		}
+    	}
+    	for (MoveableInfo info : minfos) {
+    		final Vector3f loc = info.getLocation();
+    		final boolean inWorld = info.isInWorld();
+    		final Flube m = getWorldController().getFlube(info.getId());
+    		if(m != null) {
+    			enqueue(new Callable<String>() {
+    				public String call() {
+    					getWorldController().detachFlube(m);
+    					m.getControl().setPhysicsLocation(loc);
+    					if(inWorld) {
+    						getWorldController().attachFlube(m);
+    					}
+    					return null;
+    				}
+    			});
+    		}
+    	}
+
+    	for (FlagInfo info : finfos) {
+    		final int flagid = info.getId();
+    		final int playerid = info.getPlayerid();
+    		Flag f = getWorldController().getFlag(flagid);
+    		if(f != null) {
+    			if(!info.isInBase() && playerid >= 0) {
+    				enqueue(new Callable<String>() {
+    					public String call() {
+    						takeFlag(getPlayerController().getPlayer(playerid), getWorldController().getFlag(flagid));
+    						return null;
+    					}
+    				});
+    			}else if(info.isInBase()) {
+    				enqueue(new Callable<String>() {
+    					public String call() {
+    						returnFlag(getWorldController().getFlag(flagid));
+    						return null;
+    					}
+    				});
+    			}
+    		}
+    	}
+
+
+    	setGamestate(GameState.LOBBY);
+    	menuController.actualizeScreen();
+    }
 
 	public void joinGame() {
     	String playername = this.playerNameInput.getRealText();

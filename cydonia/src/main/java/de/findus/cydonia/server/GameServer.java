@@ -446,7 +446,10 @@ public class GameServer extends MainController{
 			k++;
 		}
 		
+		long passedTime = System.currentTimeMillis() - gameplayController.getRoundStartTime();
+		
 		InitialStateMessage msg = new InitialStateMessage();
+		msg.setPassedRoundTime(passedTime);
 		msg.setPlayers(playerinfos);
 		msg.setMoveables(moveableinfos);
 		msg.setFlags(flaginfos);
