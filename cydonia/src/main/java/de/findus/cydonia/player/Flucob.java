@@ -86,4 +86,18 @@ public class Flucob extends AbstractEquipment {
 		
 	}
 
+
+	@Override
+	public String getTypeName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void initGeometry() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
