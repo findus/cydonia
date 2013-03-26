@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map name="Level1" bottomHeight="-50.0">
+<map name="TestLevel1" bottomHeight="-50.0">
 	<spawnpoint id="1" posx="0.0" posy="2.0" posz="-2.0" team="1" />
 	<spawnpoint id="2" posx="0.0" posy="2.0" posz="2.0" team="2" />
 	<flag id="1" team="1" posx="0.0" posy="-1.5" posz="-3.0" />

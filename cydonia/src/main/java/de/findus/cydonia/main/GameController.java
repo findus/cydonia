@@ -351,7 +351,8 @@ public class GameController extends MainController implements ScreenController{
      */
     public void startGame(String level) {
 //    	InputSource is = new InputSource(new StringReader(level));
-    	InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(level));
+    	String mapfile = MAPFOLDER + level + MAPEXTENSION;
+    	InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(mapfile));
         MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
         try {
 			Map map = mapXMLParser.loadMap(is);

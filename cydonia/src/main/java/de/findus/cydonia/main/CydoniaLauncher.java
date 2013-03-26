@@ -20,7 +20,7 @@ public class CydoniaLauncher extends JFrame implements ActionListener
 {
 	private static final long serialVersionUID = 4828567160092774297L;
 
-	private GameServer server;
+	private MainController server;
 	
 	private JButton serverbtn;
 	

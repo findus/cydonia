@@ -35,7 +35,9 @@ import de.findus.cydonia.player.PlayerController;
  */
 public abstract class MainController extends Application implements PhysicsCollisionListener, EventListener {
 		
-	    public static float PLAYER_SPEED = 5f;
+	    protected static final String MAPFOLDER = "/de/findus/cydonia/level/";
+	protected static final String MAPEXTENSION = ".xml";
+		public static float PLAYER_SPEED = 5f;
 	    public static float PHYSICS_ACCURACY = (1f / 192);
 	    
 	    public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
@@ -54,6 +56,12 @@ public abstract class MainController extends Application implements PhysicsColli
 	    
 	    private ConcurrentLinkedQueue<Event> eventQueue;
 	    
+	    
+	    public MainController() {
+	    	super();
+	    	
+	    	gameConfig = new GameConfig(true);
+	    }
 
 	    @Override
 	    public void initialize() {
@@ -61,7 +69,6 @@ public abstract class MainController extends Application implements PhysicsColli
 	        
 	        this.gamestate = GameState.LOADING;
 	        
-	        gameConfig = new GameConfig(true);
 	        eventMachine = new EventMachine();
 	        eventQueue = new ConcurrentLinkedQueue<Event>();
 	        

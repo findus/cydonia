@@ -5,6 +5,7 @@ package de.findus.cydonia.server;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedList;
 
 import org.jdom2.JDOMException;
 import org.xml.sax.InputSource;
@@ -65,13 +66,15 @@ public class GameServer extends MainController{
 	public static final float MAX_PLACE_RANGE = 20;
 
 	public static final boolean FREE_PLACING = false;
-
-	private static final String MAPFILENAME = "/de/findus/cydonia/level/level3.xml";
+	
+	private static final String DEFAULTMAP = "level3";
 
 	public static void main(String[] args) {
-		GameServer gameServer = new GameServer();
+		MainController gameServer = new GameServer();
 		gameServer.start();
 	}
+	
+	private boolean running;
 	
 	private ServerConfigFrame configFrame;
 	
@@ -89,12 +92,33 @@ public class GameServer extends MainController{
 
 	private EquipmentFactory equipmentFactory;
 	
+	private Collection<ServerStateListener> stateListeners;
+	
+	public GameServer() {
+		super();
+		
+		this.stateListeners = new LinkedList<ServerStateListener>();
+		
+		configFrame = new ServerConfigFrame(this);
+        configFrame.pack();
+	}
+	
+	public void setConfigFrameVisible(boolean visible) {
+		configFrame.setVisible(visible);
+	}
+	
 	@Override
 	public void start() {
+		start(DEFAULTMAP);
+	}
+	
+	public void start(String mapFileName) {
+		this.setRunning(true);
 		if (settings == null){
             settings = new AppSettings(true);
             settings.setTitle(APPTITLE);
         }
+		getGameConfig().putString("mapFileName", mapFileName);
 		super.start(JmeContext.Type.Headless);
 	}
 	
@@ -102,6 +126,7 @@ public class GameServer extends MainController{
 	public void stop(boolean waitfor) {
 		cleanup();
 		super.stop(waitfor);
+		this.setRunning(false);
 //		System.exit(0);
 	}
 	
@@ -110,8 +135,8 @@ public class GameServer extends MainController{
 		networkController.stop();
 		locationSenderLoop.interrupt();
 		gameplayController.dispose();
-		configFrame.setVisible(false);
-		configFrame.dispose();
+		configFrame.setVisible(true);
+//		configFrame.dispose();
 	}
 	
     @Override
@@ -120,15 +145,13 @@ public class GameServer extends MainController{
 
         this.equipmentFactory = new EquipmentFactory(ServiceType.SERVER, this);
         
-        configFrame = new ServerConfigFrame(this);
-        configFrame.pack();
-        configFrame.setVisible(true);
-        
-        InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(MAPFILENAME));
+        String mapfile = MAPFOLDER + getGameConfig().getString("mapFileName") + MAPEXTENSION;
+        InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(mapfile));
         MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
         try {
 			Map map = mapXMLParser.loadMap(is);
 			getWorldController().loadWorld(map);
+			informStateListeners();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -474,7 +497,7 @@ public class GameServer extends MainController{
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		init.setLevel(MAPFILENAME);
+		init.setLevel(getGameConfig().getString("mapFileName"));
 		networkController.sendMessage(init, clientid);
 	}
 
@@ -489,6 +512,38 @@ public class GameServer extends MainController{
 		}
 	}
 	
+	public boolean isRunning() {
+		return this.running;
+	}
+	
+	private void setRunning(boolean running) {
+		this.running = running;
+		informStateListeners();
+	}
+	
+	@Override
+	public EquipmentFactory getEquipmentFactory() {
+		return this.equipmentFactory;
+	}
+	
+	public void registerStateListener(ServerStateListener listener) {
+		if(!stateListeners.contains(listener)) {
+			stateListeners.add(listener);
+		}
+	}
+	
+	public void unregisterStateListener(ServerStateListener listener) {
+		if(stateListeners.contains(listener)) {
+			stateListeners.remove(listener);
+		}
+	}
+	
+	public void informStateListeners() {
+		for(ServerStateListener sl : stateListeners) {
+			sl.stateChanged();
+		}
+	}
+
 	/**
 	 * This class is used to send the current state of the virtual world to all clients in constant intervals.
 	 * @author Findus
@@ -509,9 +564,9 @@ public class GameServer extends MainController{
 			}
 		}
 	}
-
-	@Override
-	public EquipmentFactory getEquipmentFactory() {
-		return this.equipmentFactory;
+	
+	public interface ServerStateListener {
+		
+		public void stateChanged();
 	}
 }
