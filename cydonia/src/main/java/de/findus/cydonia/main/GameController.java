@@ -635,6 +635,7 @@ public class GameController extends MainController implements ScreenController{
 			}
 			getWorldController().resetWorld();
 			this.roundStartTime = System.currentTimeMillis();
+			menuController.clearEventPanel();
 			menuController.updateScoreboard();
 		}else if (e instanceof RoundEndedEvent) {
 			RoundEndedEvent roundEnded = (RoundEndedEvent) e;
@@ -801,6 +802,20 @@ public class GameController extends MainController implements ScreenController{
 	@Override
 	protected void chooseTeam(Player p, int team) {
 		super.chooseTeam(p, team);
+	}
+	
+	@Override
+	protected void beam(Player p, Player victim) {
+		super.beam(p, victim);
+		
+		menuController.displayEvent(p.getName() + " beamed " + victim.getName());
+	}
+	
+	@Override
+	protected void scoreFlag(Player p, Flag flag) {
+		super.scoreFlag(p, flag);
+		
+		menuController.displayEvent(p.getName() + " scored.");
 	}
 	
 	public long getRemainingTime() {

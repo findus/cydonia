@@ -52,6 +52,7 @@
 	<screen id="ingamescreen" controller="de.findus.cydonia.main.GameController">
 		<layer id="hudlayer" backgroundColor="#fff0" childLayout="center"
 			visible="false">
+			<panel id="eventpanel" width="20%" height="20%" align="left" valign="top" padding="10px" backgroundColor="#fff0" childLayout="vertical" childClip="false"/>
 			<panel width="100%" align="center" valign="top"
 				backgroundColor="#fff0" childLayout="center" padding="10px">
 				<panel align="center" valign="top"

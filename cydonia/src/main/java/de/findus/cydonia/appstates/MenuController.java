@@ -49,7 +49,8 @@ public class MenuController {
 	private Element messagelayer;
 	private Element messagetext;
 	private Element hudlayer;
-	private Element scoresPanel;
+	private Element scorespanel;
+	private Element eventpanel;
 	
 	
 	public MenuController(GameController game) {
@@ -67,7 +68,8 @@ public class MenuController {
 		this.messagelayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("messagelayer");
 		this.messagetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("messagetext");
 		this.hudlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("hudlayer");
-		this.scoresPanel = gameController.getNifty().getScreen("ingamescreen").findElementByName("scorespanel");
+		this.scorespanel = gameController.getNifty().getScreen("ingamescreen").findElementByName("scorespanel");
+		this.eventpanel = gameController.getNifty().getScreen("ingamescreen").findElementByName("eventpanel");
 	}
 	
 	public void actualizeScreen() {
@@ -103,9 +105,9 @@ public class MenuController {
 			String message = "Round is over. New round will start automatically in a view seconds...";
 			int winteam = gameController.getWinTeam();
 			if(winteam == 1) {
-				message += "\n\n\nBlue team is the winner!";
+				message += "\nBlue team is the winner!";
 			}else if(winteam == 2) {
-				message += "\n\n\nRed team is the winner!";
+				message += "\nRed team is the winner!";
 			}
 			showMessage(message);
 			break;
@@ -171,12 +173,12 @@ public class MenuController {
 	}
 	
 	public void updateScoreboard() {
-		Element team1 = this.scoresPanel.findElementByName("team1");
+		Element team1 = this.scorespanel.findElementByName("team1");
 		for(Element e : team1.getElements()) {
 			e.markForRemoval();
 		}
 		
-		Element team2 = this.scoresPanel.findElementByName("team2");
+		Element team2 = this.scorespanel.findElementByName("team2");
 		for(Element e : team2.getElements()) {
 			e.markForRemoval();
 		}
@@ -206,6 +208,26 @@ public class MenuController {
 				pb = new ScoreLineBuilder(name, score, color, "#ffff");
 				pb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team2);
 			}
+		}
+	}
+	
+	public void displayEvent(final String event) {
+		TextBuilder tb = new TextBuilder(){{
+			textHAlignLeft();
+			color("#80f9");
+			font("de/findus/cydonia/gui/fonts/aurulent-sans-16.fnt");
+			text(event);
+		}};
+		tb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), this.eventpanel);
+		
+		if(this.eventpanel.getElements().size() > 4) {
+			this.eventpanel.getElements().get(0).markForRemoval();
+		}
+	}
+	
+	public void clearEventPanel() {
+		for(Element e : this.eventpanel.getElements()) {
+			e.markForRemoval();
 		}
 	}
 	
