@@ -12,28 +12,28 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class RoundEndedEvent extends AbstractEvent {
 
-	private int winnerid;
+	private int winteam;
 	
 	public RoundEndedEvent() {
 		setNetworkEvent(false);
 	}
 	
-	public RoundEndedEvent(int winnerid, boolean forward) {
-		this.setWinnerid(winnerid);
+	public RoundEndedEvent(int winteam, boolean forward) {
+		this.setWinteam(winteam);
 		setNetworkEvent(forward);
 	}
 
 	/**
-	 * @return the winnerid
+	 * @return the winteam
 	 */
-	public int getWinnerid() {
-		return winnerid;
+	public int getWinteam() {
+		return winteam;
 	}
 
 	/**
-	 * @param winnerid the winnerid to set
+	 * @param winteam the winteam to set
 	 */
-	public void setWinnerid(int winnerid) {
-		this.winnerid = winnerid;
+	public void setWinteam(int winteam) {
+		this.winteam = winteam;
 	}
 }

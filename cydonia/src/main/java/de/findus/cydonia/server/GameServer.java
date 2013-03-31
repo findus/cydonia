@@ -221,7 +221,7 @@ public class GameServer extends MainController{
 			RoundEndedEvent roundEnded = (RoundEndedEvent) e;
 			for (Player p : getPlayerController().getAllPlayers()) {
 				p.setInputState(new PlayerInputState());
-				if(p.getId() == roundEnded.getWinnerid()) {
+				if(p.getId() == roundEnded.getWinteam()) {
 					p.setScores(p.getScores() + 1);
 				}
 			}
@@ -383,6 +383,14 @@ public class GameServer extends MainController{
 		
 		BeamEvent ev = new BeamEvent(p.getId(), victim.getId(), true);
 		getEventMachine().fireEvent(ev);
+	}
+	
+	@Override
+	protected void scoreFlag(Player p, Flag flag) {
+		super.scoreFlag(p, flag);
+		if(p != null) {
+			gameplayController.playerScored(p);
+		}
 	}
 
 	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {

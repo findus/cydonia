@@ -56,7 +56,6 @@ import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
-import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.FlagInfo;
@@ -148,7 +147,7 @@ public class GameController extends MainController implements ScreenController{
     
     private long roundStartTime;
     
-    private int lastScorerId;
+    private int winTeam;
 	public void start(String server) {
     	this.serverAddress = server;
     	this.start();
@@ -641,11 +640,8 @@ public class GameController extends MainController implements ScreenController{
 			RoundEndedEvent roundEnded = (RoundEndedEvent) e;
 			for (Player p : getPlayerController().getAllPlayers()) {
 				p.setInputState(new PlayerInputState());
-				if(p.getId() == roundEnded.getWinnerid()) {
-					p.setScores(p.getScores() + 1);
-				}
 			}
-			lastScorerId = roundEnded.getWinnerid();
+			winTeam = roundEnded.getWinteam();
 			setGamestate(GameState.ROUNDOVER);
 			menuController.actualizeScreen();
 		}else if(e instanceof FlagEvent) {
@@ -812,8 +808,8 @@ public class GameController extends MainController implements ScreenController{
 		return getGameConfig().getLong("mp_roundtime") * 1000 - passedTime;
 	}
 	
-	public Player getLastScorer() {
-		return getPlayerController().getPlayer(lastScorerId);
+	public int getWinTeam() {
+		return winTeam;
 	}
 
 	public String getScores() {

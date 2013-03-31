@@ -101,9 +101,11 @@ public class MenuController {
 			gameController.getInputManager().setCursorVisible(false);
 			hideHUD();
 			String message = "Round is over. New round will start automatically in a view seconds...";
-			Player scorer = gameController.getLastScorer();
-			if(scorer != null) {
-				message += "\n\n\n" + scorer.getName() + " scored.";
+			int winteam = gameController.getWinTeam();
+			if(winteam == 1) {
+				message += "\n\n\nBlue team is the winner!";
+			}else if(winteam == 2) {
+				message += "\n\n\nRed team is the winner!";
 			}
 			showMessage(message);
 			break;

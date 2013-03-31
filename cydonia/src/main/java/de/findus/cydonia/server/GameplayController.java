@@ -11,6 +11,7 @@ import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.main.GameConfig;
 import de.findus.cydonia.main.GameState;
+import de.findus.cydonia.player.Player;
 
 /**
  * @author Findus
@@ -37,11 +38,17 @@ public class GameplayController {
 	
 	private long roundStartTime;
 	
+	private int team1score;
+	private int team2score;
+	
 	public GameplayController(EventMachine em, GameConfig gameConfig) {
 		this.eventMachine = em;
 		this.gameConfig = gameConfig;
 		
 		timer = new Timer();
+		
+		team1score = 0;
+		team2score = 0;
 	}
 	
 	public void restartRound() {
@@ -49,26 +56,32 @@ public class GameplayController {
 		if(endRoundTask != null) {
 			endRoundTask.cancel();
 		}
-		endRoundTask = new TimerTask() {
-			@Override
-			public void run() {
-				endRound(-1, true);
-			}
-		};
-		timer.schedule(endRoundTask, gameConfig.getLong("mp_roundtime") * 1000);
+		
+		if(gameConfig.getLong("mp_roundtime") > 0) {
+			endRoundTask = new TimerTask() {
+				@Override
+				public void run() {
+					endRound(-1, true);
+				}
+			};
+			timer.schedule(endRoundTask, gameConfig.getLong("mp_roundtime") * 1000);
+		}
+		
+		team1score = 0;
+		team2score = 0;
 		roundStartTime = System.currentTimeMillis();
 		gameState = GameState.RUNNING;
 		RestartRoundEvent start = new RestartRoundEvent(true);
 		eventMachine.fireEvent(start);
 	}
 	
-	public void endRound(int winnerid, boolean triggerNewRound) {
+	public void endRound(int winteam, boolean triggerNewRound) {
 		System.out.println("end round...");
 		
 		endRoundTask.cancel();
 		
 		gameState = GameState.ROUNDOVER;
-		RoundEndedEvent end = new RoundEndedEvent(winnerid, true);
+		RoundEndedEvent end = new RoundEndedEvent(winteam, true);
 		eventMachine.fireEvent(end);
 		
 		if(triggerNewRound) {
@@ -97,9 +110,19 @@ public class GameplayController {
 		timer.cancel();
 	}
 
-	public void targetReached(int playerid) {
-		if(gameState == GameState.RUNNING) {
-			this.endRound(playerid, true);
+	public void playerScored(Player p) {
+		if(p.getTeam() == 1) {
+			team1score++;
+		}else if(p.getTeam() == 2) {
+			team2score++;
+		}
+		
+		if(gameConfig.getInteger("mp_scorelimit") > 0) {
+			if(team1score >= gameConfig.getInteger("mp_scorelimit")) {
+				endRound(1, true);
+			}else if(team2score >= gameConfig.getInteger("mp_scorelimit")) {
+				endRound(2, true);
+			}
 		}
 	}
 	
