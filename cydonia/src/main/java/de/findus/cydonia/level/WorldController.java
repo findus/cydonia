@@ -4,9 +4,13 @@
 package de.findus.cydonia.level;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.bounding.BoundingBox;
+import com.jme3.bounding.BoundingVolume;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.GhostControl;
@@ -26,6 +30,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.shadow.ShadowUtil;
 
 import de.findus.cydonia.player.Player;
 
@@ -66,10 +71,10 @@ public class WorldController {
 		this.assetManager = assetManager;
 		this.physicsSpace = physicsSpace;
 		
-		setUpAmbientLight();
-		
 		this.flubes = new ConcurrentHashMap<Long, Flube>();
 		this.flags = new ConcurrentHashMap<Integer, Flag>();
+		
+		setUpAmbientLight();
 	}
 
 	public void loadWorld(Map level) {
@@ -309,7 +314,29 @@ public class WorldController {
 		
         AmbientLight al = new AmbientLight();
         al.setColor(ColorRGBA.White.mult(0.1f));
-//        rootNode.addLight(al);
+//        al.setColor(ColorRGBA.White.mult(0.3f));
+        rootNode.addLight(al);
+    }
+	
+	public void setUpWorldLights() {
+        BoundingBox bbox = (BoundingBox) worldNode.getWorldBound();
+        Vector3f center = bbox.getCenter();
+        Vector3f extend = bbox.getExtent(new Vector3f());
+        
+        for(float x=5; x<=extend.getX()+5; x=x+10) {
+        	for(float y=5; y<=extend.getY()+5; y=y+10) {
+        		for(float z=5; z<=extend.getZ()+5; z=z+10) {
+        			addPointLight(center.add(x, y, z), 10, 0.3f);
+        			addPointLight(center.add(x, y, -z), 10, 0.3f);
+        			addPointLight(center.add(x, -y, z), 10, 0.3f);
+        			addPointLight(center.add(x, -y, -z), 10, 0.3f);
+        			addPointLight(center.add(-x, y, z), 10, 0.3f);
+        			addPointLight(center.add(-x, y, -z), 10, 0.3f);
+        			addPointLight(center.add(-x, -y, z), 10, 0.3f);
+        			addPointLight(center.add(-x, -y, -z), 10, 0.3f);
+        		}
+        	}
+        }
         
         DirectionalLight dl1 = new DirectionalLight();
         dl1.setColor(ColorRGBA.White.mult(0.8f));
@@ -322,59 +349,77 @@ public class WorldController {
 //        rootNode.addLight(dl2);
         
         
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Red);
-        
-        PointLight pl1 = new PointLight();
-        pl1.setColor(ColorRGBA.White.mult(0.3f));
-        pl1.setPosition(new Vector3f(0, -3, 12));
-        pl1.setRadius(30);
-        rootNode.addLight(pl1);
-        
-        Geometry g1 = new Geometry("pl1-g", new Box(pl1.getPosition(), 0.05f, 0.05f, 0.05f));
-        g1.setMaterial(mat);
-        rootNode.attachChild(g1);
-        
-        PointLight pl2 = new PointLight();
-        pl2.setColor(ColorRGBA.White.mult(0.3f));
-        pl2.setPosition(new Vector3f(0, -3, -12));
-        pl2.setRadius(30);
-        rootNode.addLight(pl2);
-        
-        Geometry g2 = new Geometry("pl2-g", new Box(pl2.getPosition(), 0.05f, 0.05f, 0.05f));
-        g2.setMaterial(mat);
-        rootNode.attachChild(g2);
-        
-        PointLight pl3 = new PointLight();
-        pl3.setColor(ColorRGBA.White.mult(0.3f));
-        pl3.setPosition(new Vector3f(10, 10, 0));
-        pl3.setRadius(50);
-        rootNode.addLight(pl3);
-        
-        Geometry g3 = new Geometry("pl3-g", new Box(pl3.getPosition(), 0.05f, 0.05f, 0.05f));
-        g3.setMaterial(mat);
-        rootNode.attachChild(g3);
-        
-        PointLight pl4 = new PointLight();
-        pl4.setColor(ColorRGBA.White.mult(0.3f));
-        pl4.setPosition(new Vector3f(-10, 10, 0));
-        pl4.setRadius(50);
-        rootNode.addLight(pl4);
-        
-        Geometry g4 = new Geometry("pl4-g", new Box(pl4.getPosition(), 0.05f, 0.05f, 0.05f));
-        g4.setMaterial(mat);
-        rootNode.attachChild(g4);
-        
-        PointLight pl5 = new PointLight();
-        pl5.setColor(ColorRGBA.White.mult(0.3f));
-        pl5.setPosition(new Vector3f(0, -10, 0));
-        pl5.setRadius(100);
+//        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+//        mat.setColor("Color", ColorRGBA.Red);
+//        
+//        PointLight pl1 = new PointLight();
+//        pl1.setColor(ColorRGBA.White.mult(0.3f));
+//        pl1.setPosition(new Vector3f(0, -3, 12));
+//        pl1.setRadius(30);
+//        rootNode.addLight(pl1);
+//        
+//        Geometry g1 = new Geometry("pl1-g", new Box(pl1.getPosition(), 0.05f, 0.05f, 0.05f));
+//        g1.setMaterial(mat);
+//        rootNode.attachChild(g1);
+//        
+//        PointLight pl2 = new PointLight();
+//        pl2.setColor(ColorRGBA.White.mult(0.3f));
+//        pl2.setPosition(new Vector3f(0, -3, -12));
+//        pl2.setRadius(30);
+//        rootNode.addLight(pl2);
+//        
+//        Geometry g2 = new Geometry("pl2-g", new Box(pl2.getPosition(), 0.05f, 0.05f, 0.05f));
+//        g2.setMaterial(mat);
+//        rootNode.attachChild(g2);
+//        
+//        PointLight pl3 = new PointLight();
+//        pl3.setColor(ColorRGBA.White.mult(0.3f));
+//        pl3.setPosition(new Vector3f(10, 10, 0));
+//        pl3.setRadius(50);
+//        rootNode.addLight(pl3);
+//        
+//        Geometry g3 = new Geometry("pl3-g", new Box(pl3.getPosition(), 0.05f, 0.05f, 0.05f));
+//        g3.setMaterial(mat);
+//        rootNode.attachChild(g3);
+//        
+//        PointLight pl4 = new PointLight();
+//        pl4.setColor(ColorRGBA.White.mult(0.3f));
+//        pl4.setPosition(new Vector3f(-10, 10, 0));
+//        pl4.setRadius(50);
 //        rootNode.addLight(pl4);
+//        
+//        Geometry g4 = new Geometry("pl4-g", new Box(pl4.getPosition(), 0.05f, 0.05f, 0.05f));
+//        g4.setMaterial(mat);
+//        rootNode.attachChild(g4);
+//        
+//        PointLight pl5 = new PointLight();
+//        pl5.setColor(ColorRGBA.White.mult(0.3f));
+//        pl5.setPosition(new Vector3f(0, -10, 0));
+//        pl5.setRadius(100);
+////        rootNode.addLight(pl4);
+//        
+//        Geometry g5 = new Geometry("pl5-g", new Box(pl5.getPosition(), 0.05f, 0.05f, 0.05f));
+//        g5.setMaterial(mat);
+//        rootNode.attachChild(g5);
+	}
+	
+	private void addPointLight(Vector3f position, float radius, float intensity) {
+		PointLight pl1 = new PointLight();
+		pl1.setColor(ColorRGBA.White.mult(intensity));
+		pl1.setPosition(position);
+		pl1.setRadius(radius);
+		rootNode.addLight(pl1);
+
+		Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Red);
+		
+		Geometry g1 = new Geometry("pl1-g", new Box(0.2f, 0.2f, 0.2f));
+		g1.setLocalTranslation(pl1.getPosition());
+		g1.setMaterial(mat);
+		rootNode.attachChild(g1);
         
-        Geometry g5 = new Geometry("pl5-g", new Box(pl5.getPosition(), 0.05f, 0.05f, 0.05f));
-        g5.setMaterial(mat);
-        rootNode.attachChild(g5);
-    }
+        System.out.println(pl1.getPosition());
+	}
 	
 	public LightList getLights() {
 		return rootNode.getLocalLightList();

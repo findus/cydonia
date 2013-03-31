@@ -56,6 +56,7 @@ import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
+import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.FlagInfo;
@@ -364,6 +365,15 @@ public class GameController extends MainController implements ScreenController{
 			e.printStackTrace();
 			stopGame();
 		}
+        
+        Callable<String> job = new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				getWorldController().setUpWorldLights();
+				return null;
+			}
+		};
+		enqueue(job);
     	
     	getBulletAppState().setEnabled(true);
     	setGamestate(GameState.LOADING);
