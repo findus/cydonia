@@ -14,6 +14,7 @@ import com.jme3.bullet.control.GhostControl;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh.Type;
 import com.jme3.effect.shapes.EmitterBoxShape;
+import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -132,6 +133,26 @@ public class FlagFactory {
 	    glitterBase.setHighLife(3f);
 		glitterBase.setEnabled(true);
 	    nodeBase.attachChild(glitterBase);
+	    
+	    SpotLight sptop = new SpotLight();
+	    sptop.setColor(ColorRGBA.White.mult(0.7f));
+	    sptop.setDirection(new Vector3f(0, -1, 0));
+	    sptop.setName("Flaglight");
+	    sptop.setPosition(origin.add(0, 0.9f, 0));
+	    sptop.setSpotInnerAngle(0);
+	    sptop.setSpotOuterAngle(FastMath.QUARTER_PI);
+	    sptop.setSpotRange(2f);
+	    nodeBase.addLight(sptop);
+	    
+	    SpotLight spbot = new SpotLight();
+	    spbot.setColor(ColorRGBA.White.mult(0.7f));
+	    spbot.setDirection(new Vector3f(0, 1, 0));
+	    spbot.setName("Flaglight");
+	    spbot.setPosition(origin.add(0, -0.9f, 0));
+	    spbot.setSpotInnerAngle(0);
+	    spbot.setSpotOuterAngle(FastMath.QUARTER_PI);
+	    spbot.setSpotRange(2f);
+	    nodeBase.addLight(spbot);
 		
 	    Mesh m = new Quad(1f, 1f);
         Geometry floor = new Geometry("FlagFloor", m);

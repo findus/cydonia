@@ -4,13 +4,10 @@
 package de.findus.cydonia.level;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
-import com.jme3.bounding.BoundingVolume;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.GhostControl;
@@ -30,7 +27,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.jme3.shadow.ShadowUtil;
 
 import de.findus.cydonia.player.Player;
 
@@ -319,7 +315,7 @@ public class WorldController {
     }
 	
 	public void setUpWorldLights() {
-        BoundingBox bbox = (BoundingBox) worldNode.getWorldBound();
+		BoundingBox bbox = (BoundingBox) worldNode.getWorldBound();
         Vector3f center = bbox.getCenter();
         Vector3f extend = bbox.getExtent(new Vector3f());
         
