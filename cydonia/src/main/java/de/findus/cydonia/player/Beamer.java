@@ -86,7 +86,7 @@ public abstract class Beamer extends AbstractEquipment {
 	private void initHUDImgs() {
 		try {
 			if(hudImg == null) {
-				hudImg = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/beamer.png"));
+				hudImg = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/beamer.png"));
 			}
 		} catch (IOException e) {
 		}

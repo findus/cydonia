@@ -63,9 +63,9 @@ public abstract class Picker extends AbstractEquipment {
 		try {
 			if(hudImgs == null) {
 				hudImgs = new Image[3];
-				hudImgs[0] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_gold.png"));
-				hudImgs[1] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_blue.png"));
-				hudImgs[2] = ImageIO.read(ClassLoader.getSystemResourceAsStream("de/findus/cydonia/gui/hud/inventory_red.png"));
+				hudImgs[0] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_gold.png"));
+				hudImgs[1] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_blue.png"));
+				hudImgs[2] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_red.png"));
 			}
 		} catch (IOException e) {
 		}

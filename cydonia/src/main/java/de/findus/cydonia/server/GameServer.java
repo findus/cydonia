@@ -146,7 +146,7 @@ public class GameServer extends MainController{
         this.equipmentFactory = new EquipmentFactory(ServiceType.SERVER, this);
         
         String mapfile = MAPFOLDER + getGameConfig().getString("mapFileName") + MAPEXTENSION;
-        InputSource is = new InputSource(ClassLoader.class.getResourceAsStream(mapfile));
+        InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
         MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
         try {
 			Map map = mapXMLParser.loadMap(is);

@@ -90,7 +90,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	}
 
 	private void loadMapNames() {
-		InputStream is = this.getClass().getResourceAsStream("de/findus/cydonia/level/levels.txt");
+		InputStream is = this.getClass().getResourceAsStream("/de/findus/cydonia/level/levels.txt");
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		String line;
 		try {

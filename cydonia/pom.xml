@@ -33,4 +33,12 @@
 			<type>pom</type>
 		</dependency>
 	</dependencies>
+	
+	<build>
+    <resources>
+      <resource>
+        <directory>D:\Programmieren\java\cubiverse43\cydonia\src\main\ressources</directory>
+      </resource>
+    </resources>
+    </build>
 </project>
