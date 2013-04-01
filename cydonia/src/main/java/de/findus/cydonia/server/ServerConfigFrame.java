@@ -21,8 +21,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.sun.org.apache.bcel.internal.util.ClassLoader;
-
 import de.findus.cydonia.server.GameServer.ServerStateListener;
 
 /**
@@ -92,7 +90,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	}
 
 	private void loadMapNames() {
-		InputStream is = ClassLoader.getSystemResourceAsStream("de/findus/cydonia/level/levels.txt");
+		InputStream is = this.getClass().getResourceAsStream("de/findus/cydonia/level/levels.txt");
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		String line;
 		try {
