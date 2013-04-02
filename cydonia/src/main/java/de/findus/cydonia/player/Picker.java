@@ -13,18 +13,12 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import com.jme3.collision.CollisionResult;
-import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 
-import de.findus.cydonia.events.PickupEvent;
-import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.PickerInfo;
-import de.findus.cydonia.server.GameServer;
 
 /**
  * @author Findus
@@ -69,65 +63,7 @@ public abstract class Picker extends AbstractEquipment {
 			}
 		} catch (IOException e) {
 		}
-	}
-	
-	public void usePrimary(boolean activate) {
-		if(!activate) return;
-		
-		if(this.repository.size() > 0) {
-			Flube m = this.repository.get(0);
-			if(m != null) {
-				CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
-				if(result != null && result.getDistance() <= this.range && getMainController().getWorldController().isPlaceableSurface(result.getGeometry())) {
-					Vector3f contactnormal = result.getContactNormal();
-					Vector3f contactpos = result.getContactPoint();
-
-					Vector3f loc;
-					if(GameServer.FREE_PLACING) {
-						loc = contactpos.add(contactnormal.mult(0.5f));
-					}else {
-						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
-					}
-//					m.getControl().setPhysicsLocation(loc);
-//					getMainController().getWorldController().attachFlube(m);
-//					this.repository.remove(0);
-
-					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, true);
-					getMainController().getEventMachine().fireEvent(place);
-				}
-			}
-		}
-	}
-	
-	public void useSecondary(boolean activate) {
-		if(!activate) return;
-		
-		if(this.repository.size() < this.capacity) {
-			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
-			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
-				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
-//				getMainController().getWorldController().detachFlube(m);
-//				this.repository.add(m);
-
-				PickupEvent pickup = new PickupEvent(this.player.getId(), m.getId(), true);
-				getMainController().getEventMachine().fireEvent(pickup);
-			}
-		}
-	}
-	
-	private boolean canPickup(Player p, Spatial g, float distance) {
-		if(distance <= this.range) {
-			if(p != null && g != null) {
-				if(getMainController().getWorldController().isFlube(g) && g.getUserData("Type") != null) {
-					int type = g.getUserData("Type");
-					if(type == 0 || type == p.getTeam()) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
+	}	
 	
 	@Override
 	public void reset() {

@@ -19,6 +19,11 @@ public class GameConfig {
 	static{
 		defaults.put("mp_roundtime", 10*60L);
 		defaults.put("mp_scorelimit", 3);
+		
+		/*
+		 * Possible values: "editor", "ctf"
+		 */
+		defaults.put("mp_gamemode", "editor");
 	}
 	
 	private HashMap<String, Object> map = new HashMap<String, Object>();

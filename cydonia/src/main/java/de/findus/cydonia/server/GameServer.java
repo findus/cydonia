@@ -17,6 +17,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 
+import de.findus.cydonia.events.AddEvent;
 import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
@@ -29,6 +30,7 @@ import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
+import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
@@ -254,6 +256,14 @@ public class GameServer extends MainController{
 			Flube f = getWorldController().getFlube(place.getMoveableid());
 			Vector3f loc = place.getLocation();
 			place(p, f, loc);
+		}else if(e instanceof RemoveEvent) {
+			RemoveEvent remove = (RemoveEvent) e;
+			Flube f = getWorldController().getFlube(remove.getMoveableid());
+			removeFlube(f);
+		}else if(e instanceof AddEvent) {
+			AddEvent add = (AddEvent) e;
+			Vector3f loc = add.getLocation();
+			addFlube(add.getMoveableid(), add.getObjectType(), loc);
 		}
 	}
 

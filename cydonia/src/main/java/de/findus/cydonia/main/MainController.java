@@ -24,6 +24,7 @@ import de.findus.cydonia.level.FlagFactory;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.player.Beamer;
+import de.findus.cydonia.player.Editor;
 import de.findus.cydonia.player.EquipmentFactory;
 import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
@@ -158,25 +159,63 @@ public abstract class MainController extends Application implements PhysicsColli
 			Player p = playerController.createNew(playerid);
 			p.setName(playername);
 			
-			Picker picker1 = (Picker) getEquipmentFactory().create("Picker");
-			picker1.setName("LongRangePicker");
-			picker1.setRange(15);
-			picker1.setCapacity(1);
-			picker1.setPlayer(p);
-			p.getEquips().add(picker1);
-			
-			Picker picker2 = (Picker) getEquipmentFactory().create("Picker");
-			picker2.setName("ShortRangePicker");
-			picker2.setRange(5);
-			picker2.setCapacity(3);
-			picker2.setPlayer(p);
-			p.getEquips().add(picker2);
-			
-			Beamer beamer = (Beamer) getEquipmentFactory().create("Beamer");
-			beamer.setName("Beamer");
-			beamer.setRange(20);
-			beamer.setPlayer(p);
-			p.getEquips().add(beamer);
+			String gameMode = getGameConfig().getString("mp_gamemode");
+			if("ctf".equals(gameMode)) {
+				Picker picker1 = (Picker) getEquipmentFactory().create("Picker");
+				picker1.setName("LongRangePicker");
+				picker1.setRange(15);
+				picker1.setCapacity(1);
+				picker1.setPlayer(p);
+				p.getEquips().add(picker1);
+				
+				Picker picker2 = (Picker) getEquipmentFactory().create("Picker");
+				picker2.setName("ShortRangePicker");
+				picker2.setRange(5);
+				picker2.setCapacity(3);
+				picker2.setPlayer(p);
+				p.getEquips().add(picker2);
+				
+				Beamer beamer = (Beamer) getEquipmentFactory().create("Beamer");
+				beamer.setName("Beamer");
+				beamer.setRange(20);
+				beamer.setPlayer(p);
+				p.getEquips().add(beamer);
+			}else if("editor".equals(gameMode)){
+				Editor editor1 = (Editor) getEquipmentFactory().create("Editor");
+				editor1.setName("EditorDarkGray");
+				editor1.setRange(50);
+				editor1.setObjectType(-2);
+				editor1.setPlayer(p);
+				p.getEquips().add(editor1);
+				
+				Editor editor2 = (Editor) getEquipmentFactory().create("Editor");
+				editor2.setName("EditorLightGray");
+				editor2.setRange(50);
+				editor2.setObjectType(-1);
+				editor2.setPlayer(p);
+				p.getEquips().add(editor2);
+				
+				Editor editor3 = (Editor) getEquipmentFactory().create("Editor");
+				editor3.setName("EditorWhite");
+				editor3.setRange(50);
+				editor3.setObjectType(0);
+				editor3.setPlayer(p);
+				p.getEquips().add(editor3);
+				
+				Editor editor4 = (Editor) getEquipmentFactory().create("Editor");
+				editor4.setName("EditorBlue");
+				editor4.setRange(50);
+				editor4.setObjectType(1);
+				editor4.setPlayer(p);
+				p.getEquips().add(editor4);
+				
+				Editor editor5 = (Editor) getEquipmentFactory().create("Editor");
+				editor5.setName("EditorRed");
+				editor5.setRange(50);
+				editor5.setObjectType(2);
+				editor5.setPlayer(p);
+				p.getEquips().add(editor5);
+			}
 		}
 		
 		protected void quitPlayer(Player p) {
@@ -272,5 +311,15 @@ public abstract class MainController extends Application implements PhysicsColli
 		 */
 		public EventMachine getEventMachine() {
 			return eventMachine;
+		}
+
+		protected void addFlube(long id, int type, Vector3f origin) {
+			Flube f = getWorldController().addNewFlube(id, type, origin);
+			f.getControl().setPhysicsLocation(origin);
+			getWorldController().attachFlube(f);
+		}
+
+		protected void removeFlube(Flube f) {
+			getWorldController().removeFlube(f);
 		}
 }

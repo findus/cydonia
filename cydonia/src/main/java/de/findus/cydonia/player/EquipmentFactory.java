@@ -44,6 +44,12 @@ public class EquipmentFactory {
 		d.clientClass = ClientPicker.class;
 		d.serverClass = ServerPicker.class;
 		this.descriptions.put(d.typeName, d);
+		
+		d = new EquipmentDescription();
+		d.typeName = "Editor";
+		d.clientClass = ClientEditor.class;
+		d.serverClass = ServerEditor.class;
+		this.descriptions.put(d.typeName, d);
 	}
 	
 	public Equipment create(String equipmentType) {

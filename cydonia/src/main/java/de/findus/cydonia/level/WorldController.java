@@ -172,6 +172,17 @@ public class WorldController {
 		}
 	}
 	
+	public Flube addNewFlube(long id, int type, Vector3f origin) {
+		Flube f = new Flube(id, origin, type, assetManager);
+		this.flubes.put(f.getId(), f);
+		return f;
+	}
+	
+	public void removeFlube(Flube f) {
+		detachFlube(f);
+		this.flubes.remove(f);
+	}
+	
 	public SpawnPoint getSpawnPoint(int team) {
 		for(SpawnPoint sp : map.getSpawnPoints()) {
 			if(sp.getTeam() == team) {
@@ -461,6 +472,15 @@ public class WorldController {
 			return (type >= -1);
 		}
 		return false;
+	}
+	
+	public long getFreeFlubeId() {
+		for(long i=1; i<Long.MAX_VALUE; i++){
+			if(!flubes.containsKey(i)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 }
