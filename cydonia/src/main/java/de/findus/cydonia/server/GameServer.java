@@ -627,8 +627,13 @@ public class GameServer extends MainController{
 		        try {
 					Map map = mapXMLParser.loadMap(is);
 					getWorldController().loadWorld(map);
+					for(Player p : getPlayerController().getAllPlayers()) {
+			        	sendInitialState(p.getId());
+			        }
+			        changeConfig("mp_map", mapname);
+			        gameplayController.restartRound();
 					informStateListeners();
-					CWRITER.writeLine("loaded map: " + getGameConfig().getString("mp_map"));
+					CWRITER.writeLine("loaded map: " + mapname);
 				} catch (IOException e) {
 					e.printStackTrace();
 					stop();
@@ -637,12 +642,6 @@ public class GameServer extends MainController{
 					stop();
 				}
 		        
-		        for(Player p : getPlayerController().getAllPlayers()) {
-		        	sendInitialState(p.getId());
-		        }
-		        
-		        changeConfig("mp_map", mapname);
-		        gameplayController.restartRound();
 		        return null;
 			}
 		});
