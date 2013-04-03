@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -53,14 +54,17 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		this.server = server;
 		
 		this.setTitle("Cydonia Server");
-		
+
 		addWindowListener(new WindowAdapter() {
-		      public void windowClosing(WindowEvent e) {
-		        ServerConfigFrame.this.server.stop(true);
-		      }
-		    });
-		
-		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			public void windowClosing(WindowEvent e) {
+				if(JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(ServerConfigFrame.this, "Do you really want to shut down the server?", "Shut down?", JOptionPane.YES_NO_OPTION)) {
+					ServerConfigFrame.this.server.stop(true);
+					dispose();
+				}
+			}
+		});
+
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLocationByPlatform(true);
 		initGUI();
 		loadMapNames();
