@@ -5,7 +5,8 @@ package de.findus.cydonia.server;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -19,6 +20,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import de.findus.cydonia.server.GameServer.ServerStateListener;
@@ -28,11 +31,12 @@ import de.findus.cydonia.server.GameServer.ServerStateListener;
  *
  */
 @SuppressWarnings("serial")
-public class ServerConfigFrame extends JFrame implements ActionListener, ServerStateListener {
+public class ServerConfigFrame extends JFrame implements ActionListener, ServerStateListener, Console {
 
 	
 	private GameServer server;
 	
+	private JTextArea consoleOutput;
 	private JTextField commandInput;
 	private JButton serverButton;
 	
@@ -57,36 +61,82 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	}
 	
 	private void initGUI() {
-		this.setPreferredSize(new Dimension(500, 300));
+		JTabbedPane tabbedPane = new JTabbedPane();
+		this.add(tabbedPane, BorderLayout.CENTER);
+		
+		// Main panel
+		JPanel mainPanel = new JPanel(new BorderLayout());
+		tabbedPane.addTab("Main", mainPanel);
 		
 		serverButton = new JButton("Start Server");
+		mainPanel.add(serverButton, BorderLayout.NORTH);
 		serverButton.addActionListener(this);
 		serverButton.setActionCommand("server");
-		this.add(serverButton, BorderLayout.NORTH);
 		
 		listmodel = new DefaultListModel<String>();
 		maplist = new JList<String>(listmodel);
-		this.add(maplist, BorderLayout.CENTER);
+		mainPanel.add(maplist, BorderLayout.CENTER);
+		maplist.setMinimumSize(new Dimension(400, 300));
+		maplist.setPreferredSize(new Dimension(400, 300));
 		
+		// Info panel
+		JPanel infoPanel = new JPanel(new GridBagLayout());
+		tabbedPane.addTab("Info", infoPanel);
 		nameLabel = new JLabel("My Server");
 		mapLabel = new JLabel();
 		stateLabel = new JLabel("Stopped");
 		
-		JPanel infoPanel = new JPanel(new GridLayout(5, 2));
-		infoPanel.add(new JLabel("Servername: "));
-		infoPanel.add(nameLabel);
-		infoPanel.add(new JLabel("Map: "));
-		infoPanel.add(mapLabel);
-		infoPanel.add(new JLabel("State: "));
-		infoPanel.add(stateLabel);
-		this.add(infoPanel, BorderLayout.EAST);
+		GridBagConstraints c = new GridBagConstraints();
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 2;
+		c.anchor = GridBagConstraints.CENTER;
+		infoPanel.add(new JLabel("Server Infos:"), c);
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		infoPanel.add(new JLabel("Servername: "), c);
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		infoPanel.add(nameLabel, c);
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		infoPanel.add(new JLabel("Map: "), c);
+		c.gridx = 1;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		infoPanel.add(mapLabel, c);
+		c.gridx = 0;
+		c.gridy = 3;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		infoPanel.add(new JLabel("State: "), c);
+		c.gridx = 1;
+		c.gridy = 3;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		infoPanel.add(stateLabel, c);
 		
+		// Console panel
+		JPanel consolePanel = new JPanel(new BorderLayout());
+		tabbedPane.addTab("Console", consolePanel);
+		
+		consoleOutput = new JTextArea("Console Output");
+		consolePanel.add(consoleOutput, BorderLayout.CENTER);
+		consoleOutput.setMinimumSize(new Dimension(400, 300));
+		consoleOutput.setPreferredSize(new Dimension(400, 300));
 		
 		commandInput = new JTextField();
+		consolePanel.add(commandInput, BorderLayout.SOUTH);
 		commandInput.addActionListener(this);
 		commandInput.setActionCommand("sendCommand");
-		commandInput.setPreferredSize(new Dimension(400, 20));
-		this.add(commandInput, BorderLayout.SOUTH);
+		commandInput.setMinimumSize(new Dimension(400, 20));
 	}
 
 	private void loadMapNames() {
@@ -130,5 +180,10 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		if(server.getWorldController() != null && server.getWorldController().getMap() != null) { 
 			mapLabel.setText(server.getWorldController().getMap().getName());
 		}
+	}
+
+	@Override
+	public void writeLine(String line) {
+		this.consoleOutput.append("\n" + line);
 	}
 }

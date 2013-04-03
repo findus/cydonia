@@ -57,14 +57,14 @@ public class GameplayController {
 			endRoundTask.cancel();
 		}
 		
-		if(gameConfig.getLong("mp_roundtime") > 0) {
+		if(gameConfig.getLong("mp_timelimit") > 0) {
 			endRoundTask = new TimerTask() {
 				@Override
 				public void run() {
 					endRound(-1, true);
 				}
 			};
-			timer.schedule(endRoundTask, gameConfig.getLong("mp_roundtime") * 1000);
+			timer.schedule(endRoundTask, gameConfig.getLong("mp_timelimit") * 1000);
 		}
 		
 		team1score = 0;

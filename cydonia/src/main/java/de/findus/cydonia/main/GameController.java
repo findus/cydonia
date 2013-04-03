@@ -41,7 +41,7 @@ import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
-import de.findus.cydonia.events.GameModeEvent;
+import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -707,9 +707,14 @@ public class GameController extends MainController implements ScreenController{
 					sp.getNode().setCullHint(CullHint.Always);
 				}
 			}
-		}else if(e instanceof GameModeEvent) {
-			GameModeEvent event = (GameModeEvent) e;
-			switchGameMode(event.getMode());
+		}else if(e instanceof ConfigEvent) {
+			ConfigEvent event = (ConfigEvent) e;
+			if("mp_gamemode".equalsIgnoreCase(event.getKey())) {
+				switchGameMode((String)event.getNewValue());
+			}else if("mp_scorelimit".equalsIgnoreCase(event.getKey())) {
+				getGameConfig().putObject("mp_scorelimit", (Integer) event.getNewValue());
+			}
+			
 		}
 	}
 

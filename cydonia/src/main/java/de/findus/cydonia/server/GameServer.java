@@ -24,7 +24,7 @@ import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
-import de.findus.cydonia.events.GameModeEvent;
+import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -73,6 +73,8 @@ public class GameServer extends MainController{
 	public static final boolean FREE_PLACING = false;
 	
 	private static final String DEFAULTMAP = "level3";
+	
+	private static ConsoleWriter CWRITER = ConsoleWriter.getWriter();
 
 	public static void main(String[] args) {
 		MainController gameServer = new GameServer();
@@ -106,6 +108,8 @@ public class GameServer extends MainController{
 		
 		configFrame = new ServerConfigFrame(this);
         configFrame.pack();
+        
+        CWRITER.addConsole(configFrame);
 	}
 	
 	public void setConfigFrameVisible(boolean visible) {
@@ -129,6 +133,7 @@ public class GameServer extends MainController{
 	
 	@Override
 	public void stop(boolean waitfor) {
+		CWRITER.writeLine("shutting down ...");
 		cleanup();
 		super.stop(waitfor);
 		this.setRunning(false);
@@ -157,12 +162,11 @@ public class GameServer extends MainController{
 			Map map = mapXMLParser.loadMap(is);
 			getWorldController().loadWorld(map);
 			informStateListeners();
+			CWRITER.writeLine("loaded map: " + getGameConfig().getString("mapFileName"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			stop();
 		} catch (JDOMException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			stop();
 		}
@@ -393,6 +397,8 @@ public class GameServer extends MainController{
 	protected void joinPlayer(int playerid, String playername) {
 		super.joinPlayer(playerid, playername);
 		
+		CWRITER.writeLine(playername + " joined");
+		
 		PlayerJoinEvent join = new PlayerJoinEvent(playerid, playername, true);
 		getEventMachine().fireEvent(join);
 	}
@@ -400,6 +406,8 @@ public class GameServer extends MainController{
 	protected void quitPlayer(Player p) {
 		super.quitPlayer(p);
 		if(p != null) {
+			CWRITER.writeLine(p.getName() + " quit");
+			
 			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
 			getEventMachine().fireEvent(quit);
 		}
@@ -409,6 +417,9 @@ public class GameServer extends MainController{
 		super.respawn(p);
 		
 		if(p == null) return;
+		
+		CWRITER.writeLine(p.getName() + " respawned");
+		
 		RespawnEvent respawn = new RespawnEvent(p.getId(), true);
 		getEventMachine().fireEvent(respawn);
 	}
@@ -416,6 +427,7 @@ public class GameServer extends MainController{
 	
 	protected void beam(Player p, Player victim) {
 		super.beam(p, victim);
+		CWRITER.writeLine(p.getName() + " beamed " + victim.getName());
 		
 		BeamEvent ev = new BeamEvent(p.getId(), victim.getId(), true);
 		getEventMachine().fireEvent(ev);
@@ -426,7 +438,21 @@ public class GameServer extends MainController{
 		super.scoreFlag(p, flag);
 		if(p != null) {
 			gameplayController.playerScored(p);
+			CWRITER.writeLine(p.getName() + " scored the flag");
 		}
+	}
+	
+	@Override
+	protected void returnFlag(Flag flag) {
+		super.returnFlag(flag);
+		
+		String teamname = "";
+		if(flag.getTeam() == 1) {
+			teamname = "Blue";
+		}else if(flag.getTeam() == 2) {
+			teamname = "Red";
+		}
+		CWRITER.writeLine(teamname + " flag returned");
 	}
 
 	public void handlePlayerInput(int playerid, InputCommand command, boolean value) {
@@ -560,34 +586,54 @@ public class GameServer extends MainController{
 	}
 
 	public void handleCommand(String command) {
-		if("restartround".equalsIgnoreCase(command)) {
+		String[] com = command.split("\\s+");
+		
+		if("mp_restartround".equalsIgnoreCase(com[0])) {
 			gameplayController.endRound(-1, true);
-		}else if(command.startsWith("mp_gamemode")) {
-			String mode = command.substring(11).trim();
-			if(mode.isEmpty()) {
-				// print line with current game mode
-			}else if(!mode.equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
-				switchGameMode(mode);
+		}else if("mp_gamemode".equalsIgnoreCase(com[0])) {
+			if(com.length < 2) {
+				CWRITER.writeLine("mp_gamemode is " + getGameConfig().getString("mp_gamemode"));
+			}else if(!com[1].equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+				switchGameMode(com[1]);
+			}
+		}else if("mp_scorelimit".equalsIgnoreCase(com[0])) {
+			if(com.length < 2) {
+				CWRITER.writeLine("mp_scorelimit is " + getGameConfig().getInteger("mp_scorelimit"));
+			}else {
+				changeConfig("mp_scorelimit", com[1]);
+			}
+		}else if("mp_timelimit".equalsIgnoreCase(com[0])) {
+			if(com.length < 2) {
+				CWRITER.writeLine("mp_timelimit is " + getGameConfig().getLong("mp_timelimit"));
+			}else {
+				changeConfig("mp_timelimit", com[1]);
 			}
 		}
 	}
 	
 	private void switchGameMode(String mode) {
-		getGameConfig().putString("mp_gamemode", mode);
 		if("editor".equalsIgnoreCase(mode)) {
 			gameplayController.endRound(-1, true);
 			for(Player p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
 				p.getControl().setGravity(0);
 			}
+			CWRITER.writeLine("switched gamemode to 'editor'");
 		}else if("ctf".equalsIgnoreCase(mode)) {
 			gameplayController.endRound(-1, true);
 			for(Player p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
 				p.getControl().setGravity(25);
 			}
+			CWRITER.writeLine("switched gamemode to 'ctf'");
 		}
-		GameModeEvent event = new GameModeEvent(mode, true);
+		changeConfig("mp_gamemode", mode);
+	}
+	
+	private void changeConfig(String key, Object value) {
+		getGameConfig().putObject(key, value);
+		
+		ConfigEvent event = new ConfigEvent(key, value, true);
 		getEventMachine().fireEvent(event);
 	}
 
