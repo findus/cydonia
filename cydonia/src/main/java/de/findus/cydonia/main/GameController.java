@@ -652,7 +652,9 @@ public class GameController extends MainController implements ScreenController{
 			this.roundStartTime = System.currentTimeMillis();
 			menuController.clearEventPanel();
 			menuController.updateScoreboard();
+			getBulletAppState().setEnabled(true);
 		}else if (e instanceof RoundEndedEvent) {
+			getBulletAppState().setEnabled(false);
 			RoundEndedEvent roundEnded = (RoundEndedEvent) e;
 			for (Player p : getPlayerController().getAllPlayers()) {
 				p.setInputState(new PlayerInputState());
