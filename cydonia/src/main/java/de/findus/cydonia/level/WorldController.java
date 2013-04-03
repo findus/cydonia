@@ -76,6 +76,27 @@ public class WorldController {
 		
 		rootNode.attachChild(worldNode);
 	}
+	
+	public void unloadCurrentWorld() {
+		for(Flube f : this.flubes.values()) {
+			detachFlube(f);
+		}
+		this.flubes.clear();
+		
+		for(Flag flag : this.flags.values()) {
+			returnFlag(flag);
+			this.worldNode.detachChild(flag.getBaseModel());
+			this.physicsSpace.removeCollisionObject(flag.getBaseControl());
+		}
+		this.flags.clear();
+		
+		for(SpawnPoint sp : this.spawnPoints.values()) {
+			this.worldNode.detachChild(sp.getNode());
+		}
+		this.spawnPoints.clear();
+		
+		this.map = null;
+	}
 
 	public void loadWorld(Map level) {
 		this.map = level;
@@ -103,7 +124,7 @@ public class WorldController {
 //		addflubestoworld();
 //		addflubestoworld2();
 
-		rootNode.attachChild(worldNode);
+//		rootNode.attachChild(worldNode);
 		
 //		try {
 //			String xml = new MapXMLParser(assetManager).writeMap(level);

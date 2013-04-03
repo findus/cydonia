@@ -36,9 +36,9 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	
 	private GameServer server;
 	
+	private JButton mapButton;
 	private JTextArea consoleOutput;
 	private JTextField commandInput;
-	private JButton serverButton;
 	
 	JLabel nameLabel;
 	JLabel mapLabel;
@@ -65,17 +65,17 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		this.add(tabbedPane, BorderLayout.CENTER);
 		
 		// Main panel
-		JPanel mainPanel = new JPanel(new BorderLayout());
-		tabbedPane.addTab("Main", mainPanel);
+		JPanel mapPanel = new JPanel(new BorderLayout());
+		tabbedPane.addTab("Map", mapPanel);
 		
-		serverButton = new JButton("Start Server");
-		mainPanel.add(serverButton, BorderLayout.NORTH);
-		serverButton.addActionListener(this);
-		serverButton.setActionCommand("server");
+		mapButton = new JButton("Load Map");
+		mapPanel.add(mapButton, BorderLayout.NORTH);
+		mapButton.setActionCommand("loadMap");
+		mapButton.addActionListener(this);
 		
 		listmodel = new DefaultListModel<String>();
 		maplist = new JList<String>(listmodel);
-		mainPanel.add(maplist, BorderLayout.CENTER);
+		mapPanel.add(maplist, BorderLayout.CENTER);
 		maplist.setMinimumSize(new Dimension(400, 300));
 		maplist.setPreferredSize(new Dimension(400, 300));
 		
@@ -131,6 +131,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		consolePanel.add(consoleOutput, BorderLayout.CENTER);
 		consoleOutput.setMinimumSize(new Dimension(400, 300));
 		consoleOutput.setPreferredSize(new Dimension(400, 300));
+		consoleOutput.setEditable(false);
 		
 		commandInput = new JTextField();
 		consolePanel.add(commandInput, BorderLayout.SOUTH);
@@ -155,28 +156,19 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if ("server".equals(e.getActionCommand())) {
-			if(server.isRunning()) {
-				server.stop(false);
-				this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			}else {
-				if(maplist.getSelectedValue() != null) {
-					this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-					server.start(maplist.getSelectedValue());
-				}
-			}
-		}else if("sendCommand".equals(e.getActionCommand())) {
+		if("sendCommand".equals(e.getActionCommand())) {
+			consoleOutput.append("-> " + commandInput.getText());
 			server.handleCommand(commandInput.getText());
+			commandInput.setText("");
+		}else if("loadMap".equals(e.getActionCommand())) {
+			if(maplist.getSelectedValue() != null) {
+				server.handleCommand("mp_map " + maplist.getSelectedValue());
+			}
 		}
 	}
 
 	@Override
 	public void stateChanged() {
-		if(server.isRunning()) {
-			serverButton.setText("Stop Server");
-		}else {
-			serverButton.setText("StartServer");
-		}
 		if(server.getWorldController() != null && server.getWorldController().getMap() != null) { 
 			mapLabel.setText(server.getWorldController().getMap().getName());
 		}

@@ -19,6 +19,7 @@ public class GameConfig {
 	static{
 		defaults.put("mp_timelimit", 10*60L);
 		defaults.put("mp_scorelimit", 3);
+		defaults.put("mp_map", "level3");
 		
 		/*
 		 * Possible values: "editor", "ctf"

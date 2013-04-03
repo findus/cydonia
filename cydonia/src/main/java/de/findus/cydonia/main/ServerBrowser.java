@@ -151,6 +151,7 @@ public class ServerBrowser implements ActionListener {
 			public void run() {
 				GameServer server = new GameServer();
 				server.setConfigFrameVisible(true);
+				server.start();
 			}
 		}).start();
 	}

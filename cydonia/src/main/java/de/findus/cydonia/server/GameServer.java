@@ -6,6 +6,7 @@ package de.findus.cydonia.server;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 
 import org.jdom2.JDOMException;
 import org.xml.sax.InputSource;
@@ -40,6 +41,7 @@ import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.SpawnPoint;
+import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -81,8 +83,6 @@ public class GameServer extends MainController{
 		gameServer.start();
 	}
 	
-	private boolean running;
-	
 	private ServerConfigFrame configFrame;
 	
 	private Thread locationSenderLoop;
@@ -118,16 +118,10 @@ public class GameServer extends MainController{
 	
 	@Override
 	public void start() {
-		start(DEFAULTMAP);
-	}
-	
-	public void start(String mapFileName) {
-		this.setRunning(true);
 		if (settings == null){
             settings = new AppSettings(true);
             settings.setTitle(APPTITLE);
         }
-		getGameConfig().putString("mapFileName", mapFileName);
 		super.start(JmeContext.Type.Headless);
 	}
 	
@@ -136,7 +130,6 @@ public class GameServer extends MainController{
 		CWRITER.writeLine("shutting down ...");
 		cleanup();
 		super.stop(waitfor);
-		this.setRunning(false);
 //		System.exit(0);
 	}
 	
@@ -155,14 +148,14 @@ public class GameServer extends MainController{
 
         this.equipmentFactory = new EquipmentFactory(ServiceType.SERVER, this);
         
-        String mapfile = MAPFOLDER + getGameConfig().getString("mapFileName") + MAPEXTENSION;
+        String mapfile = MAPFOLDER + getGameConfig().getString("mp_map") + MAPEXTENSION;
         InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
         MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
         try {
 			Map map = mapXMLParser.loadMap(is);
 			getWorldController().loadWorld(map);
 			informStateListeners();
-			CWRITER.writeLine("loaded map: " + getGameConfig().getString("mapFileName"));
+			CWRITER.writeLine("loaded map: " + getGameConfig().getString("mp_map"));
 		} catch (IOException e) {
 			e.printStackTrace();
 			stop();
@@ -612,7 +605,47 @@ public class GameServer extends MainController{
 			}else {
 				changeConfig("mp_timelimit", com[1]);
 			}
+		}else if("mp_map".equalsIgnoreCase(com[0])) {
+			if(com.length < 2) {
+				CWRITER.writeLine("mp_map is " + getGameConfig().getLong("mp_map"));
+			}else {
+				loadMap(com[1]);
+			}
 		}
+	}
+	
+	private void loadMap(final String mapname) {
+		gameplayController.endRound(-1, false);
+		enqueue(new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				getWorldController().unloadCurrentWorld();
+				
+				String mapfile = MAPFOLDER + mapname + MAPEXTENSION;
+		        InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
+		        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+		        try {
+					Map map = mapXMLParser.loadMap(is);
+					getWorldController().loadWorld(map);
+					informStateListeners();
+					CWRITER.writeLine("loaded map: " + getGameConfig().getString("mp_map"));
+				} catch (IOException e) {
+					e.printStackTrace();
+					stop();
+				} catch (JDOMException e) {
+					e.printStackTrace();
+					stop();
+				}
+		        
+		        for(Player p : getPlayerController().getAllPlayers()) {
+		        	sendInitialState(p.getId());
+		        }
+		        
+		        changeConfig("mp_map", mapname);
+		        gameplayController.restartRound();
+		        return null;
+			}
+		});
 	}
 	
 	private void switchGameMode(String mode) {
@@ -641,15 +674,6 @@ public class GameServer extends MainController{
 		getEventMachine().fireEvent(event);
 	}
 
-	public boolean isRunning() {
-		return this.running;
-	}
-	
-	private void setRunning(boolean running) {
-		this.running = running;
-		informStateListeners();
-	}
-	
 	@Override
 	public EquipmentFactory getEquipmentFactory() {
 		return this.equipmentFactory;

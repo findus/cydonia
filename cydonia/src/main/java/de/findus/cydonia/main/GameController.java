@@ -382,6 +382,8 @@ public class GameController extends MainController implements ScreenController{
 
     	getGameConfig().copyFrom(config);
 
+    	getWorldController().unloadCurrentWorld();
+    	
     	for (PlayerInfo info : pinfos) {
     		final int playerid = info.getPlayerid();
     		Player p = getPlayerController().getPlayer(playerid);
