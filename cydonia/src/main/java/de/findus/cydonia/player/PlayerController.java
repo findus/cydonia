@@ -197,6 +197,22 @@ public class PlayerController {
 			editor5.setObjectSpec(2);
 			editor5.setPlayer(p);
 			p.getEquips().add(editor5);
+			
+			Editor editor6 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor6.setName("EditorFlagBlue");
+			editor6.setRange(50);
+			editor6.setObjectType("flag");
+			editor6.setObjectSpec(1);
+			editor6.setPlayer(p);
+			p.getEquips().add(editor6);
+			
+			Editor editor7 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor7.setName("EditorFlagRed");
+			editor7.setRange(50);
+			editor7.setObjectType("flag");
+			editor7.setObjectSpec(2);
+			editor7.setPlayer(p);
+			p.getEquips().add(editor7);
 		}
 	}
 	

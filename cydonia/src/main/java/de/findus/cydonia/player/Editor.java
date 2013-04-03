@@ -53,12 +53,16 @@ public abstract class Editor extends AbstractEquipment {
 	private void initHUDImgs() {
 		try {
 			if(hudImgs == null) {
-				hudImgs = new Image[5];
+				hudImgs = new Image[9];
 				hudImgs[0] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_darkgray.png"));
 				hudImgs[1] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_lightgray.png"));
 				hudImgs[2] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_gold.png"));
 				hudImgs[3] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_blue.png"));
 				hudImgs[4] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/inventory_red.png"));
+				hudImgs[5] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/flag_blue.png"));
+				hudImgs[6] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/flag_red.png"));
+				hudImgs[7] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/spawn_blue.png"));
+				hudImgs[8] = ImageIO.read(this.getClass().getResourceAsStream("/de/findus/cydonia/gui/hud/spawn_red.png"));
 			}
 		} catch (IOException e) {
 		}

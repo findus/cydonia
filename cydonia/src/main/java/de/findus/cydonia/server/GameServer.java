@@ -310,7 +310,7 @@ public class GameServer extends MainController{
 				
 				p.getControl().setWalkDirection(walkDirection);
 
-				if(getWorldController().isBelowBottomOfPlayground(p)) {
+				if(getWorldController().isBelowBottomOfPlayground(p) && "ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
 					KillEvent ev = new KillEvent(p.getId(), true);
 					getEventMachine().fireEvent(ev);
 				}
@@ -340,6 +340,9 @@ public class GameServer extends MainController{
 
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
+		// collisionen müssen nur im spielmodus "ctf" berechnet werden
+		if(!"ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) return;
+		
 		Spatial other = null;
 		Spatial target = null;
 		
