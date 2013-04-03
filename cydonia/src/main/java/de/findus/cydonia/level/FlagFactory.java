@@ -61,6 +61,7 @@ public class FlagFactory {
 		f.setId(id);
 		f.setOrigin(origin);
 		f.setTeam(team);
+		f.setInBase(true);
 
 		ColorRGBA color = null;
 		
@@ -85,6 +86,7 @@ public class FlagFactory {
 	    
 	    Mesh mesh = new Box(0.1f, 0.1f, 0.1f);
         Geometry model = new Geometry("FlagModel", mesh);
+        model.setUserData("id", id);
         model.setMaterial(mat_lit);
 		model.setShadowMode(ShadowMode.CastAndReceive);
 		TangentBinormalGenerator.generate(model);
@@ -156,6 +158,7 @@ public class FlagFactory {
 		
 	    Mesh m = new Quad(1f, 1f);
         Geometry floor = new Geometry("FlagFloor", m);
+        floor.setUserData("id", id);
         floor.setMaterial(mat_lit);
 		floor.setShadowMode(ShadowMode.Receive);
 		TangentBinormalGenerator.generate(floor);

@@ -5,10 +5,10 @@ package de.findus.cydonia.player;
 
 import com.jme3.collision.CollisionResult;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Spatial;
 
 import de.findus.cydonia.events.AddEvent;
 import de.findus.cydonia.events.RemoveEvent;
+import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.server.GameServer;
@@ -53,11 +53,23 @@ public class ServerEditor extends Editor {
 			}else {
 				loc = result.getGeometry().getLocalTranslation().add(contactnormal);
 			}
-			long flubeid = getMainController().getWorldController().getFreeFlubeId();
-			if(flubeid < 0) {
-				System.out.println("no free flube id");
+			if("flag".equalsIgnoreCase(getObjectType())) {
+				loc.addLocal(new Vector3f(0, 0.5f, 0));
+			}
+			
+			long id = -1;
+			if("flube".equalsIgnoreCase(getObjectType())) {
+				id = getMainController().getWorldController().getFreeFlubeId();
+			}else if("flag".equalsIgnoreCase(getObjectType())) {
+				id = getMainController().getWorldController().getFreeFlagId();
+			}else if("spawnpoint".equalsIgnoreCase(getObjectType())) {
+				id = getMainController().getWorldController().getFreeSpawnPointId();
+			}
+
+			if(id < 0) {
+				System.out.println("no free id found");
 			}else {
-				AddEvent add = new AddEvent(this.player.getId(), flubeid, this.getObjectType(), this.getObjectSpec(), loc, true);
+				AddEvent add = new AddEvent(this.player.getId(), id, this.getObjectType(), this.getObjectSpec(), loc, true);
 				getMainController().getEventMachine().fireEvent(add);
 			}
 		}
@@ -68,23 +80,21 @@ public class ServerEditor extends Editor {
 		if(!activate) return;
 		
 			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
-			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
-				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
-
-				RemoveEvent remove = new RemoveEvent(this.player.getId(), m.getId(), this.getObjectType(), true);
-				getMainController().getEventMachine().fireEvent(remove);
-			}
-	}
-	
-	private boolean canPickup(Player p, Spatial g, float distance) {
-		if(distance <= this.getRange()) {
-			if(p != null && g != null) {
-				if(getMainController().getWorldController().isFlube(g)) {
-					return true;
+			if(result != null && result.getDistance() <= this.getRange()) {
+				if(getMainController().getWorldController().isFlube(result.getGeometry())) {
+					Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
+					RemoveEvent remove = new RemoveEvent(this.player.getId(), m.getId(), "flube", true);
+					getMainController().getEventMachine().fireEvent(remove);
+				}else if(getMainController().getWorldController().isFlag(result.getGeometry())) {
+					Flag f = getMainController().getWorldController().getFlag((Integer) result.getGeometry().getUserData("id"));
+					RemoveEvent remove = new RemoveEvent(this.player.getId(), f.getId(), "flag", true);
+					getMainController().getEventMachine().fireEvent(remove);
+				}else if(getMainController().getWorldController().isSpawnPoint(result.getGeometry())) {
+					
 				}
+
+				
 			}
-		}
-		return false;
 	}
 
 }

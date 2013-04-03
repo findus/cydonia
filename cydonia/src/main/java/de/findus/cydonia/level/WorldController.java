@@ -507,6 +507,15 @@ public class WorldController {
 		return (obj.getName().startsWith("Flube_"));
 	}
 	
+	public boolean isFlag(Geometry obj) {
+		return (obj.getName().startsWith("Flag"));
+	}
+
+	public boolean isSpawnPoint(Geometry geometry) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public boolean isPlaceableSurface(Spatial obj) {
 		if(obj.getUserData("Type") != null) {
 			int type = obj.getUserData("Type");
@@ -518,6 +527,24 @@ public class WorldController {
 	public long getFreeFlubeId() {
 		for(long i=1; i<Long.MAX_VALUE; i++){
 			if(!flubes.containsKey(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public int getFreeFlagId() {
+		for(int i=1; i<Integer.MAX_VALUE; i++){
+			if(!flags.containsKey(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public int getFreeSpawnPointId() {
+		for(int i=1; i<Integer.MAX_VALUE; i++){
+			if(!spawnPoints.containsKey(i)) {
 				return i;
 			}
 		}

@@ -764,7 +764,7 @@ public class GameController extends MainController implements ScreenController{
 					viewDir.setY(0).normalizeLocal();
 				}
 				Vector3f viewLeft = new Vector3f();
-				ROTATE90LEFT.transformVector(viewDir, viewLeft);
+				ROTATE90LEFT.transformVector(viewDir.clone().setY(0).normalizeLocal(), viewLeft);
 
 				walkDirection.set(0, 0, 0);
 				if(p.getInputState().isLeft()) walkDirection.addLocal(viewLeft);
