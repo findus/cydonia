@@ -384,6 +384,7 @@ public class WorldController {
 	
 	public void setUpWorldLights() {
 		BoundingBox bbox = (BoundingBox) worldNode.getWorldBound();
+		if(bbox == null) return;
         Vector3f center = bbox.getCenter();
         Vector3f extend = bbox.getExtent(new Vector3f());
         

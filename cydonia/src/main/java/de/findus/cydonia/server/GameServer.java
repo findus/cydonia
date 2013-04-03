@@ -3,6 +3,8 @@
  */
 package de.findus.cydonia.server;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -21,11 +23,11 @@ import com.jme3.system.JmeContext;
 import de.findus.cydonia.events.AddEvent;
 import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
+import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
-import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -41,7 +43,6 @@ import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.SpawnPoint;
-import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -74,7 +75,7 @@ public class GameServer extends MainController{
 
 	public static final boolean FREE_PLACING = false;
 	
-	private static final String DEFAULTMAP = "level3";
+	public static final String MAPEXTENSION = ".mfx";
 	
 	private static ConsoleWriter CWRITER = ConsoleWriter.getWriter();
 
@@ -82,6 +83,8 @@ public class GameServer extends MainController{
 		MainController gameServer = new GameServer();
 		gameServer.start();
 	}
+	
+	private String mapsDir;
 	
 	private ServerConfigFrame configFrame;
 	
@@ -148,21 +151,7 @@ public class GameServer extends MainController{
 
         this.equipmentFactory = new EquipmentFactory(ServiceType.SERVER, this);
         
-        String mapfile = MAPFOLDER + getGameConfig().getString("mp_map") + MAPEXTENSION;
-        InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
-        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-        try {
-			Map map = mapXMLParser.loadMap(is);
-			getWorldController().loadWorld(map);
-			informStateListeners();
-			CWRITER.writeLine("loaded map: " + getGameConfig().getString("mp_map"));
-		} catch (IOException e) {
-			e.printStackTrace();
-			stop();
-		} catch (JDOMException e) {
-			e.printStackTrace();
-			stop();
-		}
+//		loadMap(getGameConfig().getString("mp_map"));
         
         networkController = new NetworkController(this, getEventMachine());
 		
@@ -611,6 +600,12 @@ public class GameServer extends MainController{
 			}else {
 				loadMap(com[1]);
 			}
+		}else if("sv_mapsdir".equalsIgnoreCase(com[0])) {
+			if(com.length < 2) {
+				CWRITER.writeLine("sv_mapsdir is " + this.mapsDir);
+			}else {
+				this.mapsDir = com[1];
+			}
 		}
 	}
 	
@@ -621,25 +616,29 @@ public class GameServer extends MainController{
 			public String call() throws Exception {
 				getWorldController().unloadCurrentWorld();
 				
-				String mapfile = MAPFOLDER + mapname + MAPEXTENSION;
-		        InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
-		        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-		        try {
-					Map map = mapXMLParser.loadMap(is);
-					getWorldController().loadWorld(map);
-					for(Player p : getPlayerController().getAllPlayers()) {
-			        	sendInitialState(p.getId());
-			        }
-			        changeConfig("mp_map", mapname);
-			        gameplayController.restartRound();
-					informStateListeners();
-					CWRITER.writeLine("loaded map: " + mapname);
+				try {
+					String filename = GameServer.this.mapsDir + System.getProperty("file.separator") + mapname + MAPEXTENSION;
+					File mapFile = new File(filename);
+					if(!mapFile.exists()) {
+						CWRITER.writeLine("Map file not found: " + filename);
+					}else {
+						InputSource is = new InputSource(new FileReader(mapFile));
+
+						MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+						Map map = mapXMLParser.loadMap(is);
+						getWorldController().loadWorld(map);
+						for(Player p : getPlayerController().getAllPlayers()) {
+				        	sendInitialState(p.getId());
+				        }
+				        changeConfig("mp_map", mapname);
+				        gameplayController.restartRound();
+						informStateListeners();
+						CWRITER.writeLine("loaded map: " + mapname);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
-					stop();
 				} catch (JDOMException e) {
 					e.printStackTrace();
-					stop();
 				}
 		        
 		        return null;

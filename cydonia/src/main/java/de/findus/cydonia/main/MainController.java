@@ -22,6 +22,7 @@ import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.FlagFactory;
 import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.player.EquipmentFactory;
 import de.findus.cydonia.player.Picker;
@@ -34,8 +35,6 @@ import de.findus.cydonia.player.PlayerController;
  */
 public abstract class MainController extends Application implements PhysicsCollisionListener, EventListener {
 		
-	    protected static final String MAPFOLDER = "/de/findus/cydonia/level/";
-	protected static final String MAPEXTENSION = ".xml";
 		public static float PLAYER_SPEED = 5f;
 	    public static float PHYSICS_ACCURACY = (1f / 192);
 	    
@@ -175,7 +174,10 @@ public abstract class MainController extends Application implements PhysicsColli
 			p.setAlive(true);
 
 			if("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
-				p.getControl().setPhysicsLocation(worldController.getSpawnPointForTeam(p.getTeam()).getPosition());
+				SpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
+				if(sp != null) {
+					p.getControl().setPhysicsLocation(sp.getPosition());
+				}
 			}else if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
 				p.getControl().setPhysicsLocation(Vector3f.UNIT_Y);
 			}

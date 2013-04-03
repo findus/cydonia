@@ -12,9 +12,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.LinkedList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -36,6 +41,7 @@ import de.findus.cydonia.server.GameServer.ServerStateListener;
 @SuppressWarnings("serial")
 public class ServerConfigFrame extends JFrame implements ActionListener, ServerStateListener, Console {
 
+	protected static final String MAPFOLDER = "/de/findus/cydonia/level/";
 	
 	private GameServer server;
 	
@@ -67,7 +73,9 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLocationByPlatform(true);
 		initGUI();
-		loadMapNames();
+		
+		saveDefaultMaps();
+		loadMapsFromDir();
 		
 		server.registerStateListener(this);
 	}
@@ -152,16 +160,76 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		commandInput.setMinimumSize(new Dimension(400, 20));
 	}
 
-	private void loadMapNames() {
+	private String[] getDefaultMapNames() {
 		InputStream is = this.getClass().getResourceAsStream("/de/findus/cydonia/level/levels.txt");
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		String line;
+		LinkedList<String> list = new LinkedList<String>();
 		try {
 			while ((line = br.readLine()) != null) {
-				listmodel.addElement(line);
+				list.add(line);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		return list.toArray(new String[list.size()]);
+	}
+	
+	private void saveDefaultMaps() {
+		File userdir = new File(System.getProperty("user.home"));
+		if(userdir.exists() && userdir.isDirectory()) {
+			File dir = new File(System.getProperty("user.home") + "/Cydonia/maps/");
+			if(!dir.exists()) {
+				dir.mkdirs();
+			}
+			server.handleCommand("sv_mapsdir " + dir.getPath());
+			if(dir.exists() && dir.isDirectory()) {
+				for(String s : getDefaultMapNames()) {
+					File f = new File(dir.getPath() + System.getProperty("file.separator") + s + GameServer.MAPEXTENSION);
+					try {
+						if(f.createNewFile()) {
+							BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+
+							InputStream is = this.getClass().getResourceAsStream(MAPFOLDER + s + GameServer.MAPEXTENSION);
+							BufferedReader br = new BufferedReader(new InputStreamReader(is));
+							String line;
+							while ((line = br.readLine()) != null) {
+								bw.write(line);
+							}
+							bw.close();
+							br.close();
+							is.close();
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
+	private void loadMapsFromDir() {
+		System.out.println(System.getProperty("user.home"));
+
+		File userdir = new File(System.getProperty("user.home"));
+		if(userdir.exists() && userdir.isDirectory()) {
+			File file = new File(System.getProperty("user.home") + "/Cydonia/maps/");
+			if(file.exists() && file.isDirectory()) {
+				File[] maps = file.listFiles(new FileFilter() {
+					
+					@Override
+					public boolean accept(File pathname) {
+						if(pathname.isFile() && pathname.getName().endsWith(GameServer.MAPEXTENSION)) {
+							return true;
+						}
+						return false;
+					}
+				});
+				
+				for(File m : maps) {
+					listmodel.addElement(m.getName().substring(0, m.getName().indexOf(GameServer.MAPEXTENSION)));
+				}
+			}
 		}
 	}
 
