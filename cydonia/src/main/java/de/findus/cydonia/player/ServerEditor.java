@@ -10,6 +10,7 @@ import de.findus.cydonia.events.AddEvent;
 import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.server.GameServer;
 
@@ -55,6 +56,8 @@ public class ServerEditor extends Editor {
 			}
 			if("flag".equalsIgnoreCase(getObjectType())) {
 				loc.addLocal(new Vector3f(0, 0.5f, 0));
+			}else if("spawnpoint".equalsIgnoreCase(getObjectType())) {
+				loc.addLocal(new Vector3f(0, 0.5f, 0));
 			}
 			
 			long id = -1;
@@ -90,7 +93,9 @@ public class ServerEditor extends Editor {
 					RemoveEvent remove = new RemoveEvent(this.player.getId(), f.getId(), "flag", true);
 					getMainController().getEventMachine().fireEvent(remove);
 				}else if(getMainController().getWorldController().isSpawnPoint(result.getGeometry())) {
-					
+					SpawnPoint sp = getMainController().getWorldController().getSpawnPoint((Integer) result.getGeometry().getUserData("id"));
+					RemoveEvent remove = new RemoveEvent(this.player.getId(), sp.getId(), "spawnpoint", true);
+					getMainController().getEventMachine().fireEvent(remove);
 				}
 
 				

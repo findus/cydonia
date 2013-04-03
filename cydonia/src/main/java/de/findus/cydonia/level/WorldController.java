@@ -97,6 +97,7 @@ public class WorldController {
 		
 		for(SpawnPoint sp : level.getSpawnPoints()) {
 			this.spawnPoints.put(sp.getId(), sp);
+			this.worldNode.attachChild(sp.getNode());
 		}
 		
 //		addflubestoworld();
@@ -207,12 +208,14 @@ public class WorldController {
 	}
 	
 	public SpawnPoint addNewSpawnPoint(int id, Vector3f position, int team) {
-		SpawnPoint sp = new SpawnPoint(id, position, team);
+		SpawnPoint sp = new SpawnPoint(id, position, team, assetManager);
+		this.worldNode.attachChild(sp.getNode());
 		spawnPoints.put(sp.getId(), sp);
 		return sp;
 	}
 	
 	public void removeSpawnPoint(SpawnPoint sp) {
+		detachObject(sp.getNode());
 		spawnPoints.remove(sp.getId());
 	}
 	
@@ -511,9 +514,8 @@ public class WorldController {
 		return (obj.getName().startsWith("Flag"));
 	}
 
-	public boolean isSpawnPoint(Geometry geometry) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isSpawnPoint(Geometry obj) {
+		return (obj.getName().startsWith("SpawnPoint"));
 	}
 
 	public boolean isPlaceableSurface(Spatial obj) {

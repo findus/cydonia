@@ -148,7 +148,7 @@ public class MapXMLParser {
 			float posx = Float.parseFloat(e.getAttributeValue("posx"));
 			float posy = Float.parseFloat(e.getAttributeValue("posy"));
 			float posz = Float.parseFloat(e.getAttributeValue("posz"));
-			SpawnPoint sp = new SpawnPoint(id, new Vector3f(posx, posy, posz), team);
+			SpawnPoint sp = new SpawnPoint(id, new Vector3f(posx, posy, posz), team, assetManager);
 			list.add(sp);				
 		}
 		return list;

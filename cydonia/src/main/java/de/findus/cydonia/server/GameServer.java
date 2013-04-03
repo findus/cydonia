@@ -551,7 +551,6 @@ public class GameServer extends MainController{
 //			e.printStackTrace();
 //		}
 		init.setLevel(getGameConfig().getString("mapFileName"));
-		init.setMap(getWorldController().getMap());
 		networkController.sendMessage(init, clientid);
 	}
 

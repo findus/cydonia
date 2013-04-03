@@ -54,7 +54,6 @@ import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
-import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -354,7 +353,7 @@ public class GameController extends MainController implements ScreenController{
 	/**
      * Starts the actual game eg. the game loop.
      */
-    public void startGame(Map map) {
+    public void startGame(String level) {
 //    	InputSource is = new InputSource(new StringReader(level));
 //    	String mapfile = MAPFOLDER + level + MAPEXTENSION;
 //    	InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
@@ -461,7 +460,12 @@ public class GameController extends MainController implements ScreenController{
     	}
     	
     	for (SpawnPointInfo sp : spinfos) {
-    		getWorldController().addNewSpawnPoint(sp.getId(), sp.getPosition(), sp.getTeam());
+    		SpawnPoint spawn = getWorldController().addNewSpawnPoint(sp.getId(), sp.getPosition(), sp.getTeam());
+    		if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+    			spawn.getNode().setCullHint(CullHint.Inherit);
+    		}else {
+    			spawn.getNode().setCullHint(CullHint.Always);
+    		}
     	}
     	
     	Callable<String> job = new Callable<String>() {
@@ -598,7 +602,7 @@ public class GameController extends MainController implements ScreenController{
 			clean();
 			connector.disconnectFromServer();
 		}else if (e instanceof ConnectionInitEvent) {
-			startGame(((ConnectionInitEvent) e).getMap());
+			startGame(((ConnectionInitEvent) e).getLevel());
 		}else if (e instanceof KillEvent) {
 			KillEvent kill = (KillEvent) e;
 			Player p = getPlayerController().getPlayer(kill.getPlayerid());
@@ -697,6 +701,11 @@ public class GameController extends MainController implements ScreenController{
 				Flag f = getWorldController().addNewFlag((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
 			}else if("spawnpoint".equalsIgnoreCase(add.getObjectType())) {
 				SpawnPoint sp = getWorldController().addNewSpawnPoint((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
+				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+					sp.getNode().setCullHint(CullHint.Dynamic);
+				}else {
+					sp.getNode().setCullHint(CullHint.Always);
+				}
 			}
 		}else if(e instanceof GameModeEvent) {
 			GameModeEvent event = (GameModeEvent) e;
@@ -1031,11 +1040,17 @@ public class GameController extends MainController implements ScreenController{
 				getPlayerController().setDefaultEquipment(p);
 				p.getControl().setGravity(0);
 			}
+			for(SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
+				sp.getNode().setCullHint(CullHint.Inherit);
+			}
 			getWorldController().getRootNode().addLight(editorLight);
 		}else if("ctf".equalsIgnoreCase(mode)) {
 			for(Player p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
 				p.getControl().setGravity(25);
+			}
+			for(SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
+				sp.getNode().setCullHint(CullHint.Always);
 			}
 			getWorldController().getRootNode().removeLight(editorLight);
 		}

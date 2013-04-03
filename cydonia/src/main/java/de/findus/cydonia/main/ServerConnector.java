@@ -31,10 +31,7 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
-import de.findus.cydonia.level.Flag;
-import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
-import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -114,9 +111,6 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(FlagInfo.class);
 		Serializer.registerClass(SpawnPointInfo.class);
 		Serializer.registerClass(Map.class);
-		Serializer.registerClass(Flube.class);
-		Serializer.registerClass(Flag.class);
-		Serializer.registerClass(SpawnPoint.class);
 		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
@@ -181,7 +175,6 @@ public class ServerConnector implements MessageListener<Client> {
 			if(init.isConnectionAccepted()) {
 				ConnectionInitEvent established = new ConnectionInitEvent();
 				established.setLevel(init.getLevel());
-				established.setMap(init.getMap());
 				eventMachine.fireEvent(established);
 			}else {
 				System.out.println("Server denied connection! Reason: '" + init.getText() + "'");
