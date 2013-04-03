@@ -5,6 +5,7 @@ package de.findus.cydonia.level;
 
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.math.Vector3f;
+import com.jme3.network.serializing.Serializable;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
@@ -14,11 +15,12 @@ import de.findus.cydonia.player.Player;
  * @author Findus
  *
  */
+@Serializable
 public class Flag {
 
 	private int id;
 	
-	private Player player;
+	private transient Player player;
 	
 	private int team;
 	
@@ -26,13 +28,13 @@ public class Flag {
 	
 	private boolean inBase;
 	
-	private Spatial model;
+	private transient Spatial model;
 
-	private Node baseModel;
+	private transient Node baseModel;
 	
-	private GhostControl control;
+	private transient GhostControl control;
 	
-	private GhostControl baseControl;
+	private transient GhostControl baseControl;
 
 	/**
 	 * 

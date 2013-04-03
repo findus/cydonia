@@ -5,10 +5,13 @@ package de.findus.cydonia.level;
 
 import java.util.List;
 
+import com.jme3.network.serializing.Serializable;
+
 /**
  * @author Findus
  *
  */
+@Serializable
 public class Map {
 
 	private String name;
@@ -20,6 +23,10 @@ public class Map {
 	private List<Flag> flags;
 	
 	private float bottomHeight;
+	
+	public Map() {
+		
+	}
 
 	public Map(String name) {
 		this.name = name;

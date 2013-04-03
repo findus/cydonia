@@ -3,6 +3,7 @@
  */
 package de.findus.cydonia.messages;
 
+import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
 import de.findus.cydonia.level.Flag;
@@ -20,6 +21,10 @@ public class FlagInfo {
 	
 	private boolean inBase;
 	
+	private Vector3f origin;
+	
+	private int team;
+	
 	/**
 	 * 
 	 */
@@ -35,6 +40,8 @@ public class FlagInfo {
 		}else {
 			this.playerid = -1;
 		}
+		this.origin = f.getOrigin();
+		this.team = f.getTeam();
 	}
 
 	/**
@@ -77,5 +84,21 @@ public class FlagInfo {
 	 */
 	public void setInBase(boolean inBase) {
 		this.inBase = inBase;
+	}
+
+	public Vector3f getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(Vector3f origin) {
+		this.origin = origin;
+	}
+
+	public int getTeam() {
+		return team;
+	}
+
+	public void setTeam(int team) {
+		this.team = team;
 	}
 }

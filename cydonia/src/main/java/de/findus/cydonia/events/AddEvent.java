@@ -15,9 +15,11 @@ public class AddEvent extends AbstractEvent {
 
 	private int playerid;
 
-	private long moveableid;
+	private long objectid;
 	
-	private int objectType;
+	private String objectType;
+	
+	private int objectSpec;
 	
 	private Vector3f location;
 
@@ -34,11 +36,12 @@ public class AddEvent extends AbstractEvent {
 	 * @param moveableid
 	 * @param forward
 	 */
-	public AddEvent(int playerid, long moveableid, int type, Vector3f loc, boolean forward) {
+	public AddEvent(int playerid, long objectid, String type, int spec, Vector3f loc, boolean forward) {
 		super(forward);
 		this.setPlayerid(playerid);
-		this.setMoveableid(moveableid);
+		this.setObjectid(objectid);
 		this.setObjectType(type);
+		this.setObjectSpec(spec);
 		this.setLocation(loc);
 		this.network = forward;
 	}
@@ -60,15 +63,15 @@ public class AddEvent extends AbstractEvent {
 	/**
 	 * @return the moveableid
 	 */
-	public long getMoveableid() {
-		return moveableid;
+	public long getObjectid() {
+		return objectid;
 	}
 
 	/**
 	 * @param moveableid the moveableid to set
 	 */
-	public void setMoveableid(long moveableid) {
-		this.moveableid = moveableid;
+	public void setObjectid(long objectid) {
+		this.objectid = objectid;
 	}
 
 	/**
@@ -85,11 +88,19 @@ public class AddEvent extends AbstractEvent {
 		this.location = location;
 	}
 
-	public int getObjectType() {
+	public int getObjectSpec() {
+		return objectSpec;
+	}
+
+	public void setObjectSpec(int objectSpec) {
+		this.objectSpec = objectSpec;
+	}
+
+	public String getObjectType() {
 		return objectType;
 	}
 
-	public void setObjectType(int objectType) {
+	public void setObjectType(String objectType) {
 		this.objectType = objectType;
 	}
 

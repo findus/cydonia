@@ -33,9 +33,9 @@ public class ServerEditor extends Editor {
 	 * @param player
 	 * @param mainController
 	 */
-	public ServerEditor(String name, float range, int capacity, Player player,
+	public ServerEditor(String name, float range, String objectType, int objectSpec, Player player,
 			MainController mainController) {
-		super(name, range, capacity, player, mainController);
+		super(name, range, objectType, objectSpec, player, mainController);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class ServerEditor extends Editor {
 			if(flubeid < 0) {
 				System.out.println("no free flube id");
 			}else {
-				AddEvent add = new AddEvent(this.player.getId(), flubeid, this.getObjectType(), loc, true);
+				AddEvent add = new AddEvent(this.player.getId(), flubeid, this.getObjectType(), this.getObjectSpec(), loc, true);
 				getMainController().getEventMachine().fireEvent(add);
 			}
 		}
@@ -71,7 +71,7 @@ public class ServerEditor extends Editor {
 			if(result != null && canPickup(this.player, result.getGeometry(), result.getDistance())) {
 				Flube m = getMainController().getWorldController().getFlube((Long) result.getGeometry().getUserData("id"));
 
-				RemoveEvent remove = new RemoveEvent(this.player.getId(), m.getId(), true);
+				RemoveEvent remove = new RemoveEvent(this.player.getId(), m.getId(), this.getObjectType(), true);
 				getMainController().getEventMachine().fireEvent(remove);
 			}
 	}

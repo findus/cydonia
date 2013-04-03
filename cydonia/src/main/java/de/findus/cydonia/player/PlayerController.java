@@ -45,6 +45,11 @@ public class PlayerController {
 	
 	public Player createNew(int id) {
 		Player p = new Player(id);
+		if("ctf".equalsIgnoreCase(mainController.getGameConfig().getString("mp_gamemode"))) {
+			p.getControl().setGravity(25);
+		}else if("editor".equalsIgnoreCase(mainController.getGameConfig().getString("mp_gamemode"))) {
+			p.getControl().setGravity(0);
+		}
 		
 		players.put(p.getId(), p);
 		
@@ -124,6 +129,74 @@ public class PlayerController {
 		
 		for(Equipment equip : p.getEquips()) {
 			equip.reset();
+		}
+	}
+	
+	public void setDefaultEquipment(Player p) {
+		p.setCurrEquip(0);
+		p.getEquips().clear();
+		
+		String gameMode = mainController.getGameConfig().getString("mp_gamemode");
+		if("ctf".equals(gameMode)) {
+			Picker picker1 = (Picker) mainController.getEquipmentFactory().create("Picker");
+			picker1.setName("LongRangePicker");
+			picker1.setRange(15);
+			picker1.setCapacity(1);
+			picker1.setPlayer(p);
+			p.getEquips().add(picker1);
+			
+			Picker picker2 = (Picker) mainController.getEquipmentFactory().create("Picker");
+			picker2.setName("ShortRangePicker");
+			picker2.setRange(5);
+			picker2.setCapacity(3);
+			picker2.setPlayer(p);
+			p.getEquips().add(picker2);
+			
+			Beamer beamer = (Beamer) mainController.getEquipmentFactory().create("Beamer");
+			beamer.setName("Beamer");
+			beamer.setRange(20);
+			beamer.setPlayer(p);
+			p.getEquips().add(beamer);
+		}else if("editor".equals(gameMode)){
+			Editor editor1 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor1.setName("EditorDarkGray");
+			editor1.setRange(50);
+			editor1.setObjectType("flube");
+			editor1.setObjectSpec(-2);
+			editor1.setPlayer(p);
+			p.getEquips().add(editor1);
+			
+			Editor editor2 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor2.setName("EditorLightGray");
+			editor2.setRange(50);
+			editor2.setObjectType("flube");
+			editor2.setObjectSpec(-1);
+			editor2.setPlayer(p);
+			p.getEquips().add(editor2);
+			
+			Editor editor3 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor3.setName("EditorWhite");
+			editor3.setRange(50);
+			editor3.setObjectType("flube");
+			editor3.setObjectSpec(0);
+			editor3.setPlayer(p);
+			p.getEquips().add(editor3);
+			
+			Editor editor4 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor4.setName("EditorBlue");
+			editor4.setRange(50);
+			editor4.setObjectType("flube");
+			editor4.setObjectSpec(1);
+			editor4.setPlayer(p);
+			p.getEquips().add(editor4);
+			
+			Editor editor5 = (Editor) mainController.getEquipmentFactory().create("Editor");
+			editor5.setName("EditorRed");
+			editor5.setRange(50);
+			editor5.setObjectType("flube");
+			editor5.setObjectSpec(2);
+			editor5.setPlayer(p);
+			p.getEquips().add(editor5);
 		}
 	}
 	

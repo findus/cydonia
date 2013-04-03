@@ -25,10 +25,9 @@ public class ClientEditor extends Editor {
 	 * @param player
 	 * @param mainController
 	 */
-	public ClientEditor(String name, float range, int capacity, Player player,
+	public ClientEditor(String name, float range, String objectType, int objectSpec, Player player,
 			MainController mainController) {
-		super(name, range, capacity, player, mainController);
-		// TODO Auto-generated constructor stub
+		super(name, range, objectType, objectSpec, player, mainController);
 	}
 	
 	@Override

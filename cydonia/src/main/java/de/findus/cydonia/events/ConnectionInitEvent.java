@@ -3,6 +3,8 @@
  */
 package de.findus.cydonia.events;
 
+import de.findus.cydonia.level.Map;
+
 
 /**
  * @author Findus
@@ -13,6 +15,8 @@ public class ConnectionInitEvent extends AbstractEvent {
 	private String message;
 	
 	private String level;
+	
+	private Map map;
 	
 	public ConnectionInitEvent() {
 		setNetworkEvent(false);
@@ -44,5 +48,13 @@ public class ConnectionInitEvent extends AbstractEvent {
 	 */
 	public void setLevel(String level) {
 		this.level = level;
+	}
+
+	public Map getMap() {
+		return map;
+	}
+
+	public void setMap(Map map) {
+		this.map = map;
 	}
 }

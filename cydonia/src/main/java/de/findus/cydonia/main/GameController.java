@@ -1,6 +1,5 @@
 package de.findus.cydonia.main;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -8,15 +7,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 
-import org.jdom2.JDOMException;
-import org.xml.sax.InputSource;
-
 import com.jme3.app.StatsView;
 import com.jme3.asset.AssetNotFoundException;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
@@ -44,6 +41,7 @@ import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
+import de.findus.cydonia.events.GameModeEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -57,7 +55,7 @@ import de.findus.cydonia.events.RoundEndedEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
-import de.findus.cydonia.level.MapXMLParser;
+import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.FlagInfo;
@@ -68,6 +66,7 @@ import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.SpawnPointInfo;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.Equipment;
@@ -150,6 +149,7 @@ public class GameController extends MainController implements ScreenController{
     private long roundStartTime;
     
     private int winTeam;
+	private AmbientLight editorLight;
 	public void start(String server) {
     	this.serverAddress = server;
     	this.start();
@@ -343,6 +343,9 @@ public class GameController extends MainController implements ScreenController{
 		throwSound.setVolume(1);
 		getWorldController().attachObject(throwSound);
 		
+		editorLight = new AmbientLight();
+		editorLight.setColor(ColorRGBA.White.mult(0.4f));
+		
     	menuController.actualizeScreen();
     	connector.connectToServer(serverAddress, 6173);
     }
@@ -351,31 +354,22 @@ public class GameController extends MainController implements ScreenController{
 	/**
      * Starts the actual game eg. the game loop.
      */
-    public void startGame(String level) {
+    public void startGame(Map map) {
 //    	InputSource is = new InputSource(new StringReader(level));
-    	String mapfile = MAPFOLDER + level + MAPEXTENSION;
-    	InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
-        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-        try {
-			Map map = mapXMLParser.loadMap(is);
-			getWorldController().loadWorld(map);
-		} catch ( IOException e) {
-			e.printStackTrace();
-			stopGame();
-		} catch (JDOMException e) {
-			e.printStackTrace();
-			stopGame();
-		}
+//    	String mapfile = MAPFOLDER + level + MAPEXTENSION;
+//    	InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
+//        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
+//        try {
+//			Map map = mapXMLParser.loadMap(is);
+//			getWorldController().loadWorld(map);
+//		} catch ( IOException e) {
+//			e.printStackTrace();
+//			stopGame();
+//		} catch (JDOMException e) {
+//			e.printStackTrace();
+//			stopGame();
+//		}
         
-        Callable<String> job = new Callable<String>() {
-			@Override
-			public String call() throws Exception {
-				getWorldController().setUpWorldLights();
-				return null;
-			}
-		};
-		enqueue(job);
-    	
     	getBulletAppState().setEnabled(true);
     	setGamestate(GameState.LOADING);
     	menuController.actualizeScreen();
@@ -384,7 +378,7 @@ public class GameController extends MainController implements ScreenController{
     	connector.sendMessage(init);
     }
     
-    public void setInitialState(long passedRoundTime, GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos, FlagInfo[] finfos) {
+    public void setInitialState(long passedRoundTime, GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos, FlagInfo[] finfos, SpawnPointInfo[] spinfos) {
     	this.roundStartTime= System.currentTimeMillis() - passedRoundTime;
 
     	getGameConfig().copyFrom(config);
@@ -428,7 +422,7 @@ public class GameController extends MainController implements ScreenController{
     	for (MoveableInfo info : minfos) {
     		final Vector3f loc = info.getLocation();
     		final boolean inWorld = info.isInWorld();
-    		final Flube m = getWorldController().getFlube(info.getId());
+    		final Flube m = getWorldController().addNewFlube(info.getId(), info.getOrigin(), info.getType());
     		if(m != null) {
     			enqueue(new Callable<String>() {
     				public String call() {
@@ -446,7 +440,7 @@ public class GameController extends MainController implements ScreenController{
     	for (FlagInfo info : finfos) {
     		final int flagid = info.getId();
     		final int playerid = info.getPlayerid();
-    		Flag f = getWorldController().getFlag(flagid);
+    		Flag f = getWorldController().addNewFlag(flagid, info.getOrigin(), info.getTeam());
     		if(f != null) {
     			if(!info.isInBase() && playerid >= 0) {
     				enqueue(new Callable<String>() {
@@ -465,8 +459,23 @@ public class GameController extends MainController implements ScreenController{
     			}
     		}
     	}
-
-
+    	
+    	for (SpawnPointInfo sp : spinfos) {
+    		getWorldController().addNewSpawnPoint(sp.getId(), sp.getPosition(), sp.getTeam());
+    	}
+    	
+    	Callable<String> job = new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				getWorldController().setUpWorldLights();
+				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+					getWorldController().getRootNode().addLight(editorLight);
+				}
+				return null;
+			}
+		};
+		enqueue(job);
+    	
     	setGamestate(GameState.LOBBY);
     	menuController.actualizeScreen();
     }
@@ -589,7 +598,7 @@ public class GameController extends MainController implements ScreenController{
 			clean();
 			connector.disconnectFromServer();
 		}else if (e instanceof ConnectionInitEvent) {
-			startGame(((ConnectionInitEvent) e).getLevel());
+			startGame(((ConnectionInitEvent) e).getMap());
 		}else if (e instanceof KillEvent) {
 			KillEvent kill = (KillEvent) e;
 			Player p = getPlayerController().getPlayer(kill.getPlayerid());
@@ -669,12 +678,29 @@ public class GameController extends MainController implements ScreenController{
 			beam(p, victim);
 		}else if(e instanceof RemoveEvent) {
 			RemoveEvent remove = (RemoveEvent) e;
-			Flube f = getWorldController().getFlube(remove.getMoveableid());
-			removeFlube(f);
+			if("flube".equalsIgnoreCase(remove.getObjectType())) {
+				Flube f = getWorldController().getFlube(remove.getObjectid());
+				getWorldController().removeFlube(f);
+			}else if("flag".equalsIgnoreCase(remove.getObjectType())) {
+				Flag f = getWorldController().getFlag((int)remove.getObjectid());
+				getWorldController().removeFlag(f);
+			}else if("spawnpoint".equalsIgnoreCase(remove.getObjectType())) {
+				SpawnPoint sp = getWorldController().getSpawnPoint((int)remove.getObjectid());
+				getWorldController().removeSpawnPoint(sp);
+			}
 		}else if(e instanceof AddEvent) {
 			AddEvent add = (AddEvent) e;
-			Vector3f loc = add.getLocation();
-			addFlube(add.getMoveableid(), add.getObjectType(), loc);
+			if("flube".equalsIgnoreCase(add.getObjectType())) {
+				Flube f = getWorldController().addNewFlube(add.getObjectid(), add.getLocation(), add.getObjectSpec());
+				getWorldController().attachFlube(f);
+			}else if("flag".equalsIgnoreCase(add.getObjectType())) {
+				Flag f = getWorldController().addNewFlag((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
+			}else if("spawnpoint".equalsIgnoreCase(add.getObjectType())) {
+				SpawnPoint sp = getWorldController().addNewSpawnPoint((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
+			}
+		}else if(e instanceof GameModeEvent) {
+			GameModeEvent event = (GameModeEvent) e;
+			switchGameMode(event.getMode());
 		}
 	}
 
@@ -733,7 +759,10 @@ public class GameController extends MainController implements ScreenController{
 			}
 
 			if(p.isAlive()) {
-				Vector3f viewDir = p.getControl().getViewDirection();
+				Vector3f viewDir = p.getViewDir().clone();
+				if("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+					viewDir.setY(0).normalizeLocal();
+				}
 				Vector3f viewLeft = new Vector3f();
 				ROTATE90LEFT.transformVector(viewDir, viewLeft);
 
@@ -745,6 +774,9 @@ public class GameController extends MainController implements ScreenController{
 
 
 				walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
+				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+					walkDirection.multLocal(1.5f);
+				}
 
 				Vector3f deviation = p.getExactLoc().subtract(p.getControl().getPhysicsLocation());
 				if(deviation.length() > MAXPOSDEVIATION) {
@@ -989,6 +1021,23 @@ public class GameController extends MainController implements ScreenController{
 	public void stopInputSender() {
 		if(inputSender != null) {
 			inputSender.interrupt();
+		}
+	}
+	
+	private void switchGameMode(String mode) {
+		getGameConfig().putString("mp_gamemode", mode);
+		if("editor".equalsIgnoreCase(mode)) {
+			for(Player p : getPlayerController().getAllPlayers()) {
+				getPlayerController().setDefaultEquipment(p);
+				p.getControl().setGravity(0);
+			}
+			getWorldController().getRootNode().addLight(editorLight);
+		}else if("ctf".equalsIgnoreCase(mode)) {
+			for(Player p : getPlayerController().getAllPlayers()) {
+				getPlayerController().setDefaultEquipment(p);
+				p.getControl().setGravity(25);
+			}
+			getWorldController().getRootNode().removeLight(editorLight);
 		}
 	}
     

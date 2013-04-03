@@ -23,6 +23,8 @@ public class InitialStateMessage extends AbstractMessage {
 	
 	private FlagInfo[] flags;
 	
+	private SpawnPointInfo[] spawnPoints;
+	
 	private GameConfig config;
 
 	
@@ -98,5 +100,13 @@ public class InitialStateMessage extends AbstractMessage {
 	 */
 	public void setFlags(FlagInfo[] flags) {
 		this.flags = flags;
+	}
+
+	public SpawnPointInfo[] getSpawnPoints() {
+		return spawnPoints;
+	}
+
+	public void setSpawnPoints(SpawnPointInfo[] spawnPoints) {
+		this.spawnPoints = spawnPoints;
 	}
 }

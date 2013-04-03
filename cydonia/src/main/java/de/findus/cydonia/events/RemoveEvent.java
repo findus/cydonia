@@ -14,7 +14,9 @@ public class RemoveEvent extends AbstractEvent {
 
 	private int playerid;
 
-	private long moveableid;
+	private long objectid;
+	
+	private String objectType;
 
 	/**
 	 * 
@@ -29,10 +31,11 @@ public class RemoveEvent extends AbstractEvent {
 	 * @param moveableid
 	 * @param forward
 	 */
-	public RemoveEvent(int playerid, long moveableid, boolean forward) {
+	public RemoveEvent(int playerid, long objectid, String type, boolean forward) {
 		super(forward);
 		this.setPlayerid(playerid);
-		this.setMoveableid(moveableid);
+		this.setObjectid(objectid);
+		this.setObjectType(type);
 	}
 
 	/**
@@ -52,15 +55,23 @@ public class RemoveEvent extends AbstractEvent {
 	/**
 	 * @return the moveableid
 	 */
-	public long getMoveableid() {
-		return moveableid;
+	public long getObjectid() {
+		return objectid;
 	}
 
 	/**
 	 * @param moveableid the moveableid to set
 	 */
-	public void setMoveableid(long moveableid) {
-		this.moveableid = moveableid;
+	public void setObjectid(long objectid) {
+		this.objectid = objectid;
+	}
+
+	public String getObjectType() {
+		return objectType;
+	}
+
+	public void setObjectType(String objectType) {
+		this.objectType = objectType;
 	}
 
 }

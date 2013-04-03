@@ -9,7 +9,8 @@ public class EditorInfo implements EquipmentInfo {
 
 	private String name;
 	private float range;
-	private int objectType;
+	private String objectType;
+	private int objectSpec;
 	private int playerid;
 	private String typeName;
 	
@@ -21,6 +22,7 @@ public class EditorInfo implements EquipmentInfo {
 		this.name = editor.getName();
 		this.range = editor.getRange();
 		this.objectType = editor.getObjectType();
+		this.objectSpec = editor.getObjectSpec();
 		this.playerid = editor.getPlayer().getId();
 		this.typeName = editor.getTypeName();
 	}
@@ -43,7 +45,7 @@ public class EditorInfo implements EquipmentInfo {
 		return range;
 	}
 
-	public int getObjectType() {
+	public String getObjectType() {
 		return objectType;
 	}
 
@@ -52,6 +54,10 @@ public class EditorInfo implements EquipmentInfo {
 	 */
 	public int getPlayerid() {
 		return playerid;
+	}
+
+	public int getObjectSpec() {
+		return objectSpec;
 	}
 	
 }

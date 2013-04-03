@@ -24,6 +24,7 @@ import de.findus.cydonia.events.ConnectionAddedEvent;
 import de.findus.cydonia.events.ConnectionRemovedEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
+import de.findus.cydonia.events.GameModeEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -38,6 +39,7 @@ import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
+import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -46,12 +48,13 @@ import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
+import de.findus.cydonia.messages.SpawnPointInfo;
 import de.findus.cydonia.player.Beamer;
 import de.findus.cydonia.player.EquipmentFactory;
+import de.findus.cydonia.player.EquipmentFactory.ServiceType;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
-import de.findus.cydonia.player.EquipmentFactory.ServiceType;
 
 /**
  * @author Findus
@@ -88,7 +91,7 @@ public class GameServer extends MainController{
      * Used for moving players.
      * Allocated only once and reused for performance reasons.
      */
-    private Vector3f walkdirection = new Vector3f();
+    private Vector3f walkDirection = new Vector3f();
     
 	private NetworkController networkController;
 
@@ -258,12 +261,26 @@ public class GameServer extends MainController{
 			place(p, f, loc);
 		}else if(e instanceof RemoveEvent) {
 			RemoveEvent remove = (RemoveEvent) e;
-			Flube f = getWorldController().getFlube(remove.getMoveableid());
-			removeFlube(f);
+			if("flube".equalsIgnoreCase(remove.getObjectType())) {
+				Flube f = getWorldController().getFlube(remove.getObjectid());
+				getWorldController().removeFlube(f);
+			}else if("flag".equalsIgnoreCase(remove.getObjectType())) {
+				Flag f = getWorldController().getFlag((int)remove.getObjectid());
+				getWorldController().removeFlag(f);
+			}else if("spawnpoint".equalsIgnoreCase(remove.getObjectType())) {
+				SpawnPoint sp = getWorldController().getSpawnPoint((int)remove.getObjectid());
+				getWorldController().removeSpawnPoint(sp);
+			}
 		}else if(e instanceof AddEvent) {
 			AddEvent add = (AddEvent) e;
-			Vector3f loc = add.getLocation();
-			addFlube(add.getMoveableid(), add.getObjectType(), loc);
+			if("flube".equalsIgnoreCase(add.getObjectType())) {
+				Flube f = getWorldController().addNewFlube(add.getObjectid(), add.getLocation(), add.getObjectSpec());
+				getWorldController().attachFlube(f);
+			}else if("flag".equalsIgnoreCase(add.getObjectType())) {
+				Flag f = getWorldController().addNewFlag((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
+			}else if("spawnpoint".equalsIgnoreCase(add.getObjectType())) {
+				SpawnPoint sp = getWorldController().addNewSpawnPoint((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
+			}
 		}
 	}
 
@@ -273,19 +290,25 @@ public class GameServer extends MainController{
 		}
 		for (Player p : this.getPlayerController().getAllPlayers()) {
 			if(p.isAlive()) {
-				Vector3f viewDir = p.getControl().getViewDirection().clone().setY(0).normalizeLocal();
+				Vector3f viewDir = p.getViewDir().clone();
+				if("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+					viewDir.setY(0).normalizeLocal();
+				}
 				Vector3f viewLeft = new Vector3f();
 				ROTATE90LEFT.transformVector(viewDir, viewLeft);
 
-				walkdirection.set(0, 0, 0);
-				if(p.getInputState().isLeft()) walkdirection.addLocal(viewLeft);
-				if(p.getInputState().isRight()) walkdirection.addLocal(viewLeft.negate());
-				if(p.getInputState().isForward()) walkdirection.addLocal(viewDir);
-				if(p.getInputState().isBack()) walkdirection.addLocal(viewDir.negate());
+				walkDirection.set(0, 0, 0);
+				if(p.getInputState().isLeft()) walkDirection.addLocal(viewLeft);
+				if(p.getInputState().isRight()) walkDirection.addLocal(viewLeft.negate());
+				if(p.getInputState().isForward()) walkDirection.addLocal(viewDir);
+				if(p.getInputState().isBack()) walkDirection.addLocal(viewDir.negate());
 
-				walkdirection.normalizeLocal().multLocal(PHYSICS_ACCURACY * PLAYER_SPEED);
-
-				p.getControl().setWalkDirection(walkdirection);
+				walkDirection.normalizeLocal().multLocal(PHYSICS_ACCURACY * PLAYER_SPEED);
+				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+					walkDirection.multLocal(1.5f);
+				}
+				
+				p.getControl().setWalkDirection(walkDirection);
 
 				if(getWorldController().isBelowBottomOfPlayground(p)) {
 					KillEvent ev = new KillEvent(p.getId(), true);
@@ -487,6 +510,14 @@ public class GameServer extends MainController{
 			k++;
 		}
 		
+		Collection<SpawnPoint> spawnPoints = getWorldController().getAllSpawnPoints();
+		SpawnPointInfo[] spinfos = new SpawnPointInfo[spawnPoints.size()];
+		int l=0;
+		for (SpawnPoint sp : spawnPoints) {
+			spinfos[l] = new SpawnPointInfo(sp);
+			l++;
+		}
+		
 		long passedTime = System.currentTimeMillis() - gameplayController.getRoundStartTime();
 		
 		InitialStateMessage msg = new InitialStateMessage();
@@ -494,6 +525,7 @@ public class GameServer extends MainController{
 		msg.setPlayers(playerinfos);
 		msg.setMoveables(moveableinfos);
 		msg.setFlags(flaginfos);
+		msg.setSpawnPoints(spinfos);
 		msg.setconfig(getGameConfig());
 		networkController.sendMessage(msg, playerid);
 	}
@@ -516,6 +548,7 @@ public class GameServer extends MainController{
 //			e.printStackTrace();
 //		}
 		init.setLevel(getGameConfig().getString("mapFileName"));
+		init.setMap(getWorldController().getMap());
 		networkController.sendMessage(init, clientid);
 	}
 
@@ -527,9 +560,35 @@ public class GameServer extends MainController{
 	public void handleCommand(String command) {
 		if("restartround".equalsIgnoreCase(command)) {
 			gameplayController.endRound(-1, true);
+		}else if(command.startsWith("mp_gamemode")) {
+			String mode = command.substring(11).trim();
+			if(mode.isEmpty()) {
+				// print line with current game mode
+			}else if(!mode.equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+				switchGameMode(mode);
+			}
 		}
 	}
 	
+	private void switchGameMode(String mode) {
+		getGameConfig().putString("mp_gamemode", mode);
+		if("editor".equalsIgnoreCase(mode)) {
+			gameplayController.endRound(-1, true);
+			for(Player p : getPlayerController().getAllPlayers()) {
+				getPlayerController().setDefaultEquipment(p);
+				p.getControl().setGravity(0);
+			}
+		}else if("ctf".equalsIgnoreCase(mode)) {
+			gameplayController.endRound(-1, true);
+			for(Player p : getPlayerController().getAllPlayers()) {
+				getPlayerController().setDefaultEquipment(p);
+				p.getControl().setGravity(25);
+			}
+		}
+		GameModeEvent event = new GameModeEvent(mode, true);
+		getEventMachine().fireEvent(event);
+	}
+
 	public boolean isRunning() {
 		return this.running;
 	}

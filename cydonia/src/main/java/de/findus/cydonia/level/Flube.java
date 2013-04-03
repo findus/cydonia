@@ -10,6 +10,7 @@ import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.network.serializing.Serializable;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
@@ -24,6 +25,7 @@ import de.findus.cydonia.main.GameController;
  * @author Findus
  *
  */
+@Serializable
 public class Flube {
 
 	private long id;
@@ -32,9 +34,13 @@ public class Flube {
 	
 	private Vector3f origin;
 	
-	private Spatial model;
+	private transient Spatial model;
 	
-	private RigidBodyControl control;
+	private transient RigidBodyControl control;
+	
+	public Flube() {
+		
+	}
 	
 	public Flube(long id, Vector3f origin, int type, AssetManager assetManager) {
 		this.id = id;
@@ -119,10 +125,6 @@ public class Flube {
 	 * @return the type
 	 */
 	public int getType() {
-		return type;
-	}
-
-	public int getTeam() {
 		return type;
 	}
 

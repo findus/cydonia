@@ -29,7 +29,9 @@ public abstract class Editor extends AbstractEquipment {
 	
 	private String name;
 	
-	private int objectType;
+	private int objectSpec;
+	
+	private String objectType;
 	
 	private float range;
 	
@@ -37,7 +39,7 @@ public abstract class Editor extends AbstractEquipment {
 		initHUDImgs();
 	}
 	
-	public Editor(String name, float range, int objectType, Player player, MainController mainController) {
+	public Editor(String name, float range, String objectType, int objectSpec, Player player, MainController mainController) {
 		super(mainController);
 		
 		this.name = name;
@@ -87,7 +89,15 @@ public abstract class Editor extends AbstractEquipment {
 		BufferedImage tmpimg = new BufferedImage(35, 35, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D gr = (Graphics2D) tmpimg.getGraphics();
 		
-		gr.drawImage(hudImgs[getObjectType()+2], 0, 0, new Color(0, 0, 0, 0), null);
+		int imgIndex = -1;
+		if("flube".equalsIgnoreCase(objectType)) {
+			imgIndex = getObjectSpec()+2;
+		}else if("flag".equalsIgnoreCase(objectType)) {
+			imgIndex = getObjectSpec()+4;
+		}else if("spawnpoint".equalsIgnoreCase(objectType)) {
+			imgIndex = getObjectSpec()+6;
+		}
+		gr.drawImage(hudImgs[imgIndex], 0, 0, new Color(0, 0, 0, 0), null);
 
 		return tmpimg;
 	}
@@ -143,11 +153,19 @@ public abstract class Editor extends AbstractEquipment {
 		
 	}
 
-	public int getObjectType() {
+	public String getObjectType() {
 		return objectType;
 	}
 
-	public void setObjectType(int objectType) {
+	public void setObjectType(String objectType) {
 		this.objectType = objectType;
+	}
+
+	public int getObjectSpec() {
+		return objectSpec;
+	}
+
+	public void setObjectSpec(int objectSpec) {
+		this.objectSpec = objectSpec;
 	}
 }

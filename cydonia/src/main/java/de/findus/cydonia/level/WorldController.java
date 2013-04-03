@@ -15,7 +15,6 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightList;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
@@ -58,6 +57,8 @@ public class WorldController {
 	
 	protected ConcurrentHashMap<Integer, Flag> flags;
 	
+	protected ConcurrentHashMap<Integer, SpawnPoint> spawnPoints;
+	
 	private Map map;
 	
 	/**
@@ -69,8 +70,11 @@ public class WorldController {
 		
 		this.flubes = new ConcurrentHashMap<Long, Flube>();
 		this.flags = new ConcurrentHashMap<Integer, Flag>();
+		this.spawnPoints = new ConcurrentHashMap<Integer, SpawnPoint>();
 		
 		setUpAmbientLight();
+		
+		rootNode.attachChild(worldNode);
 	}
 
 	public void loadWorld(Map level) {
@@ -89,6 +93,10 @@ public class WorldController {
 			this.worldNode.attachChild(flag.getBaseModel());
 			this.physicsSpace.addCollisionObject(flag.getBaseControl());
 			flag.getBaseModel().attachChild(flag.getModel());
+		}
+		
+		for(SpawnPoint sp : level.getSpawnPoints()) {
+			this.spawnPoints.put(sp.getId(), sp);
 		}
 		
 //		addflubestoworld();
@@ -172,19 +180,44 @@ public class WorldController {
 		}
 	}
 	
-	public Flube addNewFlube(long id, int type, Vector3f origin) {
-		Flube f = new Flube(id, origin, type, assetManager);
-		this.flubes.put(f.getId(), f);
-		return f;
+	public Flube addNewFlube(long id, Vector3f origin, int type) {
+		Flube flube = new Flube(id, origin, type, assetManager);
+		flube.getControl().setPhysicsLocation(origin);
+		this.flubes.put(flube.getId(), flube);
+		return flube;
 	}
 	
-	public void removeFlube(Flube f) {
-		detachFlube(f);
-		this.flubes.remove(f);
+	public void removeFlube(Flube flube) {
+		detachFlube(flube);
+		this.flubes.remove(flube);
 	}
 	
-	public SpawnPoint getSpawnPoint(int team) {
-		for(SpawnPoint sp : map.getSpawnPoints()) {
+	public Flag addNewFlag(int id, Vector3f origin, int team) {
+		Flag flag = FlagFactory.getInstance().createFlag(id, origin, team);
+		this.flags.put(flag.getId(), flag);
+		this.worldNode.attachChild(flag.getBaseModel());
+		this.physicsSpace.addCollisionObject(flag.getBaseControl());
+		flag.getBaseModel().attachChild(flag.getModel());
+		return flag;
+	}
+	
+	public void removeFlag(Flag flag) {
+		detachObject(flag.getBaseModel());
+		this.flags.remove(flag.getId());
+	}
+	
+	public SpawnPoint addNewSpawnPoint(int id, Vector3f position, int team) {
+		SpawnPoint sp = new SpawnPoint(id, position, team);
+		spawnPoints.put(sp.getId(), sp);
+		return sp;
+	}
+	
+	public void removeSpawnPoint(SpawnPoint sp) {
+		spawnPoints.remove(sp.getId());
+	}
+	
+	public SpawnPoint getSpawnPointForTeam(int team) {
+		for(SpawnPoint sp : spawnPoints.values()) {
 			if(sp.getTeam() == team) {
 				return sp;
 			}
@@ -345,14 +378,14 @@ public class WorldController {
         	}
         }
         
-        DirectionalLight dl1 = new DirectionalLight();
-        dl1.setColor(ColorRGBA.White.mult(0.8f));
-        dl1.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+//        DirectionalLight dl1 = new DirectionalLight();
+//        dl1.setColor(ColorRGBA.White.mult(0.8f));
+//        dl1.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
 //        rootNode.addLight(dl1);
         
-        DirectionalLight dl2 = new DirectionalLight();
-        dl2.setColor(ColorRGBA.White.mult(0.8f));
-        dl2.setDirection(new Vector3f(0, -1, 0).normalizeLocal());
+//        DirectionalLight dl2 = new DirectionalLight();
+//        dl2.setColor(ColorRGBA.White.mult(0.8f));
+//        dl2.setDirection(new Vector3f(0, -1, 0).normalizeLocal());
 //        rootNode.addLight(dl2);
         
         
@@ -448,6 +481,14 @@ public class WorldController {
 		return flags.values();
 	}
 	
+	public SpawnPoint getSpawnPoint(int id) {
+		return spawnPoints.get(id);
+	}
+	
+	public Collection<SpawnPoint> getAllSpawnPoints() {
+		return spawnPoints.values();
+	}
+
 	public CollisionResult pickWorld(Vector3f source, Vector3f direction) {
 		CollisionResults results = new CollisionResults();
 		Ray ray = new Ray(source, direction);

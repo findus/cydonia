@@ -4,11 +4,15 @@
 package de.findus.cydonia.level;
 
 import com.jme3.math.Vector3f;
+import com.jme3.network.serializing.Serializable;
+
+import de.findus.cydonia.messages.SpawnPointInfo;
 
 /**
  * @author Findus
  *
  */
+@Serializable
 public class SpawnPoint {
 
 	private int id;
@@ -17,6 +21,10 @@ public class SpawnPoint {
 	
 	private int team;
 
+	public SpawnPoint() {
+		
+	}
+	
 	public SpawnPoint(int id, Vector3f position, int team) {
 		this.id = id;
 		this.position = position;
@@ -63,6 +71,10 @@ public class SpawnPoint {
 	 */
 	public void setId(int id) {
 		this.id = id;
+	}
+	
+	public SpawnPointInfo getInfo() {
+		return new SpawnPointInfo(this);
 	}
 
 }

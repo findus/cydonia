@@ -19,6 +19,7 @@ import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.FlagEvent;
+import de.findus.cydonia.events.GameModeEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
@@ -30,6 +31,10 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.level.Flag;
+import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.level.Map;
+import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -44,6 +49,7 @@ import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
+import de.findus.cydonia.messages.SpawnPointInfo;
 import de.findus.cydonia.messages.ViewDirMessage;
 import de.findus.cydonia.player.PlayerInputState;
 
@@ -106,6 +112,11 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(EditorInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
 		Serializer.registerClass(FlagInfo.class);
+		Serializer.registerClass(SpawnPointInfo.class);
+		Serializer.registerClass(Map.class);
+		Serializer.registerClass(Flube.class);
+		Serializer.registerClass(Flag.class);
+		Serializer.registerClass(SpawnPoint.class);
 		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(ViewDirMessage.class);
 		Serializer.registerClass(PlayerPhysic.class);
@@ -131,6 +142,7 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(PlayerJoinEvent.class);
 		Serializer.registerClass(PlayerQuitEvent.class);
 		Serializer.registerClass(ChooseTeamEvent.class);
+		Serializer.registerClass(GameModeEvent.class);
 	}
 	
 	/**
@@ -169,6 +181,7 @@ public class ServerConnector implements MessageListener<Client> {
 			if(init.isConnectionAccepted()) {
 				ConnectionInitEvent established = new ConnectionInitEvent();
 				established.setLevel(init.getLevel());
+				established.setMap(init.getMap());
 				eventMachine.fireEvent(established);
 			}else {
 				System.out.println("Server denied connection! Reason: '" + init.getText() + "'");
@@ -178,7 +191,7 @@ public class ServerConnector implements MessageListener<Client> {
 			}
 		}else if (m instanceof InitialStateMessage) {
 			InitialStateMessage iniState = (InitialStateMessage) m;
-			gameController.setInitialState(iniState.getPassedRoundTime(), iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables(), iniState.getFlags());
+			gameController.setInitialState(iniState.getPassedRoundTime(), iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables(), iniState.getFlags(), iniState.getSpawnPoints());
 		}
 	}
 }
