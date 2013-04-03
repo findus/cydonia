@@ -612,6 +612,7 @@ public class GameServer extends MainController{
 	}
 	
 	private void switchGameMode(String mode) {
+		changeConfig("mp_gamemode", mode);
 		if("editor".equalsIgnoreCase(mode)) {
 			gameplayController.endRound(-1, true);
 			for(Player p : getPlayerController().getAllPlayers()) {
@@ -627,7 +628,6 @@ public class GameServer extends MainController{
 			}
 			CWRITER.writeLine("switched gamemode to 'ctf'");
 		}
-		changeConfig("mp_gamemode", mode);
 	}
 	
 	private void changeConfig(String key, Object value) {
