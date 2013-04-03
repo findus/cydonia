@@ -285,6 +285,10 @@ public class GameServer extends MainController{
 			}else if("spawnpoint".equalsIgnoreCase(add.getObjectType())) {
 				SpawnPoint sp = getWorldController().addNewSpawnPoint((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
 			}
+		}else if(e instanceof PlayerQuitEvent) {
+			PlayerQuitEvent quit = (PlayerQuitEvent) e;
+			Player p = getPlayerController().getPlayer(quit.getPlayerId());
+			quitPlayer(p);
 		}
 	}
 
@@ -407,9 +411,6 @@ public class GameServer extends MainController{
 		super.quitPlayer(p);
 		if(p != null) {
 			CWRITER.writeLine(p.getName() + " quit");
-			
-			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
-			getEventMachine().fireEvent(quit);
 		}
 	}
 	
@@ -489,7 +490,8 @@ public class GameServer extends MainController{
 			chooseTeam(p, 2);
 			break;
 		case QUITGAME:
-			quitPlayer(p);
+			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
+			getEventMachine().fireEvent(quit);
 			break;
 
 		default:
@@ -582,7 +584,9 @@ public class GameServer extends MainController{
 
 	public void connectionRemoved(int clientid) {
 		Player p = getPlayerController().getPlayer(clientid);
-		quitPlayer(p);
+		
+		PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
+		getEventMachine().fireEvent(quit);
 	}
 
 	public void handleCommand(String command) {
