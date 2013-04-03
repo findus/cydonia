@@ -876,7 +876,7 @@ public class GameController extends MainController implements ScreenController{
 	
 	public long getRemainingTime() {
 		long passedTime = System.currentTimeMillis() - roundStartTime;
-		return getGameConfig().getLong("mp_roundtime") * 1000 - passedTime;
+		return getGameConfig().getLong("mp_timelimit") * 1000 - passedTime;
 	}
 	
 	public int getWinTeam() {
