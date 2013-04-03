@@ -146,11 +146,13 @@ public class MenuController {
 	public void updateHUD() {
 		this.timetext.getRenderer(TextRenderer.class).setText(timeFormat.format(gameController.getRemainingTime()));
 		
+		this.flagbluetext.setVisible(false);
+		this.flagredtext.setVisible(false);
 		for(Flag f : gameController.getWorldController().getAllFlags()) {
-			if(f.getTeam() == 1) {
-				this.flagbluetext.setVisible(!f.isInBase());
-			}else if(f.getTeam() == 2) {
-				this.flagredtext.setVisible(!f.isInBase());
+			if(f.getTeam() == 1 && !f.isInBase()) {
+				this.flagbluetext.setVisible(true);
+			}else if(f.getTeam() == 2 && !f.isInBase()) {
+				this.flagredtext.setVisible(true);
 			}
 		}
 		
