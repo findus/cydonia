@@ -482,8 +482,10 @@ public class GameController extends MainController implements ScreenController{
 		};
 		enqueue(job);
     	
-    	setGamestate(GameState.LOBBY);
-    	menuController.actualizeScreen();
+		if(getGamestate() == GameState.LOADING) {
+			setGamestate(GameState.LOBBY);
+			menuController.actualizeScreen();
+		}
     }
 
 	public void joinGame() {
