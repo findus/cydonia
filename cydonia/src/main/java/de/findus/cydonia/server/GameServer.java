@@ -45,6 +45,7 @@ import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.SpawnPoint;
+import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
@@ -722,10 +723,11 @@ public class GameServer extends MainController{
 		});
 	}
 	
-	public void saveCurrentMap(Writer w) {
+	public void saveCurrentMap(String name, Writer w) {
 		MapXMLParser parser = new MapXMLParser(assetManager);
 		
 		try {
+			getWorldController().getMap().setName(name);
 			String mapstring = parser.writeMap(getWorldController().getMap());
 			w.write(mapstring);
 		} catch (IOException e) {

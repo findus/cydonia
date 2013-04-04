@@ -278,7 +278,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 				if(f.exists()) f.delete();
 				f.createNewFile();
 				BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-				server.saveCurrentMap(bw);
+				server.saveCurrentMap(mapname, bw);
 				bw.flush();
 				bw.close();
 				loadMapsFromDir();
