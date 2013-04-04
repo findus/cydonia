@@ -632,6 +632,10 @@ public class GameServer extends MainController{
 			public String call() throws Exception {
 				getWorldController().unloadCurrentWorld();
 				
+				for(Player p : getPlayerController().getAllPlayers()) {
+					getPlayerController().setDefaultEquipment(p);
+				}
+				
 				try {
 					String filename = GameServer.this.mapsDir + System.getProperty("file.separator") + mapname + MAPEXTENSION;
 					File mapFile = new File(filename);

@@ -67,7 +67,7 @@ public abstract class Picker extends AbstractEquipment {
 	
 	@Override
 	public void reset() {
-		this.repository = new LinkedList<Flube>();
+//		this.repository = new LinkedList<Flube>();
 	}
 
 	@Override
