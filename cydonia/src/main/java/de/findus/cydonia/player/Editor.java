@@ -85,6 +85,7 @@ public abstract class Editor extends AbstractEquipment {
 			this.name = i.getName();
 			this.range = i.getRange();
 			this.objectType = i.getObjectType();
+			this.objectSpec = i.getObjectSpec();
 		}
 	}
 

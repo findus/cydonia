@@ -3,7 +3,7 @@
  */
 package de.findus.cydonia.player;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.jme3.animation.AnimChannel;
@@ -66,7 +66,7 @@ public class Player implements AnimEventListener{
 
 	private boolean jumping = false;
 	
-	private List<Equipment> equips = new ArrayList<Equipment>();
+	private List<Equipment> equips = new LinkedList<Equipment>();
 	
 	private int currEquip;
 	
