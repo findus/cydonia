@@ -113,7 +113,7 @@ public class GameController extends MainController implements ScreenController{
 
 	protected Node guiNode = new Node("Gui Node");
     
-    private  boolean showFps = true;
+    private  boolean showFps = false;
     protected float secondCounter = 0.0f;
     protected int frameCounter = 0;
     protected BitmapText fpsText;
@@ -271,7 +271,10 @@ public class GameController extends MainController implements ScreenController{
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
-        loadStatsView();
+        
+        if(DEBUG) {
+        	loadStatsView();
+        }
         
         guiViewPort.attachScene(guiNode);
         
@@ -733,6 +736,17 @@ public class GameController extends MainController implements ScreenController{
 					openMenu();
 				}else if(clientState == ClientState.MENU){
 					closeMenu();
+				}
+			}
+			break;
+			
+		case FPS:
+			if(value) {
+				showFps = !showFps;
+				if(showFps) {
+					fpsText.setCullHint(CullHint.Inherit);
+				}else {
+					fpsText.setCullHint(CullHint.Always);
 				}
 			}
 			break;

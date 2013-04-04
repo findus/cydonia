@@ -4,6 +4,7 @@
 package de.findus.cydonia.appstates;
 
 import static de.findus.cydonia.player.InputCommand.EXIT;
+import static de.findus.cydonia.player.InputCommand.FPS;
 
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -38,7 +39,9 @@ public class GeneralInputAppState extends AbstractAppState implements ActionList
 	
 	private void mapDefaultKeys() {
         inputManager.addMapping(EXIT.getCode(), new KeyTrigger(KeyInput.KEY_ESCAPE));
-        inputManager.addListener(this, EXIT.getCode());
+        inputManager.addMapping(FPS.getCode(), new KeyTrigger(KeyInput.KEY_F12));
+        inputManager.addListener(this, EXIT.getCode(), FPS.getCode());
+        
 	}
 
 	@Override

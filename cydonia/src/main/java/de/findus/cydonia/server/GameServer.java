@@ -357,25 +357,27 @@ public class GameServer extends MainController{
 		if(target != null && other != null) {
 			if(other.getName().startsWith("player")) {
 				Player p = getPlayerController().getPlayer(Integer.parseInt(other.getName().substring(6)));
-				if(p.getTeam() == ((Integer)target.getUserData("team")).intValue()) { // own target
-					if(p.getFlag() != null) {
-						int stolenflagid = p.getFlag().getId();
-						p.setFlag(null);
-						Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
-						if(f.isInBase()) {
-							System.out.println("Team " + p.getTeam() + " scored");
-							FlagEvent event = new FlagEvent(FlagEvent.SCORE, p.getId(), stolenflagid, true);
-							getEventMachine().fireEvent(event);
+				if(p != null) {
+					if(p.getTeam() == ((Integer)target.getUserData("team")).intValue()) { // own target
+						if(p.getFlag() != null) {
+							int stolenflagid = p.getFlag().getId();
+							p.setFlag(null);
+							Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
+							if(f.isInBase()) {
+								System.out.println("Team " + p.getTeam() + " scored");
+								FlagEvent event = new FlagEvent(FlagEvent.SCORE, p.getId(), stolenflagid, true);
+								getEventMachine().fireEvent(event);
+							}
 						}
-					}
-				}else { // opponents target
-					if(p.getFlag() == null) {
-						Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
-						if(f.isInBase()) {
-							f.setInBase(false);
-							System.out.println("Team " + p.getTeam() + " took flag");
-							FlagEvent event = new FlagEvent(FlagEvent.TAKE, p.getId(), f.getId(), true);
-							getEventMachine().fireEvent(event);
+					}else { // opponents target
+						if(p.getFlag() == null) {
+							Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
+							if(f.isInBase()) {
+								f.setInBase(false);
+								System.out.println("Team " + p.getTeam() + " took flag");
+								FlagEvent event = new FlagEvent(FlagEvent.TAKE, p.getId(), f.getId(), true);
+								getEventMachine().fireEvent(event);
+							}
 						}
 					}
 				}

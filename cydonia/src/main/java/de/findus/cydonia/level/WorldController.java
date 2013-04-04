@@ -28,6 +28,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
+import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.player.Player;
 
 /**
@@ -406,17 +407,19 @@ public class WorldController {
 		pointLights.add(pl1);
 		rootNode.addLight(pl1);
 
-		Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Red);
-		
-		Geometry g1 = new Geometry("pl1-g", new Box(0.2f, 0.2f, 0.2f));
-		g1.setLocalTranslation(pl1.getPosition());
-		g1.setMaterial(mat);
-		rootNode.attachChild(g1);
-        
-        System.out.println(pl1.getPosition());
+		if(MainController.DEBUG) {
+			Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+			mat.setColor("Color", ColorRGBA.Red);
+
+			Geometry g1 = new Geometry("pl1-g", new Box(0.2f, 0.2f, 0.2f));
+			g1.setLocalTranslation(pl1.getPosition());
+			g1.setMaterial(mat);
+			rootNode.attachChild(g1);
+
+			System.out.println(pl1.getPosition());
+		}
 	}
-	
+
 	public LightList getLights() {
 		return rootNode.getLocalLightList();
 	}
