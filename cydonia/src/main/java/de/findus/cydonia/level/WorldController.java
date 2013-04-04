@@ -38,6 +38,8 @@ import de.findus.cydonia.player.Player;
  */
 public class WorldController {
 	
+	private static final float FLAGAREARADIUS = 3f;
+
 	/**
 	 * The AssetManager.
 	 */
@@ -473,6 +475,15 @@ public class WorldController {
 		if(obj.getUserData("Type") != null) {
 			int type = obj.getUserData("Type");
 			return (type >= -1);
+		}
+		return false;
+	}
+	
+	public boolean isInFlagArea(Vector3f loc) {
+		for(Flag f : getAllFlags()) {
+			if(f.getOrigin().distance(loc) < FLAGAREARADIUS) {
+				return true;
+			}
 		}
 		return false;
 	}

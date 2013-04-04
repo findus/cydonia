@@ -56,9 +56,11 @@ public class ServerPicker extends Picker {
 					}else {
 						loc = result.getGeometry().getLocalTranslation().add(contactnormal);
 					}
-
-					PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, true);
-					getMainController().getEventMachine().fireEvent(place);
+					
+					if(!getMainController().getWorldController().isInFlagArea(loc)) {
+						PlaceEvent place = new PlaceEvent(this.player.getId(), m.getId(), loc, true);
+						getMainController().getEventMachine().fireEvent(place);
+					}
 				}
 			}
 		}
