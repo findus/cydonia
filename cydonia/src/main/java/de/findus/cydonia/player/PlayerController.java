@@ -133,6 +133,10 @@ public class PlayerController {
 	}
 	
 	public void setDefaultEquipment(Player p) {
+		Equipment cur = p.getCurrentEquipment();
+		if(cur != null && cur.getGeometry() != null) {
+			p.getNode().detachChild(cur.getGeometry());
+		}
 		p.setCurrEquip(0);
 		p.getEquips().clear();
 		

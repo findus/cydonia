@@ -385,6 +385,11 @@ public class GameController extends MainController implements ScreenController{
     		getPlayerController().setHealthpoints(p, info.getHealthpoints());
     		p.setScores(info.getScores());
 
+    		
+    		Equipment cur = p.getCurrentEquipment();
+    		if(cur != null && cur.getGeometry() != null) {
+    			p.getNode().detachChild(cur.getGeometry());
+    		}
     		p.getEquips().clear();
     		for(EquipmentInfo ei : info.getEquipInfos()) {
     			Equipment equip = getEquipmentFactory().create(ei.getTypeName());
