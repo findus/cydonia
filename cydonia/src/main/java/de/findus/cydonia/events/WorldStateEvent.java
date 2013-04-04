@@ -1,9 +1,8 @@
 /**
  * 
  */
-package de.findus.cydonia.messages;
+package de.findus.cydonia.events;
 
-import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
 import de.findus.cydonia.level.WorldState;
@@ -13,20 +12,29 @@ import de.findus.cydonia.level.WorldState;
  *
  */
 @Serializable
-public class InitialStateMessage extends AbstractMessage {
+public class WorldStateEvent extends AbstractEvent {
 
 	private WorldState worldState;
-
 	
-	public InitialStateMessage() {
-		setReliable(true);
+	
+	/**
+	 * 
+	 */
+	public WorldStateEvent() {
+		
 	}
 
+	/**
+	 * @param net
+	 */
+	public WorldStateEvent(WorldState worldState, boolean net) {
+		super(net);
+		this.setWorldState(worldState);
+	}
 
 	public WorldState getWorldState() {
 		return worldState;
 	}
-
 
 	public void setWorldState(WorldState worldState) {
 		this.worldState = worldState;

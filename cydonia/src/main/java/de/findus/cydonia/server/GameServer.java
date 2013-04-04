@@ -39,11 +39,13 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.events.WorldStateEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.SpawnPoint;
+import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -500,7 +502,7 @@ public class GameServer extends MainController{
 		}
 	}
 	
-	public void sendInitialState(int playerid) {
+	public WorldState getWorldState() {
 		PlayerInfo[] playerinfos = new PlayerInfo[getPlayerController().getPlayerCount()];
 		int i=0;
 		for (Player p : getPlayerController().getAllPlayers()) {
@@ -509,10 +511,10 @@ public class GameServer extends MainController{
 		}
 		
 		Collection<Flube> flubes = getWorldController().getAllFlubes();
-		MoveableInfo[] moveableinfos = new MoveableInfo[flubes.size()];
+		MoveableInfo[] flubeinfos = new MoveableInfo[flubes.size()];
 		int j=0;
 		for (Flube m : flubes) {
-			moveableinfos[j] = new MoveableInfo(m);
+			flubeinfos[j] = new MoveableInfo(m);
 			j++;
 		}
 		
@@ -534,14 +536,27 @@ public class GameServer extends MainController{
 		
 		long passedTime = System.currentTimeMillis() - gameplayController.getRoundStartTime();
 		
+		WorldState state = new WorldState();
+		state.setPassedRoundTime(passedTime);
+		state.setPlayers(playerinfos);
+		state.setFlubes(flubeinfos);
+		state.setFlags(flaginfos);
+		state.setSpawnPoints(spinfos);
+		state.setconfig(getGameConfig());
+		
+		return state;
+	}
+	
+	public void sendInitialState(int playerid) {
 		InitialStateMessage msg = new InitialStateMessage();
-		msg.setPassedRoundTime(passedTime);
-		msg.setPlayers(playerinfos);
-		msg.setMoveables(moveableinfos);
-		msg.setFlags(flaginfos);
-		msg.setSpawnPoints(spinfos);
-		msg.setconfig(getGameConfig());
+		msg.setWorldState(getWorldState());
 		networkController.sendMessage(msg, playerid);
+	}
+	
+	public void broadcastInitialState() {
+		WorldState state = getWorldState();
+		WorldStateEvent event = new WorldStateEvent(state, true);
+		getEventMachine().fireEvent(event);
 	}
 
 	public void setViewDir(int playerid, Vector3f dir) {
@@ -628,9 +643,7 @@ public class GameServer extends MainController{
 						MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
 						Map map = mapXMLParser.loadMap(is);
 						getWorldController().loadWorld(map);
-						for(Player p : getPlayerController().getAllPlayers()) {
-				        	sendInitialState(p.getId());
-				        }
+						broadcastInitialState();
 				        changeConfig("mp_map", mapname);
 				        gameplayController.restartRound();
 						informStateListeners();

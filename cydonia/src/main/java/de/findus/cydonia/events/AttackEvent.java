@@ -22,9 +22,9 @@ public class AttackEvent extends AbstractEvent {
 	}
 	
 	public AttackEvent(int playerid, long bulletid, boolean forward) {
+		super(forward);
 		this.playerid = playerid;
 		this.bulletid = bulletid;
-		this.network = forward;
 	}
 
 	public int getPlayerid() {

@@ -20,6 +20,7 @@ public class BeamEvent extends AbstractEvent {
 	 * 
 	 */
 	public BeamEvent() {
+		super();
 	}
 
 	/**

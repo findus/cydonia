@@ -15,11 +15,11 @@ import de.findus.cydonia.events.AddEvent;
 import de.findus.cydonia.events.AttackEvent;
 import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
+import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.FlagEvent;
-import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
@@ -31,7 +31,9 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.events.WorldStateEvent;
 import de.findus.cydonia.level.Map;
+import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.messages.BeamerInfo;
 import de.findus.cydonia.messages.BulletPhysic;
 import de.findus.cydonia.messages.ConnectionInitMessage;
@@ -102,6 +104,7 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(ConnectionInitMessage.class);
 		Serializer.registerClass(JoinMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);
+		Serializer.registerClass(WorldState.class);
 		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);
 		Serializer.registerClass(PickerInfo.class);
@@ -132,11 +135,11 @@ public class ServerConnector implements MessageListener<Client> {
 		Serializer.registerClass(RespawnEvent.class);
 		Serializer.registerClass(RestartRoundEvent.class);
 		Serializer.registerClass(RoundEndedEvent.class);
-		Serializer.registerClass(LocationUpdatedMessage.class);
 		Serializer.registerClass(PlayerJoinEvent.class);
 		Serializer.registerClass(PlayerQuitEvent.class);
 		Serializer.registerClass(ChooseTeamEvent.class);
 		Serializer.registerClass(ConfigEvent.class);
+		Serializer.registerClass(WorldStateEvent.class);
 	}
 	
 	/**
@@ -184,7 +187,9 @@ public class ServerConnector implements MessageListener<Client> {
 			}
 		}else if (m instanceof InitialStateMessage) {
 			InitialStateMessage iniState = (InitialStateMessage) m;
-			gameController.setInitialState(iniState.getPassedRoundTime(), iniState.getConfig(), iniState.getPlayers(), iniState.getMoveables(), iniState.getFlags(), iniState.getSpawnPoints());
+			WorldStateEvent event = new WorldStateEvent();
+			event.setWorldState(iniState.getWorldState());
+			eventMachine.fireEvent(event);
 		}
 	}
 }

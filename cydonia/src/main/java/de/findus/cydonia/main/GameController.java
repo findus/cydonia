@@ -1,7 +1,6 @@
 package de.findus.cydonia.main;
 
 import java.net.URL;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,11 +36,11 @@ import de.findus.cydonia.appstates.MenuController;
 import de.findus.cydonia.events.AddEvent;
 import de.findus.cydonia.events.BeamEvent;
 import de.findus.cydonia.events.ChooseTeamEvent;
+import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
-import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
 import de.findus.cydonia.events.PickupEvent;
@@ -52,9 +51,11 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.events.WorldStateEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.SpawnPoint;
+import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.FlagInfo;
@@ -351,7 +352,6 @@ public class GameController extends MainController implements ScreenController{
 		editorLight = new AmbientLight();
 		editorLight.setColor(ColorRGBA.White.mult(0.4f));
 		
-    	menuController.actualizeScreen();
     	connector.connectToServer(serverAddress, 6173);
     }
     
@@ -360,38 +360,20 @@ public class GameController extends MainController implements ScreenController{
      * Starts the actual game eg. the game loop.
      */
     public void startGame(String level) {
-//    	InputSource is = new InputSource(new StringReader(level));
-//    	String mapfile = MAPFOLDER + level + MAPEXTENSION;
-//    	InputSource is = new InputSource(this.getClass().getResourceAsStream(mapfile));
-//        MapXMLParser mapXMLParser = new MapXMLParser(assetManager);
-//        try {
-//			Map map = mapXMLParser.loadMap(is);
-//			getWorldController().loadWorld(map);
-//		} catch ( IOException e) {
-//			e.printStackTrace();
-//			stopGame();
-//		} catch (JDOMException e) {
-//			e.printStackTrace();
-//			stopGame();
-//		}
-        
     	getBulletAppState().setEnabled(true);
-//    	setGamestate(GameState.LOADING);
-//    	setClientstate(ClientState.)
-    	menuController.actualizeScreen();
     	
     	InitialStateMessage init = new InitialStateMessage();
     	connector.sendMessage(init);
     }
     
-    public void setInitialState(long passedRoundTime, GameConfig config, PlayerInfo[] pinfos, MoveableInfo[] minfos, FlagInfo[] finfos, SpawnPointInfo[] spinfos) {
-    	this.roundStartTime= System.currentTimeMillis() - passedRoundTime;
+    private void setWorldState(WorldState state) {
+    	this.roundStartTime= System.currentTimeMillis() - state.getPassedRoundTime();
 
-    	getGameConfig().copyFrom(config);
+    	getGameConfig().copyFrom(state.getConfig());
 
     	getWorldController().unloadCurrentWorld();
     	
-    	for (PlayerInfo info : pinfos) {
+    	for (PlayerInfo info : state.getPlayers()) {
     		final int playerid = info.getPlayerid();
     		Player p = getPlayerController().getPlayer(playerid);
     		if(p == null) {
@@ -418,76 +400,55 @@ public class GameController extends MainController implements ScreenController{
     		p.getControl().setViewDirection(info.getOrientation());
 
     		if(p.isAlive()) {
-    			enqueue(new Callable<String>() {
-    				public String call() {
-    					getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
-    					return null;
-    				}
-    			});
-
+    			getWorldController().attachPlayer(getPlayerController().getPlayer(playerid));
     		}
     	}
-    	for (MoveableInfo info : minfos) {
+    	for (MoveableInfo info : state.getFlubes()) {
     		final Vector3f loc = info.getLocation();
     		final boolean inWorld = info.isInWorld();
-    		final Flube m = getWorldController().addNewFlube(info.getId(), info.getOrigin(), info.getType());
-    		if(m != null) {
-    			enqueue(new Callable<String>() {
-    				public String call() {
-    					getWorldController().detachFlube(m);
-    					m.getControl().setPhysicsLocation(loc);
-    					if(inWorld) {
-    						getWorldController().attachFlube(m);
-    					}
-    					return null;
-    				}
-    			});
+    		final long id = info.getId();
+    		final Vector3f origin = info.getOrigin();
+    		final int type = info.getType();
+    		Flube m = getWorldController().addNewFlube(id, origin, type);
+    		getWorldController().detachFlube(m);
+    		m.getControl().setPhysicsLocation(loc);
+    		if(inWorld) {
+    			getWorldController().attachFlube(m);
     		}
     	}
 
-    	for (FlagInfo info : finfos) {
+    	for (FlagInfo info : state.getFlags()) {
     		final int flagid = info.getId();
     		final int playerid = info.getPlayerid();
-    		Flag f = getWorldController().addNewFlag(flagid, info.getOrigin(), info.getTeam());
-    		if(f != null) {
-    			if(!info.isInBase() && playerid >= 0) {
-    				enqueue(new Callable<String>() {
-    					public String call() {
-    						takeFlag(getPlayerController().getPlayer(playerid), getWorldController().getFlag(flagid));
-    						return null;
-    					}
-    				});
-    			}else if(info.isInBase()) {
-    				enqueue(new Callable<String>() {
-    					public String call() {
-    						returnFlag(getWorldController().getFlag(flagid));
-    						return null;
-    					}
-    				});
-    			}
-    		}
+    		final Vector3f origin = info.getOrigin();
+    		final int team = info.getTeam();
+    		final boolean inBase = info.isInBase();
+    				Flag f = getWorldController().addNewFlag(flagid, origin, team);
+    				if(!inBase && playerid >= 0) {
+    					takeFlag(getPlayerController().getPlayer(playerid), f);
+    				}else if(inBase) {
+    					returnFlag(f);
+    				}
+    	}
+
+    	for (SpawnPointInfo info : state.getSpawnPoints()) {
+    		final int id = info.getId();
+    		final Vector3f position = info.getPosition();
+    		final int team = info.getTeam();
+    				SpawnPoint spawn = getWorldController().addNewSpawnPoint(id, position, team);
+    				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+    					spawn.getNode().setCullHint(CullHint.Inherit);
+    				}else {
+    					spawn.getNode().setCullHint(CullHint.Always);
+    				}
     	}
     	
-    	for (SpawnPointInfo sp : spinfos) {
-    		SpawnPoint spawn = getWorldController().addNewSpawnPoint(sp.getId(), sp.getPosition(), sp.getTeam());
-    		if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
-    			spawn.getNode().setCullHint(CullHint.Inherit);
-    		}else {
-    			spawn.getNode().setCullHint(CullHint.Always);
-    		}
-    	}
-    	
-    	Callable<String> job = new Callable<String>() {
-			@Override
-			public String call() throws Exception {
 				getWorldController().setUpWorldLights();
 				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
-					getWorldController().getRootNode().addLight(editorLight);
+					getWorldController().setAmbientBrightness(0.3f);
+				}else {
+					getWorldController().setAmbientBrightness(0.1f);
 				}
-				return null;
-			}
-		};
-		enqueue(job);
     	
 		if(getClientstate() == ClientState.LOADING) {
 			setClientstate(ClientState.LOBBY);
@@ -536,7 +497,7 @@ public class GameController extends MainController implements ScreenController{
     }
     
     public void closeMenu() {
-    	if(getGamestate() == GameState.RUNNING) {
+    	if(getGamestate() == GameState.RUNNING || getGamestate() == GameState.SPECTATE) {
     		stateManager.attach(gameInputAppState);
     		startInputSender();
     	}
@@ -737,7 +698,8 @@ public class GameController extends MainController implements ScreenController{
 			}else if("mp_scorelimit".equalsIgnoreCase(event.getKey())) {
 				getGameConfig().putObject("mp_scorelimit", (Integer) event.getNewValue());
 			}
-			
+		}else if(e instanceof WorldStateEvent) {
+			setWorldState(((WorldStateEvent) e).getWorldState());
 		}
 	}
 	
