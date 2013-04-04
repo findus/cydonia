@@ -23,6 +23,7 @@ import java.util.LinkedList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -31,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.findus.cydonia.server.GameServer.ServerStateListener;
 
@@ -43,9 +45,22 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 
 	protected static final String MAPFOLDER = "/de/findus/cydonia/level/";
 	
+	private static final FileFilter mfxFilter = new FileFilter() {
+		@Override
+		public boolean accept(File pathname) {
+			if(pathname.isFile() && pathname.getName().endsWith(GameServer.MAPEXTENSION)) {
+				return true;
+			}
+			return false;
+		}
+	};
+	
+	private static final javax.swing.filechooser.FileFilter mfxChooserFilter = new FileNameExtensionFilter("XML Map Files", "mfx");
+	
 	private GameServer server;
 	
 	private JButton mapButton;
+	private JButton saveButton;
 	private JTextArea consoleOutput;
 	private JTextField commandInput;
 	
@@ -88,10 +103,18 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		JPanel mapPanel = new JPanel(new BorderLayout());
 		tabbedPane.addTab("Map", mapPanel);
 		
+		JPanel buttonPanel = new JPanel();
+		mapPanel.add(buttonPanel, BorderLayout.NORTH);
+		
 		mapButton = new JButton("Load Map");
-		mapPanel.add(mapButton, BorderLayout.NORTH);
+		buttonPanel.add(mapButton);
 		mapButton.setActionCommand("loadMap");
 		mapButton.addActionListener(this);
+		
+		saveButton = new JButton("Save Map");
+		buttonPanel.add(saveButton);
+		saveButton.setActionCommand("saveMap");
+		saveButton.addActionListener(this);
 		
 		listmodel = new DefaultListModel<String>();
 		maplist = new JList<String>(listmodel);
@@ -215,21 +238,50 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		if(userdir.exists() && userdir.isDirectory()) {
 			File file = new File(System.getProperty("user.home") + "/Cydonia/maps/");
 			if(file.exists() && file.isDirectory()) {
-				File[] maps = file.listFiles(new FileFilter() {
-					
-					@Override
-					public boolean accept(File pathname) {
-						if(pathname.isFile() && pathname.getName().endsWith(GameServer.MAPEXTENSION)) {
-							return true;
-						}
-						return false;
-					}
-				});
+				File[] maps = file.listFiles(mfxFilter);
 				
 				for(File m : maps) {
 					listmodel.addElement(m.getName().substring(0, m.getName().indexOf(GameServer.MAPEXTENSION)));
 				}
 			}
+		}
+	}
+	
+	private void saveMap() {
+		File dir = new File(System.getProperty("user.home") + "/Cydonia/maps/");
+		if(!dir.exists()) {
+			dir = new File(System.getProperty("user.home"));
+		}
+		JFileChooser chooser = new JFileChooser(dir);
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setFileFilter(mfxChooserFilter);
+		boolean accepted = false;
+		File f = null;
+		do {
+			if(JFileChooser.APPROVE_OPTION == chooser.showSaveDialog(this)) {
+				f = chooser.getSelectedFile();
+				if(!f.exists()) {
+					accepted = true;
+				}else if(JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "File already exits. Do you want to overwrite it?", "Overwrite?", JOptionPane.YES_NO_OPTION)) {
+					accepted = true;
+				}
+			}else {
+				break;
+			}
+		}while (!accepted);
+		
+		if(accepted && f != null) {
+			try {
+				if(f.exists()) f.delete();
+				f.createNewFile();
+				BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+				server.saveCurrentMap(bw);
+				bw.flush();
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
 	}
 
@@ -244,6 +296,8 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 			if(maplist.getSelectedValue() != null) {
 				server.handleCommand("mp_map " + maplist.getSelectedValue());
 			}
+		}else if("saveMap".equals(e.getActionCommand())) {
+			saveMap();
 		}
 	}
 

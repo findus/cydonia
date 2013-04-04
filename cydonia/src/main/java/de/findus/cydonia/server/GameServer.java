@@ -6,6 +6,7 @@ package de.findus.cydonia.server;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
@@ -644,6 +645,17 @@ public class GameServer extends MainController{
 		        return null;
 			}
 		});
+	}
+	
+	public void saveCurrentMap(Writer w) {
+		MapXMLParser parser = new MapXMLParser(assetManager);
+		
+		try {
+			String mapstring = parser.writeMap(getWorldController().getMap());
+			w.write(mapstring);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
 	}
 	
 	private void switchGameMode(String mode) {

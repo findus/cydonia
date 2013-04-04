@@ -71,14 +71,16 @@ public class MapXMLParser {
 	 */
 	public String writeMap(Map level) throws IOException {
 		Element root = new Element("map");
-		root.setAttribute("name", level.getName());
-		root.setAttribute("bottomHeight", String.valueOf(level.getBottomHeight()));
+		if(level != null) {
+			root.setAttribute("name", level.getName());
+			root.setAttribute("bottomHeight", String.valueOf(level.getBottomHeight()));
+
+			root.addContent(writeFlags(level.getFlags()));
+			root.addContent(writeSpawnPoints(level.getSpawnPoints()));
+			root.addContent(writeFlubes(level.getFlubes()));
+		}
+		
 		Document doc = new Document(root);
-		
-		root.addContent(writeFlags(level.getFlags()));
-		root.addContent(writeSpawnPoints(level.getSpawnPoints()));
-		root.addContent(writeFlubes(level.getFlubes()));
-		
 		StringWriter buffer = new StringWriter();
 		XMLOutputter outputter = new XMLOutputter();
 		outputter.output(doc, buffer);
