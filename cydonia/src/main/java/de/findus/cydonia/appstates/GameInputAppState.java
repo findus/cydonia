@@ -4,6 +4,8 @@
 package de.findus.cydonia.appstates;
 
 import static de.findus.cydonia.player.InputCommand.ATTACK;
+import static de.findus.cydonia.player.InputCommand.CROSSHAIR;
+import static de.findus.cydonia.player.InputCommand.HUD;
 import static de.findus.cydonia.player.InputCommand.JUMP;
 import static de.findus.cydonia.player.InputCommand.MOVEBACK;
 import static de.findus.cydonia.player.InputCommand.MOVEFRONT;
@@ -56,6 +58,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
+		inputManager.addMapping(CROSSHAIR.getCode(), new KeyTrigger(KeyInput.KEY_F10));
+		inputManager.addMapping(HUD.getCode(), new KeyTrigger(KeyInput.KEY_F11));
 		inputManager.addMapping(STRAFELEFT.getCode(), new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping(STRAFERIGHT.getCode(), new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping(MOVEFRONT.getCode(), new KeyTrigger(KeyInput.KEY_W));
@@ -64,7 +68,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(USEPRIMARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping(USESECONDARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         inputManager.addMapping(SWITCHEQUIP.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
-        inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(), SWITCHEQUIP.getCode());
+        inputManager.addListener(this, CROSSHAIR.getCode(), HUD.getCode(), STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(), SWITCHEQUIP.getCode());
         
         inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addListener(this, SCOREBOARD.getCode());
@@ -72,13 +76,17 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         camController.registerWithInput(inputManager);
         camController.setEnabled(true);
         
-        crosshair = getCrosshair();
-        gameController.getGuiNode().attachChild(crosshair);
+        if(gameController.isShowCrosshair()) {
+        	crosshair = getCrosshair();
+        	gameController.getGuiNode().attachChild(crosshair);
+        }
     }
 
 	@Override
     public void stateDetached(AppStateManager stateManager) {
-    	gameController.getGuiNode().detachChild(crosshair);
+		if(crosshair != null) {
+    		crosshair.removeFromParent();
+    	}
     	inputManager.removeListener(this);
     	camController.setEnabled(false);
     }
@@ -94,7 +102,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	/**
 	 * A plus sign used as crosshairs to help the player with aiming.
 	 */
-    protected BitmapText getCrosshair() {
+    public BitmapText getCrosshair() {
       //guiNode.detachAllChildren();
       BitmapFont guiFont = gameController.getAssetManager().loadFont("Interface/Fonts/Default.fnt");
       BitmapText ch = new BitmapText(guiFont, false);
@@ -104,6 +112,16 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         gameController.getContext().getSettings().getWidth() / 2 - guiFont.getCharSet().getRenderedSize() / 3 * 2,
         gameController.getContext().getSettings().getHeight() / 2 + ch.getLineHeight() / 2, 0);
       return ch;
+    }
+    
+    public void crosshair(boolean visible) {
+    	if(crosshair != null) {
+    		crosshair.removeFromParent();
+    	}
+    	if(visible) {
+        	crosshair = getCrosshair();
+        	gameController.getGuiNode().attachChild(crosshair);
+        }
     }
 
 }

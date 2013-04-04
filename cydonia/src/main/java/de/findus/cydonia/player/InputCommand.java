@@ -14,7 +14,7 @@ import java.util.Set;
 public enum InputCommand {
 
 	USEPRIMARY("useprimary"), USESECONDARY("usesecondary"), SWITCHEQUIP("switchequip"), ATTACK("attack"), JUMP("jump"), MOVEFRONT("movefront"), MOVEBACK("moveback"), STRAFELEFT("strafeleft"), STRAFERIGHT("straferight"), JOINGAME("joingame"), QUITGAME("quitgame"),
-	SCOREBOARD("scoreboard"), EXIT("exit"), CHOOSETEAM1("chooseteam1"), CHOOSETEAM2("chooseteam2"), FPS("fps");
+	SCOREBOARD("scoreboard"), EXIT("exit"), CHOOSETEAM1("chooseteam1"), CHOOSETEAM2("chooseteam2"), FPS("fps"), HUD("hud"), CROSSHAIR("crosshair");
 	
 	public static final Set<InputCommand> forwarded = new HashSet<InputCommand>();
 	

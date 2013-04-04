@@ -119,6 +119,8 @@ public class GameController extends MainController implements ScreenController{
     protected BitmapText fpsText;
     protected BitmapFont guiFont;
     protected StatsView statsView;
+    
+    private boolean showCrosshair = true;
 
     private Node beamNode;
     
@@ -750,6 +752,21 @@ public class GameController extends MainController implements ScreenController{
 				}
 			}
 			break;
+			
+		case HUD:
+			if(value) {
+				menuController.setShowHUD(!menuController.isShowHUD());
+				menuController.actualizeScreen();
+			}
+			break;
+			
+		case CROSSHAIR:
+			if(value) {
+				showCrosshair = !showCrosshair;
+				gameInputAppState.crosshair(showCrosshair);
+			}
+			break;
+
 
 		default:
 			if(getClientstate() == ClientState.GAME && getGamestate() == GameState.RUNNING && InputCommand.usedirect.contains(command)) {
@@ -920,6 +937,11 @@ public class GameController extends MainController implements ScreenController{
 	    fpsText = new BitmapText(guiFont, false);
 	    fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
 	    fpsText.setText("Frames per second");
+	    if(showFps) {
+			fpsText.setCullHint(CullHint.Inherit);
+		}else {
+			fpsText.setCullHint(CullHint.Always);
+		}
 	    guiNode.attachChild(fpsText);
 	}
 
@@ -1085,6 +1107,10 @@ public class GameController extends MainController implements ScreenController{
 
 	public void setClientstate(ClientState clientState) {
 		this.clientState = clientState;
+	}
+
+	public boolean isShowCrosshair() {
+		return showCrosshair;
 	}
 
 	/**

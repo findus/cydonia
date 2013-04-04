@@ -40,6 +40,8 @@ public class MenuController {
 	
 	private GameController gameController;
 	
+	private boolean showHUD = true;
+	
 	private Element timetext;
 	private Element flagredtext;
 	private Element flagbluetext;
@@ -96,11 +98,17 @@ public class MenuController {
 
 			switch (gameController.getGamestate()) {
 			case DOWN:
+				hideMessage();
+				hideHUD();
 				break;
 
 			case RUNNING:
 				hideMessage();
-				showHUD();
+				if(showHUD) {
+					showHUD();
+				}else {
+					hideHUD();
+				}
 				break;
 
 			case SPECTATE:
@@ -242,6 +250,14 @@ public class MenuController {
 		}
 	}
 	
+	public boolean isShowHUD() {
+		return showHUD;
+	}
+
+	public void setShowHUD(boolean showHUD) {
+		this.showHUD = showHUD;
+	}
+
 	private class ScoreLineBuilder extends PanelBuilder {
 		
 		private ScoreLineBuilder(final String name, final String score, final String bgcolor, final String fontcolor)
