@@ -242,4 +242,41 @@ public class PlayerController {
 	public int getPlayerCount() {
 		return players.size();
 	}
+	
+	public void handleInput(Player p, InputCommand command, boolean value) {
+		switch (command) {
+		case MOVEFRONT:
+			p.inputs.setForward(value);
+			break;
+		case MOVEBACK:
+			p.inputs.setBack(value);
+			break;
+		case STRAFELEFT:
+			p.inputs.setLeft(value);
+			break;
+		case STRAFERIGHT:
+			p.inputs.setRight(value);
+			break;
+		case JUMP:
+			if(value) {
+				if("ctf".equalsIgnoreCase(mainController.getGameConfig().getString("mp_gamemode"))) {
+					p.jump();
+				}
+			}
+			break;
+		case USEPRIMARY:
+			p.getCurrentEquipment().usePrimary(value);
+			break;
+		case USESECONDARY:
+			p.getCurrentEquipment().useSecondary(value);
+			break;
+		case SWITCHEQUIP:
+			p.switchEquipment(value);
+			break;
+		default:
+			break;
+		}
+
+		p.updateAnimationState();
+	}
 }

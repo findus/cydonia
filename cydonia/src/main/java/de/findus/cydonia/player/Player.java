@@ -38,7 +38,7 @@ public class Player implements AnimEventListener{
 	
 	private boolean alive = false;
 
-	private PlayerInputState inputs;
+	PlayerInputState inputs;
 	
 	private Vector3f exactLoc = new Vector3f();
 	
@@ -98,43 +98,43 @@ public class Player implements AnimEventListener{
         node.addControl(control);
 		node.addControl(ghostControl);
 	}
+//	
+//	void handleInput(InputCommand command, boolean value) {
+//		switch (command) {
+//		case MOVEFRONT:
+//			inputs.setForward(value);
+//			break;
+//		case MOVEBACK:
+//			inputs.setBack(value);
+//			break;
+//		case STRAFELEFT:
+//			inputs.setLeft(value);
+//			break;
+//		case STRAFERIGHT:
+//			inputs.setRight(value);
+//			break;
+//		case JUMP:
+//			if(value) {
+//				this.jump();
+//			}
+//			break;
+//		case USEPRIMARY:
+//			getCurrentEquipment().usePrimary(value);
+//			break;
+//		case USESECONDARY:
+//			getCurrentEquipment().useSecondary(value);
+//			break;
+//		case SWITCHEQUIP:
+//			this.switchEquipment(value);
+//			break;
+//		default:
+//			break;
+//		}
+//		
+//		updateAnimationState();
+//	}
 	
-	public void handleInput(InputCommand command, boolean value) {
-		switch (command) {
-		case MOVEFRONT:
-			inputs.setForward(value);
-			break;
-		case MOVEBACK:
-			inputs.setBack(value);
-			break;
-		case STRAFELEFT:
-			inputs.setLeft(value);
-			break;
-		case STRAFERIGHT:
-			inputs.setRight(value);
-			break;
-		case JUMP:
-			if(value) {
-				this.jump();
-			}
-			break;
-		case USEPRIMARY:
-			getCurrentEquipment().usePrimary(value);
-			break;
-		case USESECONDARY:
-			getCurrentEquipment().useSecondary(value);
-			break;
-		case SWITCHEQUIP:
-			this.switchEquipment(value);
-			break;
-		default:
-			break;
-		}
-		
-		updateAnimationState();
-	}
-	
-	public void updateAnimationState() {
+	void updateAnimationState() {
 		// Update Animation
 		if(jumping) {
 			
@@ -174,7 +174,7 @@ public class Player implements AnimEventListener{
 		
 	}
 
-	public void setModel(Node s) {
+	void setModel(Node s) {
 		if(this.node.hasChild(this.model)) {
 			this.node.detachChild(this.model);
 		}
@@ -190,14 +190,14 @@ public class Player implements AnimEventListener{
         topchannel.setSpeed(0.1f);
 	}
 	
-	public void jump() {
+	void jump() {
 		control.jump();
 		this.jumping = true;
 		basechannel.setAnim("JumpStart", 0.5f);
 		basechannel.setLoopMode(LoopMode.Loop);
 	}
 	
-	public void switchEquipment(boolean up) {
+	void switchEquipment(boolean up) {
 		this.setCurrEquip(this.currEquip + (up?1:-1));
 	}
 	

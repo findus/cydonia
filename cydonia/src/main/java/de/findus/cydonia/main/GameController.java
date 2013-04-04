@@ -621,7 +621,7 @@ public class GameController extends MainController implements ScreenController{
 			// only use inputs from other players, not our own inputs, that are sent back to us from the server
 			if(player.getId() != input.getPlayerid() || !InputCommand.usedirect.contains(input.getClass())) {
 				Player p = getPlayerController().getPlayer(input.getPlayerid());
-				p.handleInput(input.getCommand(), input.isValue());
+				getPlayerController().handleInput(p, input.getCommand(), input.isValue());
 			}
 		}else if (e instanceof RestartRoundEvent) {
 			for (Player p : getPlayerController().getAllPlayers()) {
@@ -734,7 +734,7 @@ public class GameController extends MainController implements ScreenController{
 
 		default:
 			if(getClientstate() == ClientState.GAME && getGamestate() == GameState.RUNNING && InputCommand.usedirect.contains(command)) {
-				player.handleInput(command, value);
+				getPlayerController().handleInput(player, command, value);
 			}
 			break;
 		}

@@ -447,7 +447,7 @@ public class GameServer extends MainController{
 		case USEPRIMARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
-					p.handleInput(command, value);
+					getPlayerController().handleInput(p, command, value);
 					
 					InputEvent event = new InputEvent(p.getId(), command, value, true);
 					getEventMachine().fireEvent(event);
@@ -461,7 +461,7 @@ public class GameServer extends MainController{
 		case USESECONDARY:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
 				if(p.isAlive()) {
-					p.handleInput(command, value);
+					getPlayerController().handleInput(p, command, value);
 					
 					InputEvent event = new InputEvent(p.getId(), command, value, true);
 					getEventMachine().fireEvent(event);
@@ -481,7 +481,7 @@ public class GameServer extends MainController{
 
 		default:
 			if(gameplayController.getGameState() == GameState.RUNNING) {
-				p.handleInput(command, value);
+				getPlayerController().handleInput(p, command, value);
 				InputEvent event = new InputEvent(p.getId(), command, value, true);
 				getEventMachine().fireEvent(event);
 			}
