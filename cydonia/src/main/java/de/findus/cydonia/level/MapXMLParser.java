@@ -6,8 +6,8 @@ package de.findus.cydonia.level;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -52,7 +52,13 @@ public class MapXMLParser {
 		}
 
 		String name = root.getAttributeValue("name");
-		float bottomHeight = Float.parseFloat(root.getAttributeValue("bottomHeight"));
+		if(name == null) name = "n/a";
+		float bottomHeight = 0;
+		try {
+			bottomHeight = Float.parseFloat(root.getAttributeValue("bottomHeight"));
+		}catch(NullPointerException e) {
+		}catch(NumberFormatException e) {
+		}
 
 		Map map = new Map(name);
 		map.setBottomHeight(bottomHeight);
@@ -75,9 +81,9 @@ public class MapXMLParser {
 			root.setAttribute("name", level.getName());
 			root.setAttribute("bottomHeight", String.valueOf(level.getBottomHeight()));
 
-			root.addContent(writeFlags(level.getFlags()));
-			root.addContent(writeSpawnPoints(level.getSpawnPoints()));
-			root.addContent(writeFlubes(level.getFlubes()));
+			root.addContent(writeFlags(level.getFlags().values()));
+			root.addContent(writeSpawnPoints(level.getSpawnPoints().values()));
+			root.addContent(writeFlubes(level.getFlubes().values()));
 		}
 		
 		Document doc = new Document(root);
@@ -87,7 +93,7 @@ public class MapXMLParser {
 		return buffer.toString();
 	}
 
-	private Collection<Element> writeFlags(List<Flag> list) {
+	private Collection<Element> writeFlags(Collection<Flag> list) {
 		Collection<Element> col = new LinkedList<Element>();
 		for(Flag f : list) {
 			Element e = new Element("flag");
@@ -100,7 +106,7 @@ public class MapXMLParser {
 		return col;
 	}
 	
-	private Collection<Element> writeSpawnPoints(List<SpawnPoint> list) {
+	private Collection<Element> writeSpawnPoints(Collection<SpawnPoint> list) {
 		Collection<Element> col = new LinkedList<Element>();
 		for(SpawnPoint sp : list) {
 			Element e = new Element("spawnpoint");
@@ -114,7 +120,7 @@ public class MapXMLParser {
 		return col;
 	}
 	
-	private Collection<Element> writeFlubes(List<Flube> list) {
+	private Collection<Element> writeFlubes(Collection<Flube> list) {
 		Collection<Element> col = new LinkedList<Element>();
 		for(Flube f : list) {
 			Element e = new Element("flube");
@@ -128,8 +134,8 @@ public class MapXMLParser {
 		return col;
 	}
 
-	private List<Flag> parseFlags(Element root) {
-		LinkedList<Flag> list = new LinkedList<Flag>();	
+	private java.util.Map<Integer, Flag> parseFlags(Element root) {
+		java.util.Map<Integer, Flag> list =  new HashMap<Integer, Flag>();	
 		for(Element e : root.getChildren("flag")) {
 			int id = Integer.parseInt(e.getAttributeValue("id"));
 			int team = Integer.parseInt(e.getAttributeValue("team"));
@@ -137,13 +143,13 @@ public class MapXMLParser {
 			float posy = Float.parseFloat(e.getAttributeValue("posy"));
 			float posz = Float.parseFloat(e.getAttributeValue("posz"));
 			Flag f = FlagFactory.getInstance().createFlag(id, new Vector3f(posx, posy, posz), team);
-			list.add(f);				
+			list.put(f.getId(), f);				
 		}
 		return list;
 	}
 	
-	private List<SpawnPoint> parseSpawnPoints(Element root) {
-		LinkedList<SpawnPoint> list = new LinkedList<SpawnPoint>();	
+	private java.util.Map<Integer, SpawnPoint> parseSpawnPoints(Element root) {
+		java.util.Map<Integer, SpawnPoint> list = new HashMap<Integer, SpawnPoint>();	
 		for(Element e : root.getChildren("spawnpoint")) {
 			int id = Integer.parseInt(e.getAttributeValue("id"));
 			int team = Integer.parseInt(e.getAttributeValue("team"));
@@ -151,13 +157,13 @@ public class MapXMLParser {
 			float posy = Float.parseFloat(e.getAttributeValue("posy"));
 			float posz = Float.parseFloat(e.getAttributeValue("posz"));
 			SpawnPoint sp = new SpawnPoint(id, new Vector3f(posx, posy, posz), team, assetManager);
-			list.add(sp);				
+			list.put(sp.getId(), sp);				
 		}
 		return list;
 	}
 	
-	private List<Flube> parseFlubes(Element root) {
-		LinkedList<Flube> list = new LinkedList<Flube>();	
+	private java.util.Map<Long, Flube> parseFlubes(Element root) {
+		java.util.Map<Long, Flube> list = new HashMap<Long, Flube>();	
 		for(Element e : root.getChildren("flube")) {
 			long id = Long.parseLong(e.getAttributeValue("id"));
 			int type = Integer.parseInt(e.getAttributeValue("type"));
@@ -165,7 +171,7 @@ public class MapXMLParser {
 			float posy = Float.parseFloat(e.getAttributeValue("posy"));
 			float posz = Float.parseFloat(e.getAttributeValue("posz"));
 			Flube f = new Flube(id, new Vector3f(posx, posy, posz), type, assetManager);
-			list.add(f);				
+			list.put(f.getId(), f);				
 		}
 		return list;
 	}

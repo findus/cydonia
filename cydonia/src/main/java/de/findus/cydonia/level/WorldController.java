@@ -4,7 +4,6 @@
 package de.findus.cydonia.level;
 
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
@@ -53,13 +52,7 @@ public class WorldController {
 	
 	protected Node moveablesNode = new Node("Movables");
 	
-	protected ConcurrentHashMap<Long, Flube> flubes;
-	
-	protected ConcurrentHashMap<Integer, Flag> flags;
-	
-	protected ConcurrentHashMap<Integer, SpawnPoint> spawnPoints;
-	
-	private Map map;
+	private Map map = new Map("empty");
 	
 	/**
 	 * Constructs setting up ambient light.
@@ -68,34 +61,28 @@ public class WorldController {
 		this.assetManager = assetManager;
 		this.physicsSpace = physicsSpace;
 		
-		this.flubes = new ConcurrentHashMap<Long, Flube>();
-		this.flags = new ConcurrentHashMap<Integer, Flag>();
-		this.spawnPoints = new ConcurrentHashMap<Integer, SpawnPoint>();
-		
 		setUpAmbientLight();
 		
 		rootNode.attachChild(worldNode);
 	}
 	
 	public void unloadCurrentWorld() {
-		for(Flube f : this.flubes.values()) {
+		for(Flube f : map.getFlubes().values()) {
 			detachFlube(f);
 		}
-		this.flubes.clear();
+		this.map.getFlubes().clear();
 		
-		for(Flag flag : this.flags.values()) {
+		for(Flag flag : map.getFlags().values()) {
 			returnFlag(flag);
 			this.worldNode.detachChild(flag.getBaseModel());
 			this.physicsSpace.removeCollisionObject(flag.getBaseControl());
 		}
-		this.flags.clear();
+		this.map.getFlags().clear();
 		
-		for(SpawnPoint sp : this.spawnPoints.values()) {
+		for(SpawnPoint sp : map.getSpawnPoints().values()) {
 			this.worldNode.detachChild(sp.getNode());
 		}
-		this.spawnPoints.clear();
-		
-		this.map = null;
+		this.map.getSpawnPoints().clear();
 	}
 
 	public void loadWorld(Map level) {
@@ -104,20 +91,17 @@ public class WorldController {
 //		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
 //		rootNode.attachChild(sky);
 
-		for(Flube f : level.getFlubes()) {
-			this.flubes.put(f.getId(), f);
+		for(Flube f : level.getFlubes().values()) {
 			f.getControl().setPhysicsLocation(f.getOrigin());
 			attachFlube(f);
 		}
-		for(Flag flag : level.getFlags()) {
-			this.flags.put(flag.getId(), flag);
+		for(Flag flag : level.getFlags().values()) {
 			this.worldNode.attachChild(flag.getBaseModel());
 			this.physicsSpace.addCollisionObject(flag.getBaseControl());
 			flag.getBaseModel().attachChild(flag.getModel());
 		}
 		
-		for(SpawnPoint sp : level.getSpawnPoints()) {
-			this.spawnPoints.put(sp.getId(), sp);
+		for(SpawnPoint sp : level.getSpawnPoints().values()) {
 			this.worldNode.attachChild(sp.getNode());
 		}
 		
@@ -188,15 +172,13 @@ public class WorldController {
 	
 	private void addFlube(long id, Vector3f pos, int type, boolean doubleSymmetric) {
 		Flube m1 = new Flube(id, pos, type, assetManager);
-		this.flubes.put(m1.getId(), m1);
-		map.getFlubes().add(m1);
+		this.map.getFlubes().put(m1.getId(), m1);
 		m1.getControl().setPhysicsLocation(m1.getOrigin());
 		attachFlube(m1);
 		
 		if(doubleSymmetric) {
 			Flube m2 = new Flube(++id, pos.mult(new Vector3f(1, 1, -1)), type, assetManager);
-			this.flubes.put(m2.getId(), m2);
-			map.getFlubes().add(m2);
+			this.map.getFlubes().put(m2.getId(), m2);
 			m2.getControl().setPhysicsLocation(m2.getOrigin());
 			attachFlube(m2);
 		}
@@ -205,18 +187,18 @@ public class WorldController {
 	public Flube addNewFlube(long id, Vector3f origin, int type) {
 		Flube flube = new Flube(id, origin, type, assetManager);
 		flube.getControl().setPhysicsLocation(origin);
-		this.flubes.put(flube.getId(), flube);
+		this.map.getFlubes().put(flube.getId(), flube);
 		return flube;
 	}
 	
 	public void removeFlube(Flube flube) {
 		detachFlube(flube);
-		this.flubes.remove(flube);
+		this.map.getFlubes().remove(flube.getId());
 	}
 	
 	public Flag addNewFlag(int id, Vector3f origin, int team) {
 		Flag flag = FlagFactory.getInstance().createFlag(id, origin, team);
-		this.flags.put(flag.getId(), flag);
+		this.map.getFlags().put(flag.getId(), flag);
 		this.worldNode.attachChild(flag.getBaseModel());
 		this.physicsSpace.addCollisionObject(flag.getBaseControl());
 		flag.getBaseModel().attachChild(flag.getModel());
@@ -225,23 +207,23 @@ public class WorldController {
 	
 	public void removeFlag(Flag flag) {
 		detachObject(flag.getBaseModel());
-		this.flags.remove(flag.getId());
+		this.map.getFlags().remove(flag.getId());
 	}
 	
 	public SpawnPoint addNewSpawnPoint(int id, Vector3f position, int team) {
 		SpawnPoint sp = new SpawnPoint(id, position, team, assetManager);
 		this.worldNode.attachChild(sp.getNode());
-		spawnPoints.put(sp.getId(), sp);
+		map.getSpawnPoints().put(sp.getId(), sp);
 		return sp;
 	}
 	
 	public void removeSpawnPoint(SpawnPoint sp) {
 		detachObject(sp.getNode());
-		spawnPoints.remove(sp.getId());
+		map.getSpawnPoints().remove(sp.getId());
 	}
 	
 	public SpawnPoint getSpawnPointForTeam(int team) {
-		for(SpawnPoint sp : spawnPoints.values()) {
+		for(SpawnPoint sp : map.getSpawnPoints().values()) {
 			if(sp.getTeam() == team) {
 				return sp;
 			}
@@ -258,12 +240,12 @@ public class WorldController {
 	}
 	
 	public void resetWorld() {
-		for (Flube f : flubes.values()) {
+		for (Flube f : map.getFlubes().values()) {
 			detachFlube(f);
 			f.getControl().setPhysicsLocation(f.getOrigin());
 			attachFlube(f);
 		}
-		for(Flag flag : flags.values()) {
+		for(Flag flag : map.getFlags().values()) {
 			returnFlag(flag);
 		}
 	}
@@ -491,27 +473,27 @@ public class WorldController {
 	}
 	
 	public Flube getFlube(long id) {
-		return flubes.get(id);
+		return map.getFlubes().get(id);
 	}
 	
 	public Collection<Flube> getAllFlubes() {
-		return flubes.values();
+		return map.getFlubes().values();
 	}
 	
 	public Flag getFlag(int id) {
-		return flags.get(id);
+		return map.getFlags().get(id);
 	}
 	
 	public Collection<Flag> getAllFlags() {
-		return flags.values();
+		return map.getFlags().values();
 	}
 	
 	public SpawnPoint getSpawnPoint(int id) {
-		return spawnPoints.get(id);
+		return map.getSpawnPoints().get(id);
 	}
 	
 	public Collection<SpawnPoint> getAllSpawnPoints() {
-		return spawnPoints.values();
+		return map.getSpawnPoints().values();
 	}
 
 	public CollisionResult pickWorld(Vector3f source, Vector3f direction) {
@@ -550,7 +532,7 @@ public class WorldController {
 	
 	public long getFreeFlubeId() {
 		for(long i=1; i<Long.MAX_VALUE; i++){
-			if(!flubes.containsKey(i)) {
+			if(!map.getFlubes().containsKey(i)) {
 				return i;
 			}
 		}
@@ -559,7 +541,7 @@ public class WorldController {
 	
 	public int getFreeFlagId() {
 		for(int i=1; i<Integer.MAX_VALUE; i++){
-			if(!flags.containsKey(i)) {
+			if(!map.getFlags().containsKey(i)) {
 				return i;
 			}
 		}
@@ -568,7 +550,7 @@ public class WorldController {
 	
 	public int getFreeSpawnPointId() {
 		for(int i=1; i<Integer.MAX_VALUE; i++){
-			if(!spawnPoints.containsKey(i)) {
+			if(!map.getSpawnPoints().containsKey(i)) {
 				return i;
 			}
 		}

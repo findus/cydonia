@@ -232,14 +232,14 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	}
 	
 	private void loadMapsFromDir() {
-		System.out.println(System.getProperty("user.home"));
-
+		listmodel.clear();
+		
 		File userdir = new File(System.getProperty("user.home"));
 		if(userdir.exists() && userdir.isDirectory()) {
 			File file = new File(System.getProperty("user.home") + "/Cydonia/maps/");
 			if(file.exists() && file.isDirectory()) {
+				System.out.println("loading maps from dir: " + file.getPath());
 				File[] maps = file.listFiles(mfxFilter);
-				
 				for(File m : maps) {
 					listmodel.addElement(m.getName().substring(0, m.getName().indexOf(GameServer.MAPEXTENSION)));
 				}
@@ -248,6 +248,8 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	}
 	
 	private void saveMap() {
+		String mapname = JOptionPane.showInputDialog("Please insert a name for this map:", server.getWorldController().getMap().getName());
+		
 		File dir = new File(System.getProperty("user.home") + "/Cydonia/maps/");
 		if(!dir.exists()) {
 			dir = new File(System.getProperty("user.home"));
@@ -255,6 +257,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		JFileChooser chooser = new JFileChooser(dir);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setFileFilter(mfxChooserFilter);
+		chooser.setSelectedFile(new File(dir, mapname + GameServer.MAPEXTENSION));
 		boolean accepted = false;
 		File f = null;
 		do {
@@ -278,6 +281,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 				server.saveCurrentMap(bw);
 				bw.flush();
 				bw.close();
+				loadMapsFromDir();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
