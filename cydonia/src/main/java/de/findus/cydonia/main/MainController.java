@@ -164,21 +164,27 @@ public abstract class MainController extends Application implements PhysicsColli
 			playerController.removePlayer(p.getId());
 		}
 		
-		protected void respawn(final Player p) {
-			if(p == null) return;
-			playerController.setHealthpoints(p, 100);
-			p.setAlive(true);
+		protected boolean respawn(final Player p) {
+			if(p == null) return false;
 
 			if("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
 				SpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
 				if(sp != null) {
+					playerController.setHealthpoints(p, 100);
+					p.setAlive(true);
 					p.getControl().setPhysicsLocation(sp.getPosition());
+					worldController.attachPlayer(p);
+					return true;
 				}
 			}else if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+				playerController.setHealthpoints(p, 100);
+				p.setAlive(true);
 				p.getControl().setPhysicsLocation(Vector3f.UNIT_Y);
+				worldController.attachPlayer(p);
+				return true;
 			}
 			
-			worldController.attachPlayer(p);
+			return false;
 		}
 		
 		protected void chooseTeam(Player p, int team) {

@@ -821,14 +821,16 @@ public class GameController extends MainController implements ScreenController{
 		}
 	}
 
-	protected void respawn(final Player p) {
-		super.respawn(p);
+	protected boolean respawn(final Player p) {
+		boolean res = super.respawn(p);
 		
-		if(p == null) return;
-		if(p.getId() == player.getId()) {
-			p.getModel().setCullHint(CullHint.Always);
-			resumeGame();
+		if(res) {
+			if(p.getId() == player.getId()) {
+				p.getModel().setCullHint(CullHint.Always);
+				resumeGame();
+			}
 		}
+		return res;
 	}
 	
 	protected void joinPlayer(int playerid, String playername) {

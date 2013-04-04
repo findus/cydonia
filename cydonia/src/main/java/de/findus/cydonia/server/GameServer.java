@@ -399,15 +399,16 @@ public class GameServer extends MainController{
 		}
 	}
 	
-	protected void respawn(Player p) {
-		super.respawn(p);
+	protected boolean respawn(Player p) {
+		boolean res = super.respawn(p);
 		
-		if(p == null) return;
-		
-		CWRITER.writeLine(p.getName() + " respawned");
-		
-		RespawnEvent respawn = new RespawnEvent(p.getId(), true);
-		getEventMachine().fireEvent(respawn);
+		if(res) {
+			CWRITER.writeLine(p.getName() + " respawned");
+
+			RespawnEvent respawn = new RespawnEvent(p.getId(), true);
+			getEventMachine().fireEvent(respawn);
+		}
+		return res;
 	}
 	
 	
