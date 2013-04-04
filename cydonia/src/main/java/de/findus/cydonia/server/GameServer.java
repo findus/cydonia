@@ -104,7 +104,7 @@ public class GameServer extends MainController{
 	private EquipmentFactory equipmentFactory;
 	
 	private Collection<ServerStateListener> stateListeners;
-	
+
 	public GameServer() {
 		super();
 		

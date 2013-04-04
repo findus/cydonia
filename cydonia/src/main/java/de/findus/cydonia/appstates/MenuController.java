@@ -73,44 +73,53 @@ public class MenuController {
 	}
 	
 	public void actualizeScreen() {
-		switch (gameController.getGamestate()) {
+		switch (gameController.getClientstate()) {
 		case LOBBY:
-			gameController.getNifty().gotoScreen("lobbymenu");
+			if(!"lobbymenu".equals(gameController.getNifty().getCurrentScreen().getScreenId())) {
+				gameController.getNifty().gotoScreen("lobbymenu");
+			}
 			gameController.getInputManager().setCursorVisible(true);
 			break;
 
 		case MENU:
-			gameController.getNifty().gotoScreen("pausemenu");
+			if(!"pausemenu".equals(gameController.getNifty().getCurrentScreen().getScreenId())) {
+				gameController.getNifty().gotoScreen("pausemenu");
+			}
 			gameController.getInputManager().setCursorVisible(true);
 			break;
 
-		case SPECTATE:
-			gameController.getNifty().gotoScreen("ingamescreen");
-			gameController.getInputManager().setCursorVisible(false);
-			hideHUD();
-			showMessage("Press 'Fire' to join the game!");
-			break;
-
-		case RUNNING:
-			gameController.getNifty().gotoScreen("ingamescreen");
-			gameController.getInputManager().setCursorVisible(false);
-			hideMessage();
-			showHUD();
-			break;
-
-		case ROUNDOVER:
-			gameController.getNifty().gotoScreen("ingamescreen");
-			gameController.getInputManager().setCursorVisible(false);
-			hideHUD();
-			String message = "Round is over. New round will start automatically in a view seconds...";
-			int winteam = gameController.getWinTeam();
-			if(winteam == 1) {
-				message += "\nBlue team is the winner!";
-			}else if(winteam == 2) {
-				message += "\nRed team is the winner!";
+		case GAME:
+			if(!"ingamescreen".equals(gameController.getNifty().getCurrentScreen().getScreenId())) {
+				gameController.getNifty().gotoScreen("ingamescreen");
 			}
-			showMessage(message);
-			break;
+			gameController.getInputManager().setCursorVisible(false);
+
+			switch (gameController.getGamestate()) {
+			case DOWN:
+				break;
+
+			case RUNNING:
+				hideMessage();
+				showHUD();
+				break;
+
+			case SPECTATE:
+				hideHUD();
+				showMessage("Press 'Fire' to join the game!");
+				break;
+
+			case ROUNDOVER:
+				hideHUD();
+				String message = "Round is over. New round will start automatically in a view seconds...";
+				int winteam = gameController.getWinTeam();
+				if(winteam == 1) {
+					message += "\nBlue team is the winner!";
+				}else if(winteam == 2) {
+					message += "\nRed team is the winner!";
+				}
+				showMessage(message);
+				break;
+			}
 
 		default:
 			break;

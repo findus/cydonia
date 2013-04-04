@@ -40,8 +40,6 @@ public abstract class MainController extends Application implements PhysicsColli
 	    
 	    public static Transform ROTATE90LEFT = new Transform(new Quaternion().fromRotationMatrix(new Matrix3f(1, 0, FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 	    
-	    private GameState gamestate;
-	    
 	    private GameConfig gameConfig;
 	    
 	    private WorldController worldController;
@@ -64,8 +62,6 @@ public abstract class MainController extends Application implements PhysicsColli
 	    @Override
 	    public void initialize() {
 	        super.initialize();
-	        
-	        this.gamestate = GameState.LOADING;
 	        
 	        eventMachine = new EventMachine();
 	        eventQueue = new ConcurrentLinkedQueue<Event>();
@@ -214,17 +210,6 @@ public abstract class MainController extends Application implements PhysicsColli
 			System.out.println("Place");
 		}
 		
-		public GameState getGamestate() {
-			return gamestate;
-		}
-
-	    /**
-		 * @param gamestate the gamestate to set
-		 */
-		public void setGamestate(GameState gamestate) {
-			this.gamestate = gamestate;
-		}
-
 		/**
 		 * @return the gameConfig
 		 */

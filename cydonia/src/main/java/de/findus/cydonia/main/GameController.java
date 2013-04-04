@@ -146,9 +146,14 @@ public class GameController extends MainController implements ScreenController{
     private LocationUpdatedMessage latestLocationUpdate;
     
     private long roundStartTime;
+
+	private GameState gamestate;
+	
+	private ClientState clientState;
     
     private int winTeam;
 	private AmbientLight editorLight;
+	
 	public void start(String server) {
     	this.serverAddress = server;
     	this.start();
@@ -277,7 +282,8 @@ public class GameController extends MainController implements ScreenController{
     	guiViewPort.addProcessor(niftyDisplay);
 
     	menuController = new MenuController(this);
-    	this.setGamestate(GameState.LOADING);
+    	this.setClientstate(ClientState.LOADING);
+    	this.setGamestate(GameState.DOWN);
     	menuController.actualizeScreen();
     	
     	connector = new ServerConnector(this, getEventMachine());
@@ -370,7 +376,8 @@ public class GameController extends MainController implements ScreenController{
 //		}
         
     	getBulletAppState().setEnabled(true);
-    	setGamestate(GameState.LOADING);
+//    	setGamestate(GameState.LOADING);
+//    	setClientstate(ClientState.)
     	menuController.actualizeScreen();
     	
     	InitialStateMessage init = new InitialStateMessage();
@@ -482,8 +489,8 @@ public class GameController extends MainController implements ScreenController{
 		};
 		enqueue(job);
     	
-		if(getGamestate() == GameState.LOADING) {
-			setGamestate(GameState.LOBBY);
+		if(getClientstate() == ClientState.LOADING) {
+			setClientstate(ClientState.LOBBY);
 			menuController.actualizeScreen();
 		}
     }
@@ -493,6 +500,7 @@ public class GameController extends MainController implements ScreenController{
     	int team = this.teamInput.getSelectedIndex() + 1;
     	
     	setGamestate(GameState.SPECTATE);
+    	setClientstate(ClientState.GAME);
     	menuController.actualizeScreen();
     	
         JoinMessage join = new JoinMessage(connector.getConnectionId(), playername);
@@ -512,7 +520,7 @@ public class GameController extends MainController implements ScreenController{
      */
     public void resumeGame() {
     	setGamestate(GameState.RUNNING);
-    	stateManager.attach(gameInputAppState);
+//    	stateManager.attach(gameInputAppState);
     	startInputSender();
     	menuController.actualizeScreen();
     }
@@ -523,7 +531,16 @@ public class GameController extends MainController implements ScreenController{
     public void openMenu() {
     	stateManager.detach(gameInputAppState);
     	stopInputSender();
-    	setGamestate(GameState.MENU);
+    	clientState = ClientState.MENU;
+    	menuController.actualizeScreen();
+    }
+    
+    public void closeMenu() {
+    	if(getGamestate() == GameState.RUNNING) {
+    		stateManager.attach(gameInputAppState);
+    		startInputSender();
+    	}
+    	clientState = ClientState.GAME;
     	menuController.actualizeScreen();
     }
     
@@ -601,10 +618,10 @@ public class GameController extends MainController implements ScreenController{
 	protected void handleEvent(Event e) {
 		if (e instanceof ConnectionDeniedEvent) {
 			System.out.println("Server denied connection! Reason: '" + ((ConnectionDeniedEvent) e).getReason() + "'");
-			setGamestate(GameState.LOBBY);
+			setClientstate(ClientState.LOADING);
 			menuController.actualizeScreen();
-			clean();
 			connector.disconnectFromServer();
+			stopGame();
 		}else if (e instanceof ConnectionInitEvent) {
 			startGame(((ConnectionInitEvent) e).getLevel());
 		}else if (e instanceof KillEvent) {
@@ -723,10 +740,6 @@ public class GameController extends MainController implements ScreenController{
 			
 		}
 	}
-
-	private void clean() {
-		getPlayerController().removeAllPlayers();
-	}
 	
 	public void setlatestLocationUpdate(LocationUpdatedMessage update) {
 		latestLocationUpdate = update;
@@ -749,16 +762,16 @@ public class GameController extends MainController implements ScreenController{
 			break;
 		case EXIT:
 			if(value) {
-				if(getGamestate() == GameState.RUNNING || getGamestate() == GameState.SPECTATE || getGamestate() == GameState.ROUNDOVER) {
+				if(clientState == ClientState.GAME) {
 					openMenu();
-				}else if (getGamestate() == GameState.MENU) {
-					resumeGame();
+				}else if(clientState == ClientState.MENU){
+					closeMenu();
 				}
 			}
 			break;
 
 		default:
-			if(getGamestate() == GameState.RUNNING && InputCommand.usedirect.contains(command)) {
+			if(getClientstate() == ClientState.GAME && getGamestate() == GameState.RUNNING && InputCommand.usedirect.contains(command)) {
 				player.handleInput(command, value);
 			}
 			break;
@@ -1009,6 +1022,11 @@ public class GameController extends MainController implements ScreenController{
 		this.down = down;
 	}
 
+	@Override
+	public EquipmentFactory getEquipmentFactory() {
+		return this.equipmentFactory;
+	}
+
 	/**
 	 * Retrieves nifty.
 	 * @return nifty object
@@ -1067,7 +1085,26 @@ public class GameController extends MainController implements ScreenController{
 		}
 	}
     
-    /**
+    public GameState getGamestate() {
+		return gamestate;
+	}
+
+	/**
+	 * @param gamestate the gamestate to set
+	 */
+	public void setGamestate(GameState gamestate) {
+		this.gamestate = gamestate;
+	}
+
+	public ClientState getClientstate() {
+		return clientState;
+	}
+
+	public void setClientstate(ClientState clientState) {
+		this.clientState = clientState;
+	}
+
+	/**
 	 * This class is used to send the user input state to the server in constant time intervals.
 	 * @author Findus
 	 *
@@ -1091,10 +1128,5 @@ public class GameController extends MainController implements ScreenController{
 			}
 		}
 		
-	}
-
-	@Override
-	public EquipmentFactory getEquipmentFactory() {
-		return this.equipmentFactory;
 	}
 }
