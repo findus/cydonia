@@ -58,7 +58,7 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 	
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
-		inputManager.addMapping(CROSSHAIR.getCode(), new KeyTrigger(KeyInput.KEY_F10));
+		inputManager.addMapping(CROSSHAIR.getCode(), new KeyTrigger(KeyInput.KEY_O));
 		inputManager.addMapping(HUD.getCode(), new KeyTrigger(KeyInput.KEY_F11));
 		inputManager.addMapping(STRAFELEFT.getCode(), new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping(STRAFERIGHT.getCode(), new KeyTrigger(KeyInput.KEY_D));

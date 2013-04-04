@@ -98,6 +98,7 @@ public class MapXMLParser {
 		for(Flag f : list) {
 			Element e = new Element("flag");
 			e.setAttribute("id", String.valueOf(f.getId()));
+			e.setAttribute("team", String.valueOf(f.getTeam()));
 			e.setAttribute("posx", String.valueOf(f.getOrigin().getX()));
 			e.setAttribute("posy", String.valueOf(f.getOrigin().getY()));
 			e.setAttribute("posz", String.valueOf(f.getOrigin().getZ()));
