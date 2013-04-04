@@ -293,7 +293,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if("sendCommand".equals(e.getActionCommand())) {
-			consoleOutput.append("-> " + commandInput.getText());
+			consoleOutput.append("\n-> " + commandInput.getText());
 			server.handleCommand(commandInput.getText());
 			commandInput.setText("");
 		}else if("loadMap".equals(e.getActionCommand())) {
