@@ -17,6 +17,7 @@ import org.xml.sax.InputSource;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.collision.CollisionResult;
 import com.jme3.math.Vector3f;
+import com.jme3.network.message.CompressedMessage;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
@@ -39,7 +40,6 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
-import de.findus.cydonia.events.WorldStateEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
@@ -50,6 +50,7 @@ import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.FlagInfo;
+import de.findus.cydonia.messages.FlubeStatePartMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
@@ -551,15 +552,69 @@ public class GameServer extends MainController{
 	}
 	
 	public void sendInitialState(int playerid) {
+		WorldState state = getWorldState();
+		MoveableInfo[] infos = state.getFlubes();
+		int partsize = 300;
+		LinkedList<MoveableInfo[]> list = new LinkedList<MoveableInfo[]>();
+		MoveableInfo[] part = new MoveableInfo[partsize];
+		int j = 0;
+		for(int i=0; i<infos.length; i++) {
+			part[j] = infos[i];
+			j++;
+			if(j >= partsize) {
+				list.add(part);
+				part = new MoveableInfo[partsize];
+				j=0;
+			}
+		}
+		list.add(part);
+		
+		state.setFlubes(new MoveableInfo[0]);
 		InitialStateMessage msg = new InitialStateMessage();
-		msg.setWorldState(getWorldState());
-		networkController.sendMessage(msg, playerid);
+		msg.setPartcount(list.size());
+		msg.setWorldState(state);
+		networkController.sendMessage(new CompressedMessage(msg), playerid);
+		
+		int k = 1;
+		for(MoveableInfo[] p : list) {
+			FlubeStatePartMessage partmsg = new FlubeStatePartMessage();
+			partmsg.setFlubes(p);
+			partmsg.setNumber(k++);
+			networkController.sendMessage(new CompressedMessage(partmsg), playerid);
+		}
 	}
 	
 	public void broadcastInitialState() {
 		WorldState state = getWorldState();
-		WorldStateEvent event = new WorldStateEvent(state, true);
-		getEventMachine().fireEvent(event);
+		MoveableInfo[] infos = state.getFlubes();
+		int partsize = 300;
+		LinkedList<MoveableInfo[]> list = new LinkedList<MoveableInfo[]>();
+		MoveableInfo[] part = new MoveableInfo[partsize];
+		int j = 0;
+		for(int i=0; i<infos.length; i++) {
+			part[j] = infos[i];
+			j++;
+			if(j >= partsize) {
+				list.add(part);
+				part = new MoveableInfo[partsize];
+				j=0;
+			}
+		}
+		list.add(part);
+		
+		state.setFlubes(new MoveableInfo[0]);
+		InitialStateMessage msg = new InitialStateMessage();
+		msg.setPartcount(list.size());
+		msg.setWorldState(state);
+		networkController.broadcast(new CompressedMessage(msg));
+		
+		int k = 1;
+		for(MoveableInfo[] p : list) {
+			FlubeStatePartMessage partmsg = new FlubeStatePartMessage();
+			partmsg.setFlubes(p);
+			partmsg.setNumber(k++);
+			networkController.broadcast(new CompressedMessage(partmsg));
+		}
 	}
 
 	public void setViewDir(int playerid, Vector3f dir) {

@@ -16,6 +16,8 @@ import de.findus.cydonia.level.WorldState;
 public class InitialStateMessage extends AbstractMessage {
 
 	private WorldState worldState;
+	
+	private int partcount;
 
 	
 	public InitialStateMessage() {
@@ -30,5 +32,15 @@ public class InitialStateMessage extends AbstractMessage {
 
 	public void setWorldState(WorldState worldState) {
 		this.worldState = worldState;
+	}
+
+
+	public int getPartcount() {
+		return partcount;
+	}
+
+
+	public void setPartcount(int partcount) {
+		this.partcount = partcount;
 	}
 }

@@ -16,6 +16,7 @@ import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
 import com.jme3.network.Server;
+import com.jme3.network.message.CompressedMessage;
 import com.jme3.network.serializing.Serializer;
 
 import de.findus.cydonia.events.AddEvent;
@@ -50,6 +51,7 @@ import de.findus.cydonia.messages.ConnectionInitMessage;
 import de.findus.cydonia.messages.EditorInfo;
 import de.findus.cydonia.messages.EventMessage;
 import de.findus.cydonia.messages.FlagInfo;
+import de.findus.cydonia.messages.FlubeStatePartMessage;
 import de.findus.cydonia.messages.InitialStateMessage;
 import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
@@ -153,9 +155,11 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 	}
 	
 	private void initSerializer() {
+		Serializer.registerClass(CompressedMessage.class);
 		Serializer.registerClass(ConnectionInitMessage.class);
 		Serializer.registerClass(JoinMessage.class);
 		Serializer.registerClass(InitialStateMessage.class);
+		Serializer.registerClass(FlubeStatePartMessage.class);
 		Serializer.registerClass(WorldState.class);
 		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);
@@ -209,6 +213,8 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 			gameserver.joinPlayer(msg.getPlayerid(), msg.getPlayername());
 		}else if(m instanceof InitialStateMessage) {
 			gameserver.sendInitialState(con.getId());
+		}else if(m instanceof CompressedMessage) {
+			messageReceived(con, ((CompressedMessage) m).getMessage());
 		}
 	}
 
