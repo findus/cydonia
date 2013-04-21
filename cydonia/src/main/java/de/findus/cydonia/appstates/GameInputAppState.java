@@ -13,6 +13,8 @@ import static de.findus.cydonia.player.InputCommand.SCOREBOARD;
 import static de.findus.cydonia.player.InputCommand.STRAFELEFT;
 import static de.findus.cydonia.player.InputCommand.STRAFERIGHT;
 import static de.findus.cydonia.player.InputCommand.SWITCHEQUIP;
+import static de.findus.cydonia.player.InputCommand.SWITCHEQUIPUP;
+import static de.findus.cydonia.player.InputCommand.SWITCHEQUIPDOWN;
 import static de.findus.cydonia.player.InputCommand.USEPRIMARY;
 import static de.findus.cydonia.player.InputCommand.USESECONDARY;
 
@@ -67,8 +69,9 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
         inputManager.addMapping(USEPRIMARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping(USESECONDARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
-        inputManager.addMapping(SWITCHEQUIP.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
-        inputManager.addListener(this, CROSSHAIR.getCode(), HUD.getCode(), STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(), SWITCHEQUIP.getCode());
+        inputManager.addMapping(SWITCHEQUIPDOWN.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        inputManager.addMapping(SWITCHEQUIPUP.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        inputManager.addListener(this, CROSSHAIR.getCode(), HUD.getCode(), STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(), SWITCHEQUIPUP.getCode(), SWITCHEQUIPDOWN.getCode());
         
         inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(KeyInput.KEY_TAB));
         inputManager.addListener(this, SCOREBOARD.getCode());
@@ -95,6 +98,14 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
     public void onAction(String name, boolean isPressed, float tpf) {
 		InputCommand command = InputCommand.parseInputCommand(name);
 		if(command != null) {
+			if(command == SWITCHEQUIPUP) {
+				command = SWITCHEQUIP;
+				isPressed = true;
+			}
+			if(command == SWITCHEQUIPDOWN) {
+				command = SWITCHEQUIP;
+				isPressed = false;
+			}
 			gameController.handlePlayerInput(command, isPressed);
 		}
 	}

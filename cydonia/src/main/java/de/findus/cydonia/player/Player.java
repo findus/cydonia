@@ -212,7 +212,8 @@ public class Player implements AnimEventListener{
 				this.node.detachChild(this.getCurrentEquipment().getGeometry());
 			}
 			this.getCurrentEquipment().reset();
-			this.currEquip = index % this.equips.size();
+			int size = this.equips.size();
+			this.currEquip = ((index % size) + size) % size;
 			if(this.getCurrentEquipment().getGeometry() != null) {
 				this.node.attachChild(this.getCurrentEquipment().getGeometry());
 			}
