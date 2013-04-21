@@ -45,7 +45,6 @@ import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.SpawnPoint;
-import de.findus.cydonia.level.WorldController;
 import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
@@ -543,6 +542,8 @@ public class GameServer extends MainController{
 		
 		WorldState state = new WorldState();
 		state.setPassedRoundTime(passedTime);
+		state.setTeam1score(gameplayController.getTeam1score());
+		state.setTeam2score(gameplayController.getTeam2score());
 		state.setPlayers(playerinfos);
 		state.setFlubes(flubeinfos);
 		state.setFlags(flaginfos);

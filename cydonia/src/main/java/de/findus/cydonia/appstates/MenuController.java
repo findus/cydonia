@@ -205,10 +205,10 @@ public class MenuController {
 			e.markForRemoval();
 		}
 		
-		PanelBuilder teampb = new ScoreLineBuilder("Team 1", "", "#4488", "ffff");
+		PanelBuilder teampb = new ScoreLineBuilder("Team 1", String.valueOf(gameController.getTeam1score()), "#4488", "ffff");
 		teampb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team1);
 		
-		teampb = new ScoreLineBuilder("Team 2", "", "#8448", "ffff");
+		teampb = new ScoreLineBuilder("Team 2", String.valueOf(gameController.getTeam2score()), "#8448", "ffff");
 		teampb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team2);
 		
 		PanelBuilder pb;

@@ -129,4 +129,12 @@ public class GameplayController {
 	public long getRoundStartTime() {
 		return this.roundStartTime;
 	}
+	
+	public int getTeam1score() {
+		return team1score;
+	}
+	
+	public int getTeam2score() {
+		return team2score;
+	}
 }

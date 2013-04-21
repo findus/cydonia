@@ -20,6 +20,10 @@ public class WorldState {
 
 	private long passedRoundTime;
 	
+	private int team1score;
+	
+	private int team2score;
+	
 	private PlayerInfo[] players;
 	
 	private MoveableInfo[] flubes;
@@ -124,6 +128,22 @@ public class WorldState {
 
 	public void setSpawnPoints(SpawnPointInfo[] spawnPoints) {
 		this.spawnPoints = spawnPoints;
+	}
+
+	public int getTeam1score() {
+		return team1score;
+	}
+
+	public void setTeam1score(int team1score) {
+		this.team1score = team1score;
+	}
+
+	public int getTeam2score() {
+		return team2score;
+	}
+
+	public void setTeam2score(int team2score) {
+		this.team2score = team2score;
 	}
 
 }

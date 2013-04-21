@@ -149,13 +149,15 @@ public class GameController extends MainController implements ScreenController{
     private LocationUpdatedMessage latestLocationUpdate;
     
     private long roundStartTime;
-
+    
 	private GameState gamestate;
 	
 	private ClientState clientState;
     
     private int winTeam;
 	private AmbientLight editorLight;
+	private int team1score;
+	private int team2score;
 	
 	public void start(String server) {
     	this.serverAddress = server;
@@ -376,6 +378,9 @@ public class GameController extends MainController implements ScreenController{
     	this.roundStartTime= System.currentTimeMillis() - state.getPassedRoundTime();
 
     	getGameConfig().copyFrom(state.getConfig());
+    	
+    	team1score = state.getTeam1score();
+    	team2score = state.getTeam2score();
 
     	getWorldController().unloadCurrentWorld();
     	
@@ -644,6 +649,8 @@ public class GameController extends MainController implements ScreenController{
 				getPlayerController().reset(p);
 			}
 			getWorldController().resetWorld();
+			team1score = 0;
+			team2score = 0;
 			this.roundStartTime = System.currentTimeMillis();
 			menuController.clearEventPanel();
 			menuController.updateScoreboard();
@@ -894,6 +901,11 @@ public class GameController extends MainController implements ScreenController{
 		super.scoreFlag(p, flag);
 		
 		menuController.displayEvent(p.getName() + " scored.");
+		if(p.getTeam() == 1) {
+			team1score++;
+		}else if(p.getTeam() == 2) {
+			team2score++;
+		}
 	}
 	
 	public long getRemainingTime() {
@@ -1114,6 +1126,14 @@ public class GameController extends MainController implements ScreenController{
 
 	public boolean isShowCrosshair() {
 		return showCrosshair;
+	}
+
+	public int getTeam1score() {
+		return team1score;
+	}
+
+	public int getTeam2score() {
+		return team2score;
 	}
 
 	/**

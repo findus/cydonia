@@ -54,7 +54,6 @@ public abstract class MainController extends Application implements PhysicsColli
 
 	private ConcurrentLinkedQueue<Event> eventQueue;
 
-
 	public MainController() {
 		super();
 
