@@ -40,7 +40,7 @@
 				childLayout="vertical">
 				<control name="button" label="Resume Game" width="40%"
 					align="center">
-					<interact onClick="resumeGame()" />
+					<interact onClick="closeMenu()" />
 				</control>
 				<control name="button" label="Quit Game" width="40%" align="center">
 					<interact onClick="stopGame()" />
@@ -106,7 +106,7 @@
 		</layer>
 		<layer id="messagelayer" backgroundColor="#fff0" childLayout="vertical"
 			visible="false">
-			<panel height="10%" width="90%" align="center" valign="top" backgroundColor="#fff0" />
+			<panel height="1%" width="90%" align="center" valign="top" backgroundColor="#fff0" />
 			<panel height="10%" width="90%" align="center" valign="top"
 				style="nifty-panel-colored-no-shadow-trans" childLayout="vertical">
 				<text id="messagetext" font="de/findus/cydonia/gui/fonts/ComicSansMS20.fnt" color="#000f"
