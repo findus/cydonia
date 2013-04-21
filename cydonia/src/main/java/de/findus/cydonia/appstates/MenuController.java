@@ -45,6 +45,7 @@ public class MenuController {
 	private Element timetext;
 	private Element flagredtext;
 	private Element flagbluetext;
+	private Element yougottheflagtext;
 	private Element healthpointstext;
 	private Element	inventoryimg;
 	private Element scoreboardlayer;
@@ -64,6 +65,7 @@ public class MenuController {
 		this.timetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("timetext");
 		this.flagbluetext = gameController.getNifty().getScreen("ingamescreen").findElementByName("flagbluetext");
 		this.flagredtext = gameController.getNifty().getScreen("ingamescreen").findElementByName("flagredtext");
+		this.yougottheflagtext = gameController.getNifty().getScreen("ingamescreen").findElementByName("yougottheflagtext");
 		this.healthpointstext = gameController.getNifty().getScreen("ingamescreen").findElementByName("healthpointstext");
 		this.inventoryimg = gameController.getNifty().getScreen("ingamescreen").findElementByName("inventoryimg");
 		this.scoreboardlayer = gameController.getNifty().getScreen("ingamescreen").findElementByName("scoreboardlayer");
@@ -118,7 +120,7 @@ public class MenuController {
 
 			case ROUNDOVER:
 				hideHUD();
-				String message = "Round is over. New round will start automatically in a view seconds...";
+				String message = "Round is over. New round will start automatically in a few seconds...";
 				int winteam = gameController.getWinTeam();
 				if(winteam == 1) {
 					message += "\nBlue team is the winner!";
@@ -188,6 +190,7 @@ public class MenuController {
 		
 		if(gameController.getPlayer() != null) {
 			this.healthpointstext.getRenderer(TextRenderer.class).setText(String.valueOf(Math.round(gameController.getPlayer().getHealthpoints())));
+			this.yougottheflagtext.setVisible(gameController.getPlayer().getFlag() != null);
 		}
 	}
 	

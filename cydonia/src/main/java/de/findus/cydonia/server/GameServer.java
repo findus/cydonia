@@ -363,9 +363,9 @@ public class GameServer extends MainController{
 					if(p.getTeam() == ((Integer)target.getUserData("team")).intValue()) { // own target
 						if(p.getFlag() != null) {
 							int stolenflagid = p.getFlag().getId();
-							p.setFlag(null);
 							Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
 							if(f.isInBase()) {
+								p.setFlag(null);
 								System.out.println("Team " + p.getTeam() + " scored");
 								FlagEvent event = new FlagEvent(FlagEvent.SCORE, p.getId(), stolenflagid, true);
 								getEventMachine().fireEvent(event);
@@ -642,8 +642,10 @@ public class GameServer extends MainController{
 	public void connectionRemoved(int clientid) {
 		Player p = getPlayerController().getPlayer(clientid);
 		
-		PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
-		getEventMachine().fireEvent(quit);
+		if(p != null) {
+			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
+			getEventMachine().fireEvent(quit);
+		}
 	}
 
 	public void handleCommand(String command) {

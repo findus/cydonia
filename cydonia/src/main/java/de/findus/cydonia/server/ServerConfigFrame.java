@@ -74,7 +74,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	public ServerConfigFrame(GameServer server) {
 		this.server = server;
 		
-		this.setTitle("Cydonia Server");
+		this.setTitle("Cydonia 43 - Server");
 
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {

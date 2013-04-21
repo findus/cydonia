@@ -90,7 +90,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 public class GameController extends MainController implements ScreenController{
 	
 	public static final String TEXTURES_PATH = "de/findus/cydonia/textures/";
-	public static final String APPTITLE = "Cydonia Client";
+	public static final String APPTITLE = "Cydonia 43";
 	
 	/**
 	 * The time in seconds it should take to compensate a deviation from the accurate (=server defined) physical location of an object. 
@@ -172,6 +172,7 @@ public class GameController extends MainController implements ScreenController{
             loadSettings = true;
             settings.setTitle(APPTITLE);
         }
+        settings.setSettingsDialogImage("/de/findus/cydonia/gui/logo43.jpg");
 
         // show settings dialog
         if (showSettings) {
@@ -629,9 +630,11 @@ public class GameController extends MainController implements ScreenController{
 		}else if (e instanceof InputEvent) {
 			InputEvent input = (InputEvent) e;
 			// only use inputs from other players, not our own inputs, that are sent back to us from the server
-			if(player.getId() != input.getPlayerid() || !InputCommand.usedirect.contains(input.getClass())) {
+			if((player != null  && player.getId() != input.getPlayerid()) || !InputCommand.usedirect.contains(input.getClass())) {
 				Player p = getPlayerController().getPlayer(input.getPlayerid());
-				getPlayerController().handleInput(p, input.getCommand(), input.isValue());
+				if(p != null) {
+					getPlayerController().handleInput(p, input.getCommand(), input.isValue());
+				}
 			}
 		}else if (e instanceof RestartRoundEvent) {
 			for (Player p : getPlayerController().getAllPlayers()) {
