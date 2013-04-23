@@ -32,6 +32,7 @@ import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
+import de.findus.cydonia.events.PhaseEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
@@ -238,6 +239,11 @@ public class GameServer extends MainController{
 			KillEvent kill = (KillEvent) e;
 			Player p = getPlayerController().getPlayer(kill.getPlayerid());
 			killPlayer(p);
+		}else if(e instanceof PhaseEvent) {
+			PhaseEvent phase = (PhaseEvent) e;
+			Player attacker = getPlayerController().getPlayer(phase.getAttackerId());
+			Player victim = getPlayerController().getPlayer(phase.getVictimId());
+			phase(attacker, victim, phase.getDamage());
 		}else if(e instanceof PickupEvent) {
 			PickupEvent pickup = (PickupEvent) e;
 			Player p = getPlayerController().getPlayer(pickup.getPlayerid());

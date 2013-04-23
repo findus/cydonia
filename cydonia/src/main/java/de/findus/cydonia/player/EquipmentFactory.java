@@ -50,6 +50,12 @@ public class EquipmentFactory {
 		d.clientClass = ClientEditor.class;
 		d.serverClass = ServerEditor.class;
 		this.descriptions.put(d.typeName, d);
+		
+		d = new EquipmentDescription();
+		d.typeName = "Phaser";
+		d.clientClass = Phaser.class;
+		d.serverClass = ServerPhaser.class;
+		this.descriptions.put(d.typeName, d);
 	}
 	
 	public Equipment create(String equipmentType) {

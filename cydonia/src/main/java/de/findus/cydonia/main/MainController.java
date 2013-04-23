@@ -144,6 +144,13 @@ public abstract class MainController extends Application implements PhysicsColli
 		p.setAlive(false);
 	}
 
+	protected void phase(Player attacker, Player victim, float damage) {
+		getPlayerController().setHealthpoints(victim, victim.getHealthpoints() - damage);
+		if(victim.getHealthpoints() <= 0) {
+			beam(attacker, victim);
+		}
+	}
+
 	protected void beam(Player p, Player victim) {
 		p.setScores(p.getScores() + 1);
 		killPlayer(victim);

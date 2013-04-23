@@ -161,6 +161,13 @@ public class PlayerController {
 			beamer.setRange(20);
 			beamer.setPlayer(p);
 			p.getEquips().add(beamer);
+			
+			Phaser phaser = (Phaser) mainController.getEquipmentFactory().create("Phaser");
+			phaser.setName("Phaser");
+			phaser.setDamage(100);
+			phaser.setInterval(1000);
+			phaser.setPlayer(p);
+			p.getEquips().add(phaser);
 		}else if("editor".equals(gameMode)){
 			Editor editor1 = (Editor) mainController.getEquipmentFactory().create("Editor");
 			editor1.setName("EditorDarkGray");

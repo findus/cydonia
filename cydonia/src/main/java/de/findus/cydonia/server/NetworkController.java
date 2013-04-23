@@ -33,6 +33,7 @@ import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
+import de.findus.cydonia.events.PhaseEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
@@ -57,6 +58,7 @@ import de.findus.cydonia.messages.InputMessage;
 import de.findus.cydonia.messages.JoinMessage;
 import de.findus.cydonia.messages.LocationUpdatedMessage;
 import de.findus.cydonia.messages.MoveableInfo;
+import de.findus.cydonia.messages.PhaserInfo;
 import de.findus.cydonia.messages.PickerInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.PlayerPhysic;
@@ -165,6 +167,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(PlayerInfo.class);
 		Serializer.registerClass(PickerInfo.class);
 		Serializer.registerClass(BeamerInfo.class);
+		Serializer.registerClass(PhaserInfo.class);
 		Serializer.registerClass(EditorInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
 		Serializer.registerClass(FlagInfo.class);
@@ -180,6 +183,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		
 		Serializer.registerClass(InputEvent.class);
 		Serializer.registerClass(AttackEvent.class);
+		Serializer.registerClass(PhaseEvent.class);
 		Serializer.registerClass(HitEvent.class);
 		Serializer.registerClass(BeamEvent.class);
 		Serializer.registerClass(PickupEvent.class);
