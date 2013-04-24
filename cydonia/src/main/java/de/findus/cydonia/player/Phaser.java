@@ -19,8 +19,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial.CullHint;
 
-import de.findus.cydonia.events.PhaseEvent;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.PhaserInfo;
@@ -39,9 +39,9 @@ public class Phaser extends AbstractEquipment {
 	
 	private float damage;
 	
-	private float interval;
+	private long interval;
 	
-	private float lastShotTime = 0;
+	protected long lastShotTime = 0;
 	
 	private Node geom = new Node("Phaser");
 	
@@ -57,7 +57,7 @@ public class Phaser extends AbstractEquipment {
 	/**
 	 * @param mainController
 	 */
-	public Phaser(String name, float damage, float interval, Player player, MainController mainController) {
+	public Phaser(String name, float damage, long interval, Player player, MainController mainController) {
 		super(mainController);
 		this.name = name;
 		this.damage = damage;
@@ -79,7 +79,7 @@ public class Phaser extends AbstractEquipment {
 
 	@Override
 	public void initGeometry() {
-		beam = new ParticleEmitter("Beam", Type.Point, 30);
+		beam = new ParticleEmitter("Beam", Type.Triangle, 30);
         Material mat_red = new Material(getMainController().getAssetManager(), 
                 "Common/MatDefs/Misc/Particle.j3md");
         mat_red.setTexture("Texture", getMainController().getAssetManager().loadTexture(
@@ -87,22 +87,22 @@ public class Phaser extends AbstractEquipment {
         beam.setMaterial(mat_red);
         beam.setImagesX(2); 
         beam.setImagesY(2); // 2x2 texture animation
-        beam.setEndColor(new ColorRGBA(6f, 6f, 1f, 0.5f));
-        beam.setStartColor(new ColorRGBA(3f, 3f, 1f, 1f));
-        beam.setStartSize(0.01f);
+        beam.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.5f));
+        beam.setStartColor(new ColorRGBA(1f, 0.5f, 0.5f, 1f));
+        beam.setStartSize(0.02f);
         beam.setEndSize(0.005f);
         beam.setGravity(0, 0, 0);
-        beam.setNumParticles(200);
-	    geom.setLocalTranslation(0, 0.3f, 0.2f);
-		beam.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 0, 0.1f));
+        beam.setNumParticles(300);
+		beam.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 0, 0.05f));
 		beam.getParticleInfluencer().setVelocityVariation(1f);
 		beam.setParticlesPerSec(0);
-		beam.setShape(new EmitterBoxShape(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0)));
+		beam.setShape(new EmitterBoxShape(Vector3f.ZERO, new Vector3f(0.1f, 0.1f, 0.1f)));
 		beam.setLowLife(0.5f);
-		beam.setHighLife(1f);
+		beam.setHighLife(2f);
 		beam.setEnabled(true);
 	    
 	    this.geom.attachChild(beam);
+	    geom.setLocalTranslation(0, 0.3f, 0.5f);
 	}
 
 	private void initHUDImgs() {
@@ -118,15 +118,23 @@ public class Phaser extends AbstractEquipment {
 	public void usePrimary(boolean activate) {
 		if(!activate) return;
 
-		if(this.getLastShotTime() + this.getInterval() < System.currentTimeMillis()) {
-			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
+		if(this.lastShotTime + this.getInterval() < System.currentTimeMillis()) {
+			this.lastShotTime = System.currentTimeMillis();
+			CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition().add(player.getViewDir().normalize().mult(0.3f)), this.player.getViewDir());
 			float distance = 0;
 			if(result != null) {
 				distance = result.getDistance();
 			}else {
 				distance = 30;
 			}
-			beam.setLocalTranslation(distance/2, 0, 0);
+			
+			float angle = player.getViewDir().normalize().angleBetween(player.getControl().getViewDirection());
+			if(player.getViewDir().normalize().getY() > 0) angle = -angle;
+			geom.setLocalRotation(new Quaternion().fromAngleAxis(angle, Vector3f.UNIT_X));
+			
+			beam.setLocalTranslation(0, 0, distance/2);
+			beam.setShape(new EmitterBoxShape(new Vector3f(-0.01f, -0.01f, -distance/2), new Vector3f(0.01f, 0.01f, distance/2)));
+			
 			beam.emitAllParticles();
 		}
 	}
@@ -182,16 +190,12 @@ public class Phaser extends AbstractEquipment {
 		this.damage = damage;
 	}
 
-	public float getInterval() {
+	public long getInterval() {
 		return interval;
 	}
 	
-	public void setInterval(float interval) {
+	public void setInterval(long interval) {
 		this.interval = interval;
-	}
-
-	protected float getLastShotTime() {
-		return lastShotTime;
 	}
 
 	@Override
@@ -201,6 +205,8 @@ public class Phaser extends AbstractEquipment {
 
 	@Override
 	public void setActive(boolean active) {
-
+		beam.setEnabled(active);
+		geom.setLocalTranslation(0, 0.3f, 0.5f);
+		geom.setCullHint(CullHint.Dynamic);
 	}
 }

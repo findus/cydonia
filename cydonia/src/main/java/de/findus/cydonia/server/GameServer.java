@@ -244,6 +244,11 @@ public class GameServer extends MainController{
 			Player attacker = getPlayerController().getPlayer(phase.getAttackerId());
 			Player victim = getPlayerController().getPlayer(phase.getVictimId());
 			phase(attacker, victim, phase.getDamage());
+		}else if(e instanceof BeamEvent) {
+			BeamEvent beam = (BeamEvent) e;
+			Player p = getPlayerController().getPlayer(beam.getSourceid());
+			Player victim = getPlayerController().getPlayer(beam.getTargetid());
+			beam(p, victim);
 		}else if(e instanceof PickupEvent) {
 			PickupEvent pickup = (PickupEvent) e;
 			Player p = getPlayerController().getPlayer(pickup.getPlayerid());
@@ -329,7 +334,8 @@ public class GameServer extends MainController{
 						if(victim != null && victim.getTeam() != beamer.getPlayer().getTeam()) {
 							getPlayerController().setHealthpoints(victim, victim.getHealthpoints() - 20*tpf);
 							if(victim.getHealthpoints() <= 0) {
-								beam(p, victim);
+								BeamEvent ev = new BeamEvent(p.getId(), victim.getId(), true);
+								getEventMachine().fireEvent(ev);
 							}
 						}
 					}
@@ -425,8 +431,7 @@ public class GameServer extends MainController{
 		super.beam(p, victim);
 		CWRITER.writeLine(p.getName() + " beamed " + victim.getName());
 		
-		BeamEvent ev = new BeamEvent(p.getId(), victim.getId(), true);
-		getEventMachine().fireEvent(ev);
+		
 	}
 	
 	@Override

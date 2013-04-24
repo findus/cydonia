@@ -16,7 +16,7 @@ public class PhaserInfo implements EquipmentInfo {
 
 	private String name;
 	private float damage;
-	private float interval;
+	private long interval;
 	private int playerid;
 	private String typeName;
 	
@@ -40,7 +40,7 @@ public class PhaserInfo implements EquipmentInfo {
 		return damage;
 	}
 
-	public float getInterval() {
+	public long getInterval() {
 		return interval;
 	}
 

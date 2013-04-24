@@ -24,7 +24,7 @@ public class ServerPhaser extends Phaser {
 	/**
 	 * @param mainController
 	 */
-	public ServerPhaser(String name, float damage, float interval, Player player, MainController mainController) {
+	public ServerPhaser(String name, float damage, long interval, Player player, MainController mainController) {
 		super(name, damage, interval, player, mainController);
 	}
 
@@ -32,8 +32,9 @@ public class ServerPhaser extends Phaser {
 	public void usePrimary(boolean activate) {
 		if(!activate) return;
 
-		if(this.getLastShotTime() + this.getInterval() < System.currentTimeMillis()) {
-			CollisionResult result = getMainController().getWorldController().pickWorld(this.player.getEyePosition(), this.player.getViewDir());
+		if(this.lastShotTime + this.getInterval() < System.currentTimeMillis()) {
+			this.lastShotTime = System.currentTimeMillis();
+			CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition().add(player.getViewDir().normalize().mult(0.3f)), this.player.getViewDir());
 			
 			if(result != null && result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player")) {
 				Player victim = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
