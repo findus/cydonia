@@ -151,6 +151,8 @@ public class GameController extends MainController implements ScreenController{
     
     private long roundStartTime;
     
+    private long gameOverTime = 0;
+    
 	private GameState gamestate;
 	
 	private ClientState clientState;
@@ -527,6 +529,7 @@ public class GameController extends MainController implements ScreenController{
     }
     
     public void gameOver() {
+    	gameOverTime = System.currentTimeMillis();
     	stopInputSender();
     	setGamestate(GameState.SPECTATE);
     	menuController.actualizeScreen();
@@ -561,6 +564,7 @@ public class GameController extends MainController implements ScreenController{
         computeBeams(tpf);
         movePlayers(tpf);
         menuController.updateHUD();
+        menuController.actualizeScreen();
         
         // update world and gui
         getWorldController().updateLogicalState(tpf);
@@ -1140,6 +1144,10 @@ public class GameController extends MainController implements ScreenController{
 
 	public int getTeam2score() {
 		return team2score;
+	}
+
+	public long getGameOverTime() {
+		return gameOverTime;
 	}
 
 	/**

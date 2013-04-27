@@ -468,7 +468,10 @@ public class GameServer extends MainController{
 					getEventMachine().fireEvent(event);
 				}else {
 					if(value && p.getTeam() > 0) {
-						respawn(p);
+						long timeToRespawn = p.getGameOverTime() + (getGameConfig().getLong("mp_respawntime") * 1000) - System.currentTimeMillis();
+						if(timeToRespawn < 0) {
+							respawn(p);
+						}
 					}
 				}
 			}

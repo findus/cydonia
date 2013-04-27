@@ -20,6 +20,7 @@ public class GameConfig {
 		defaults.put("mp_timelimit", 10*60L);
 		defaults.put("mp_scorelimit", 3);
 		defaults.put("mp_map", "");
+		defaults.put("mp_respawntime", 5L);
 		
 		/*
 		 * Possible values: "editor", "ctf"

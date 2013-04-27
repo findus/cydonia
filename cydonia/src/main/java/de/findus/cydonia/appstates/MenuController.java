@@ -115,7 +115,12 @@ public class MenuController {
 
 			case SPECTATE:
 				hideHUD();
-				showMessage("Press 'Fire' to join the game!");
+				long timeToRespawn = gameController.getGameOverTime() + (gameController.getGameConfig().getLong("mp_respawntime") * 1000) - System.currentTimeMillis();
+				if(timeToRespawn < 0) {
+					showMessage("Press 'Fire' to join the game!");
+				}else {
+					showMessage("You can join the game in " + Math.round(Math.ceil(timeToRespawn/1000f)) + " seconds.");
+				}
 				break;
 
 			case ROUNDOVER:

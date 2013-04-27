@@ -140,6 +140,7 @@ public abstract class MainController extends Application implements PhysicsColli
 		if(p.getFlag() != null) {
 			returnFlag(p.getFlag());
 		}
+		p.setGameOverTime(System.currentTimeMillis());
 		worldController.detachPlayer(p);
 		p.setAlive(false);
 	}

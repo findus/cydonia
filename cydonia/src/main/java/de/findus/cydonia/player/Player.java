@@ -37,6 +37,8 @@ public class Player implements AnimEventListener{
 	private int team;
 	
 	private boolean alive = false;
+	
+	private long gameOverTime = 0;
 
 	PlayerInputState inputs;
 	
@@ -411,5 +413,13 @@ public class Player implements AnimEventListener{
 	 */
 	public GhostControl getGhostControl() {
 		return ghostControl;
+	}
+
+	public long getGameOverTime() {
+		return gameOverTime;
+	}
+
+	public void setGameOverTime(long gameOverTime) {
+		this.gameOverTime = gameOverTime;
 	}
 }
