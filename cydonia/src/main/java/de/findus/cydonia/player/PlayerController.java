@@ -48,27 +48,32 @@ public class PlayerController {
         
         players = new ConcurrentHashMap<Integer, Player>();
         
-        dieEmit = new ParticleEmitter("dieEmit", Type.Triangle, 200);
+        dieEmit = new ParticleEmitter("dieEmit", Type.Point, 200);
         Material mat_red = new Material(assetManager, 
                 "Common/MatDefs/Misc/Particle.j3md");
         mat_red.setTexture("Texture", assetManager.loadTexture(
                 "Effects/Explosion/flame.png"));
-        dieEmit.setMaterial(mat_red);
+        
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setBoolean("PointSprite", true);
+        mat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/flash.png"));
+        
+        dieEmit.setMaterial(mat);
         dieEmit.setImagesX(2); 
-        dieEmit.setImagesY(2); // 2x2 texture animation
-        dieEmit.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.3f));
+        dieEmit.setImagesY(2);
+        dieEmit.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.0f));
         dieEmit.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
-        dieEmit.setStartSize(0.06f);
-        dieEmit.setEndSize(0.03f);
+        dieEmit.setStartSize(0.03f);
+        dieEmit.setEndSize(0.01f);
         dieEmit.setGravity(0, 0, 0);
-        dieEmit.setNumParticles(300);
+        dieEmit.setNumParticles(100);
         dieEmit.setShape(new EmitterBoxShape(new Vector3f(-0.5f, -0.8f, -0.5f), new Vector3f(0.5f, 0.8f, 0.5f)));
         dieEmit.getParticleInfluencer().setInitialVelocity(new Vector3f(0f, 0.1f, 0f));
         dieEmit.getParticleInfluencer().setVelocityVariation(0.1f);
         dieEmit.setRandomAngle(true);
         dieEmit.setParticlesPerSec(0f);
-        dieEmit.setLowLife(0.5f);
-        dieEmit.setHighLife(1.0f);
+        dieEmit.setLowLife(0.2f);
+        dieEmit.setHighLife(0.5f);
         dieEmit.setEnabled(true);
         this.mainController.getWorldController().getRootNode().attachChild(dieEmit);
 	}
