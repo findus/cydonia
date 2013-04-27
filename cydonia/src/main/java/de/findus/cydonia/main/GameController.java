@@ -563,8 +563,8 @@ public class GameController extends MainController implements ScreenController{
         useLatestLocationUpdate();
         computeBeams(tpf);
         movePlayers(tpf);
-        menuController.updateHUD();
         menuController.actualizeScreen();
+        menuController.updateHUD();
         
         // update world and gui
         getWorldController().updateLogicalState(tpf);
