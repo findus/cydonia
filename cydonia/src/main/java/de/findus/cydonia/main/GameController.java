@@ -867,6 +867,7 @@ public class GameController extends MainController implements ScreenController{
 		super.killPlayer(p);
 		
 		if(p == null) return;
+		getPlayerController().playDieAnim(p);
 		if(p.getId() == player.getId()) {
 			gameOver();
 		}
@@ -876,7 +877,7 @@ public class GameController extends MainController implements ScreenController{
 		boolean res = super.respawn(p);
 		
 		if(res) {
-			if(p.getId() == player.getId()) {
+			if(player != null && p.getId() == player.getId()) {
 				p.getModel().setCullHint(CullHint.Always);
 				resumeGame();
 			}

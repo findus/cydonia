@@ -9,9 +9,13 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
+import com.jme3.effect.shapes.EmitterBoxShape;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -35,12 +39,38 @@ public class PlayerController {
     private MainController mainController;
 
 	private ConcurrentHashMap<Integer, Player> players;
+	
+	private ParticleEmitter dieEmit;
 
 	public PlayerController(AssetManager assetManager, MainController mainController) {
 		this.assetManager = assetManager;
 		this.mainController = mainController;
         
         players = new ConcurrentHashMap<Integer, Player>();
+        
+        dieEmit = new ParticleEmitter("dieEmit", Type.Triangle, 200);
+        Material mat_red = new Material(assetManager, 
+                "Common/MatDefs/Misc/Particle.j3md");
+        mat_red.setTexture("Texture", assetManager.loadTexture(
+                "Effects/Explosion/flame.png"));
+        dieEmit.setMaterial(mat_red);
+        dieEmit.setImagesX(2); 
+        dieEmit.setImagesY(2); // 2x2 texture animation
+        dieEmit.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.3f));
+        dieEmit.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
+        dieEmit.setStartSize(0.06f);
+        dieEmit.setEndSize(0.03f);
+        dieEmit.setGravity(0, 0, 0);
+        dieEmit.setNumParticles(300);
+        dieEmit.setShape(new EmitterBoxShape(new Vector3f(-0.5f, -0.8f, -0.5f), new Vector3f(0.5f, 0.8f, 0.5f)));
+        dieEmit.getParticleInfluencer().setInitialVelocity(new Vector3f(0f, 0.1f, 0f));
+        dieEmit.getParticleInfluencer().setVelocityVariation(0.1f);
+        dieEmit.setRandomAngle(true);
+        dieEmit.setParticlesPerSec(0f);
+        dieEmit.setLowLife(0.5f);
+        dieEmit.setHighLife(1.0f);
+        dieEmit.setEnabled(true);
+        this.mainController.getWorldController().getRootNode().attachChild(dieEmit);
 	}
 	
 	public Player createNew(int id) {
@@ -289,5 +319,10 @@ public class PlayerController {
 		}
 
 		p.updateAnimationState();
+	}
+	
+	public void playDieAnim(Player p) {
+		dieEmit.setLocalTranslation(p.getControl().getPhysicsLocation());
+		dieEmit.emitAllParticles();
 	}
 }
