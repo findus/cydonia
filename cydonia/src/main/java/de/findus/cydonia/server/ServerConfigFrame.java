@@ -9,6 +9,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
@@ -19,8 +21,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -32,7 +38,11 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.Keymap;
+
+import com.sun.jmx.remote.internal.ArrayQueue;
 
 import de.findus.cydonia.server.GameServer.ServerStateListener;
 
@@ -41,7 +51,7 @@ import de.findus.cydonia.server.GameServer.ServerStateListener;
  *
  */
 @SuppressWarnings("serial")
-public class ServerConfigFrame extends JFrame implements ActionListener, ServerStateListener, Console {
+public class ServerConfigFrame extends JFrame implements KeyListener, ActionListener, ServerStateListener, Console {
 
 	protected static final String MAPFOLDER = "/de/findus/cydonia/level/";
 	
@@ -71,10 +81,15 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	private DefaultListModel<String> listmodel;
 	private JList<String> maplist;
 	
+	private LinkedList<String> commandHistory;
+	private int commandHistoryPointer = 1;
+	
 	public ServerConfigFrame(GameServer server) {
 		this.server = server;
 		
 		this.setTitle("Cydonia 43 - Server");
+		
+		this.commandHistory = new LinkedList<String>();
 
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -180,6 +195,7 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 		consolePanel.add(commandInput, BorderLayout.SOUTH);
 		commandInput.addActionListener(this);
 		commandInput.setActionCommand("sendCommand");
+		commandInput.addKeyListener(this);
 		commandInput.setMinimumSize(new Dimension(400, 20));
 	}
 
@@ -293,8 +309,14 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if("sendCommand".equals(e.getActionCommand())) {
-			consoleOutput.append("\n-> " + commandInput.getText());
-			server.handleCommand(commandInput.getText());
+			String command = commandInput.getText();
+			consoleOutput.append("\n-> " + command);
+			server.handleCommand(command);
+			commandHistory.add(command);
+			while(commandHistory.size() > 20) {
+				commandHistory.poll();
+			}
+			commandHistoryPointer = commandHistory.size();
 			commandInput.setText("");
 		}else if("loadMap".equals(e.getActionCommand())) {
 			if(maplist.getSelectedValue() != null) {
@@ -315,5 +337,44 @@ public class ServerConfigFrame extends JFrame implements ActionListener, ServerS
 	@Override
 	public void writeLine(String line) {
 		this.consoleOutput.append("\n" + line);
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if(e.getSource() == commandInput) {
+			if(e.getKeyCode() == KeyEvent.VK_UP) {
+				commandHistoryPointer--;
+				actualizeCommandInput();
+			}else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				commandHistoryPointer++;
+				actualizeCommandInput();
+			}
+		}
+	}
+	
+	private void actualizeCommandInput() {
+		if(commandHistoryPointer < 0) {
+			commandHistoryPointer = 0;
+		}
+		if(commandHistoryPointer > commandHistory.size()) {
+			commandHistoryPointer = commandHistory.size();
+		}
+		
+		if(commandHistoryPointer == commandHistory.size()) {
+			commandInput.setText("");
+		}else {
+			commandInput.setText(commandHistory.get(commandHistoryPointer));
+		}
 	}
 }
