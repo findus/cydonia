@@ -12,7 +12,6 @@ import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
@@ -158,7 +157,6 @@ public class GameController extends MainController implements ScreenController{
 	private ClientState clientState;
     
     private int winTeam;
-	private AmbientLight editorLight;
 	private int team1score;
 	private int team2score;
 	
@@ -359,9 +357,6 @@ public class GameController extends MainController implements ScreenController{
 		throwSound.setLocalTranslation(Vector3f.ZERO);
 		throwSound.setVolume(1);
 		getWorldController().attachObject(throwSound);
-		
-		editorLight = new AmbientLight();
-		editorLight.setColor(ColorRGBA.White.mult(0.4f));
 		
     	connector.connectToServer(serverAddress, 6173);
     }
@@ -1103,7 +1098,7 @@ public class GameController extends MainController implements ScreenController{
 			for(SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Inherit);
 			}
-			getWorldController().getRootNode().addLight(editorLight);
+			getWorldController().setAmbientBrightness(0.3f);
 		}else if("ctf".equalsIgnoreCase(mode)) {
 			for(Player p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
@@ -1112,7 +1107,7 @@ public class GameController extends MainController implements ScreenController{
 			for(SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Always);
 			}
-			getWorldController().getRootNode().removeLight(editorLight);
+			getWorldController().setAmbientBrightness(0.1f);
 		}
 	}
     
