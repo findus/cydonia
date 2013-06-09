@@ -203,6 +203,13 @@ public class PlayerController {
 			phaser.setInterval(1000);
 			phaser.setPlayer(p);
 			p.getEquips().add(phaser);
+			
+			Pusher pusher = (Pusher) mainController.getEquipmentFactory().create("Pusher");
+			pusher.setName("Phaser");
+			pusher.setForce(15);
+			pusher.setInterval(1000);
+			pusher.setPlayer(p);
+			p.getEquips().add(pusher);
 		}else if("editor".equals(gameMode)){
 			Editor editor1 = (Editor) mainController.getEquipmentFactory().create("Editor");
 			editor1.setName("EditorDarkGray");

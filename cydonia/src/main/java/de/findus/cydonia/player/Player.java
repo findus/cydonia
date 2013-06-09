@@ -12,7 +12,6 @@ import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.LoopMode;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
@@ -44,7 +43,7 @@ public class Player implements AnimEventListener{
 	
 	private Vector3f exactLoc = new Vector3f();
 	
-	private CharacterControl control;
+	private ForceCharacterControl control;
 	
 	private GhostControl ghostControl;
 	
@@ -87,10 +86,12 @@ public class Player implements AnimEventListener{
 		this.node = new Node("player" + id);
 		
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 0.8f);
-        control = new CharacterControl(capsuleShape, MAX_STEP_HEIGHT);
+        control = new ForceCharacterControl(capsuleShape, MAX_STEP_HEIGHT);
         control.setJumpSpeed(10);
         control.setFallSpeed(25);
         control.setGravity(25);
+        control.setMinimalForceAmount(2f);
+        control.setForceDamping(0.97f);
         
         BoxCollisionShape boxShape = new BoxCollisionShape(new Vector3f(0.25f, 0.8f, 0.25f));
         ghostControl = new GhostControl(boxShape);
@@ -264,7 +265,7 @@ public class Player implements AnimEventListener{
 	 * Returns the physics control object.
 	 * @return physics control
 	 */
-	public CharacterControl getControl() {
+	public ForceCharacterControl getControl() {
 		return control;
 	}
 	

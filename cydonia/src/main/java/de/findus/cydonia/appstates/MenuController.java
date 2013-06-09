@@ -229,7 +229,7 @@ public class MenuController {
 				pb = new ScoreLineBuilder(name, score, color, "#ffff");
 				pb.build(gameController.getNifty(), gameController.getNifty().getScreen("ingamescreen"), team1);
 			}else if(p.getTeam() == 2){
-				if(p.getId() == gameController.getPlayer().getId()) {
+				if(gameController.getPlayer() != null && p.getId() == gameController.getPlayer().getId()) {
 					color = "#9778";
 				}
 				pb = new ScoreLineBuilder(name, score, color, "#ffff");

@@ -10,7 +10,6 @@ import java.util.List;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
@@ -29,6 +28,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
 import de.findus.cydonia.main.MainController;
+import de.findus.cydonia.player.ForceCharacterControl;
 import de.findus.cydonia.player.Player;
 
 /**
@@ -302,9 +302,10 @@ public class WorldController {
 	
 	public void attachPlayer(Player player) {
 		rootNode.attachChild(player.getNode());
-		CharacterControl control = player.getControl();
+		ForceCharacterControl control = player.getControl();
 		if(control != null) {
 			physicsSpace.addCollisionObject(control);
+			physicsSpace.addTickListener(control);
 		}
 		GhostControl ghostcontrol = player.getGhostControl();
 		if(ghostcontrol != null) {
@@ -317,9 +318,10 @@ public class WorldController {
 		if(ghostcontrol != null) {
 			physicsSpace.removeCollisionObject(ghostcontrol);
 		}
-		CharacterControl control = player.getControl();
+		ForceCharacterControl control = player.getControl();
 		if(control != null) {
 			physicsSpace.removeCollisionObject(control);
+			physicsSpace.removeTickListener(control);
 		}
 		rootNode.detachChild(player.getNode());
 	}

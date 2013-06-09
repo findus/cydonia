@@ -151,6 +151,10 @@ public abstract class MainController extends Application implements PhysicsColli
 			beam(attacker, victim);
 		}
 	}
+	
+	protected void push(Player attacker, Player victim, Vector3f force) {
+		victim.getControl().applyCentralForce(force);
+	}
 
 	protected void beam(Player p, Player victim) {
 		p.setScores(p.getScores() + 1);
@@ -181,6 +185,7 @@ public abstract class MainController extends Application implements PhysicsColli
 			if(sp != null) {
 				playerController.setHealthpoints(p, 100);
 				p.setAlive(true);
+				p.getControl().zeroForce();
 				p.getControl().setPhysicsLocation(sp.getPosition());
 				worldController.attachPlayer(p);
 				return true;
@@ -188,6 +193,7 @@ public abstract class MainController extends Application implements PhysicsColli
 		}else if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
 			playerController.setHealthpoints(p, 100);
 			p.setAlive(true);
+			p.getControl().zeroForce();
 			p.getControl().setPhysicsLocation(Vector3f.UNIT_Y);
 			worldController.attachPlayer(p);
 			return true;

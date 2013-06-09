@@ -47,6 +47,7 @@ import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
 import de.findus.cydonia.events.PlayerJoinEvent;
 import de.findus.cydonia.events.PlayerQuitEvent;
+import de.findus.cydonia.events.PushEvent;
 import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
@@ -684,6 +685,11 @@ public class GameController extends MainController implements ScreenController{
 			Player attacker = getPlayerController().getPlayer(phase.getAttackerId());
 			Player victim = getPlayerController().getPlayer(phase.getVictimId());
 			phase(attacker, victim, phase.getDamage());
+		}else if(e instanceof PushEvent) {
+			PushEvent push = (PushEvent) e;
+			Player attacker = getPlayerController().getPlayer(push.getAttackerId());
+			Player victim = getPlayerController().getPlayer(push.getVictimId());
+			push(attacker, victim, push.getForce());
 		}else if(e instanceof BeamEvent) {
 			BeamEvent beam = (BeamEvent) e;
 			Player p = getPlayerController().getPlayer(beam.getSourceid());
