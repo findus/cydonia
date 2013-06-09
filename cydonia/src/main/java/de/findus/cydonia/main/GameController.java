@@ -458,11 +458,11 @@ public class GameController extends MainController implements ScreenController{
     				}
     	}
     	
-				getWorldController().setUpWorldLights();
+//				getWorldController().setUpWorldLights();
 				if("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
 					getWorldController().setAmbientBrightness(0.3f);
 				}else {
-					getWorldController().setAmbientBrightness(0.1f);
+					getWorldController().setAmbientBrightness(0.15f);
 				}
     	
 		if(getClientstate() == ClientState.LOADING) {
@@ -1113,7 +1113,7 @@ public class GameController extends MainController implements ScreenController{
 			for(SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Always);
 			}
-			getWorldController().setAmbientBrightness(0.1f);
+			getWorldController().setAmbientBrightness(0.15f);
 		}
 	}
     

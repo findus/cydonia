@@ -15,6 +15,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightList;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
@@ -26,6 +27,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.player.ForceCharacterControl;
@@ -73,7 +76,14 @@ public class WorldController {
 		rootNode.setShadowMode(ShadowMode.Off);
 
 		rootNode.addLight(al);
-		setAmbientBrightness(0.1f);
+		setAmbientBrightness(0.15f);
+		
+		DirectionalLight dl = new DirectionalLight();
+		dl.setColor(ColorRGBA.White.mult(0.3f));
+		dl.setDirection(new Vector3f(0f, -0.2f, 1f));
+		rootNode.addLight(dl);
+		
+		setUpSky();
 		
 		rootNode.attachChild(worldNode);
 	}
@@ -100,9 +110,6 @@ public class WorldController {
 	public void loadWorld(Map level) {
 		this.map = level;
 		
-//		Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false);
-//		rootNode.attachChild(sky);
-
 		for(Flube f : level.getFlubes().values()) {
 			f.getControl().setPhysicsLocation(f.getOrigin());
 			attachFlube(f);
@@ -372,6 +379,28 @@ public class WorldController {
 	public void setAmbientBrightness(float brightness) {
         al.setColor(ColorRGBA.White.mult(brightness));
     }
+	
+	public void setUpSky() {
+//		Spatial sky = SkyFactory.createSky(assetManager, "de/findus/cydonia/textures/sky/Bright/BrightSky.dds", false);
+		
+//		Texture west = assetManager.loadTexture("de/findus/cydonia/textures/sky/Lagoon/lagoon_west.jpg");
+//		Texture east = assetManager.loadTexture("de/findus/cydonia/textures/sky/Lagoon/lagoon_east.jpg");
+//		Texture north = assetManager.loadTexture("de/findus/cydonia/textures/sky/Lagoon/lagoon_north.jpg");
+//		Texture south = assetManager.loadTexture("de/findus/cydonia/textures/sky/Lagoon/lagoon_south.jpg");
+//		Texture up = assetManager.loadTexture("de/findus/cydonia/textures/sky/Lagoon/lagoon_up.jpg");
+//		Texture down = assetManager.loadTexture("de/findus/cydonia/textures/sky/Lagoon/lagoon_down.jpg");
+//		Spatial sky = SkyFactory.createSky(assetManager, west, east, north, south, up, down);
+		
+		Texture west = assetManager.loadTexture("de/findus/cydonia/textures/sky/Space2/Space2_right1.png");
+		Texture east = assetManager.loadTexture("de/findus/cydonia/textures/sky/Space2/Space2_left2.png");
+		Texture north = assetManager.loadTexture("de/findus/cydonia/textures/sky/Space2/Space2_back6.png");
+		Texture south = assetManager.loadTexture("de/findus/cydonia/textures/sky/Space2/Space2_front5.png");
+		Texture up = assetManager.loadTexture("de/findus/cydonia/textures/sky/Space2/Space2_top3.png");
+		Texture down = assetManager.loadTexture("de/findus/cydonia/textures/sky/Space2/Space2_bottom4.png");
+		Spatial sky = SkyFactory.createSky(assetManager, west, east, north, south, up, down);
+		
+		rootNode.attachChild(sky);
+	}
 	
 	public void setUpWorldLights() {
 		for(PointLight pl : pointLights) {
