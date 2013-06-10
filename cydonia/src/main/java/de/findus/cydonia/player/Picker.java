@@ -13,6 +13,13 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import com.jme3.audio.AudioNode;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
+import com.jme3.effect.shapes.EmitterBoxShape;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 
 import de.findus.cydonia.level.Flube;
@@ -53,6 +60,11 @@ public abstract class Picker extends AbstractEquipment {
 		initHUDImgs();
 	}
 	
+	@Override
+	public void initGeometry() {
+		
+	}
+	
 	private void initHUDImgs() {
 		try {
 			if(hudImgs == null) {
@@ -63,7 +75,7 @@ public abstract class Picker extends AbstractEquipment {
 			}
 		} catch (IOException e) {
 		}
-	}	
+	}
 	
 	@Override
 	public void reset() {
@@ -163,7 +175,6 @@ public abstract class Picker extends AbstractEquipment {
 
 	@Override
 	public Node getGeometry() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -176,11 +187,5 @@ public abstract class Picker extends AbstractEquipment {
 	@Override
 	public String getTypeName() {
 		return TYPENAME;
-	}
-
-	@Override
-	public void initGeometry() {
-		// TODO Auto-generated method stub
-		
 	}
 }

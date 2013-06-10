@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import com.jme3.audio.AudioNode;
 import com.jme3.collision.CollisionResult;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh.Type;
@@ -47,6 +48,8 @@ public class Phaser extends AbstractEquipment {
 	
 	protected ParticleEmitter beam;
 	
+	protected AudioNode fireSound;
+	
 	/**
 	 * 
 	 */
@@ -65,8 +68,6 @@ public class Phaser extends AbstractEquipment {
 		this.player = player;
 		
 		initHUDImgs();
-		
-		initGeometry();
 	}
 
 	/* (non-Javadoc)
@@ -103,6 +104,17 @@ public class Phaser extends AbstractEquipment {
 	    
 	    this.geom.attachChild(beam);
 	    geom.setLocalTranslation(0, 0.3f, 0.5f);
+	    
+	    initSound();
+	}
+
+	private void initSound() {
+		fireSound = new AudioNode(getMainController().getAssetManager(), "de/findus/cydonia/sounds/pew01_mono.wav", false);
+		fireSound.setLooping(false);
+		fireSound.setPositional(true);
+		fireSound.setLocalTranslation(Vector3f.ZERO);
+		fireSound.setVolume(1);
+		this.geom.attachChild(fireSound);
 	}
 
 	private void initHUDImgs() {
@@ -136,6 +148,7 @@ public class Phaser extends AbstractEquipment {
 			beam.setShape(new EmitterBoxShape(new Vector3f(-0.01f, -0.01f, -distance/2), new Vector3f(0.01f, 0.01f, distance/2)));
 			
 			beam.emitAllParticles();
+			fireSound.play();
 		}
 	}
 

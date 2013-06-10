@@ -3,6 +3,10 @@
  */
 package de.findus.cydonia.player;
 
+import com.jme3.audio.AudioNode;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
+
 import de.findus.cydonia.main.MainController;
 
 /**
@@ -11,6 +15,11 @@ import de.findus.cydonia.main.MainController;
  */
 public class ClientPicker extends Picker {
 
+	private Node node = new Node("Picker");
+
+	private AudioNode placeSound;
+	private AudioNode pickupSound;
+	
 	/**
 	 * 
 	 */
@@ -32,12 +41,43 @@ public class ClientPicker extends Picker {
 	}
 	
 	@Override
-	public void usePrimary(boolean activate) {
+	public void initGeometry() {
+	    initSound();
+	}
+
+	private void initSound() {
+		placeSound = new AudioNode(getMainController().getAssetManager(), "de/findus/cydonia/sounds/place_mono.wav", false);
+		placeSound.setLooping(false);
+		placeSound.setPositional(true);
+		placeSound.setLocalTranslation(Vector3f.ZERO);
+		placeSound.setVolume(1);
+		this.node.attachChild(placeSound);
 		
+		pickupSound = new AudioNode(getMainController().getAssetManager(), "de/findus/cydonia/sounds/pickup_mono.wav", false);
+		pickupSound.setLooping(false);
+		pickupSound.setPositional(true);
+		pickupSound.setLocalTranslation(Vector3f.ZERO);
+		pickupSound.setVolume(1);
+		this.node.attachChild(pickupSound);
 	}
 	
+	@Override
+	public void usePrimary(boolean activate) {
+		if(activate) {
+//			placeSound.playInstance();
+		}
+	}
+	
+	@Override
 	public void useSecondary(boolean activate) {
-		
+		if(activate) {
+//			pickupSound.playInstance();
+		}
+	}
+	
+	@Override
+	public Node getGeometry() {
+		return this.node;
 	}
 
 }

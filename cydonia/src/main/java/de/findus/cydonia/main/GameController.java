@@ -141,9 +141,11 @@ public class GameController extends MainController implements ScreenController{
     private DropDown<String> teamInput;
     
     private Player player;
-    private AudioNode throwSound;
-
-    private ServerConnector connector;
+    
+    private AudioNode pickupSound;
+    private AudioNode placeSound;
+    
+	private ServerConnector connector;
     
     private Thread inputSender;
     
@@ -160,7 +162,6 @@ public class GameController extends MainController implements ScreenController{
     private int winTeam;
 	private int team1score;
 	private int team2score;
-	
 	public void start(String server) {
     	this.serverAddress = server;
     	this.start();
@@ -352,12 +353,23 @@ public class GameController extends MainController implements ScreenController{
         
         cam.setFrustumPerspective(45f, (float) cam.getWidth() / cam.getHeight(), 0.3f, 300f);
         
-        throwSound = new AudioNode(assetManager, "de/findus/cydonia/sounds/throw_001.wav", false);
-        throwSound.setLooping(false);
-		throwSound.setPositional(true);
-		throwSound.setLocalTranslation(Vector3f.ZERO);
-		throwSound.setVolume(1);
-		getWorldController().attachObject(throwSound);
+        pickupSound = new AudioNode(assetManager, "de/findus/cydonia/sounds/pickup_mono.wav", false);
+        pickupSound.setLooping(false);
+		pickupSound.setPositional(true);
+		pickupSound.setLocalTranslation(Vector3f.ZERO);
+		pickupSound.setVolume(0.5f);
+		pickupSound.setDirectional(false);
+		pickupSound.setRefDistance(5f);
+		getWorldController().attachObject(pickupSound);
+		
+		placeSound = new AudioNode(assetManager, "de/findus/cydonia/sounds/place_mono.wav", false);
+		placeSound.setLooping(false);
+		placeSound.setPositional(true);
+		placeSound.setLocalTranslation(Vector3f.ZERO);
+		placeSound.setVolume(0.5f);
+		placeSound.setDirectional(false);
+		placeSound.setRefDistance(5f);
+		getWorldController().attachObject(placeSound);
 		
     	connector.connectToServer(serverAddress, 6173);
     }
@@ -917,6 +929,28 @@ public class GameController extends MainController implements ScreenController{
 			team1score++;
 		}else if(p.getTeam() == 2) {
 			team2score++;
+		}
+	}
+	
+	@Override
+	protected void pickup(Player p, Flube f) {
+		if(f != null) {
+			Vector3f loc = f.getModel().getWorldTranslation();
+			pickupSound.setLocalTranslation(loc);
+			pickupSound.playInstance();
+		}
+		
+		super.pickup(p, f);
+	}
+	
+	@Override
+	protected void place(Player p, Flube f, Vector3f loc) {
+		super.place(p, f, loc);
+		
+		if(f != null) {
+			Vector3f l = f.getModel().getWorldTranslation();
+			placeSound.setLocalTranslation(l);
+			placeSound.playInstance();
 		}
 	}
 	

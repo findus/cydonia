@@ -228,7 +228,6 @@ public abstract class MainController extends Application implements PhysicsColli
 				picker.getRepository().remove(f);
 			}
 		}
-		System.out.println("Place");
 	}
 
 	/**
