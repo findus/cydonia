@@ -223,7 +223,7 @@ public class MenuController {
 			String color = "#8888";
 			
 			if(p.getTeam() == 1) {
-				if(p.getId() == gameController.getPlayer().getId()) {
+				if(gameController.getPlayer() != null && p.getId() == gameController.getPlayer().getId()) {
 					color = "#7798";
 				}
 				pb = new ScoreLineBuilder(name, score, color, "#ffff");
