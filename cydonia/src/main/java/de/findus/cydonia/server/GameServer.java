@@ -86,7 +86,15 @@ public class GameServer extends MainController{
 	private static ConsoleWriter CWRITER = ConsoleWriter.getWriter();
 
 	public static void main(String[] args) {
-		MainController gameServer = new GameServer();
+        boolean window = false;
+		
+		for(String arg : args) {
+        	if("--window".equalsIgnoreCase(arg)) {
+        		window = true;
+        	}
+        }
+		
+		MainController gameServer = new GameServer(window);
 		gameServer.start();
 	}
 	
@@ -110,15 +118,16 @@ public class GameServer extends MainController{
 	
 	private Collection<ServerStateListener> stateListeners;
 
-	public GameServer() {
+	public GameServer(boolean window) {
 		super();
 		
 		this.stateListeners = new LinkedList<ServerStateListener>();
 		
-		configFrame = new ServerConfigFrame(this);
-        configFrame.pack();
-        
-        CWRITER.addConsole(configFrame);
+		if(window) {
+			configFrame = new ServerConfigFrame(this);
+			configFrame.pack();
+			CWRITER.addConsole(configFrame);
+		}
 	}
 	
 	public void setConfigFrameVisible(boolean visible) {

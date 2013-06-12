@@ -149,7 +149,7 @@ public class ServerBrowser implements ActionListener {
 
 			@Override
 			public void run() {
-				GameServer server = new GameServer();
+				GameServer server = new GameServer(true);
 				server.setConfigFrameVisible(true);
 				server.start();
 			}
