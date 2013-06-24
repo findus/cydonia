@@ -210,6 +210,12 @@ public class PlayerController {
 			pusher.setInterval(1000);
 			pusher.setPlayer(p);
 			p.getEquips().add(pusher);
+			
+			Swapper swapper = (Swapper) mainController.getEquipmentFactory().create("Swapper");
+			swapper.setName("Swapper");
+			swapper.setRange(100);
+			swapper.setPlayer(p);
+			p.getEquips().add(swapper);
 		}else if("editor".equals(gameMode)){
 			Editor editor1 = (Editor) mainController.getEquipmentFactory().create("Editor");
 			editor1.setName("EditorDarkGray");

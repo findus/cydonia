@@ -52,6 +52,7 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.events.SwapEvent;
 import de.findus.cydonia.events.WorldStateEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
@@ -629,6 +630,21 @@ public class GameController extends MainController implements ScreenController{
 			Flube f = getWorldController().getFlube(place.getMoveableid());
 			Vector3f loc = place.getLocation();
 			place(p, f, loc);
+		}else if(e instanceof SwapEvent) {
+			SwapEvent swap = (SwapEvent) e;
+			Object a = null;
+			if(swap.getPlayerA() != 0) {
+				a = getPlayerController().getPlayer(swap.getPlayerA());
+			}else if(swap.getFlubeA() != 0) {
+				a = getWorldController().getFlube(swap.getFlubeA());
+			}
+			Object b = null;
+			if(swap.getPlayerB() != 0) {
+				b = getPlayerController().getPlayer(swap.getPlayerB());
+			}else if(swap.getFlubeB() != 0) {
+				b = getWorldController().getFlube(swap.getFlubeB());
+			}
+			swap(a, b);
 		}else if (e instanceof PlayerJoinEvent) {
 			PlayerJoinEvent join = (PlayerJoinEvent) e;
 			int playerid = join.getPlayerId();

@@ -482,6 +482,7 @@ public class WorldController {
 	public CollisionResult pickWorld(Vector3f source, Vector3f direction) {
 		CollisionResults results = new CollisionResults();
 		Ray ray = new Ray(source, direction);
+		System.out.println(ray.getLimit());
 		worldNode.collideWith(ray, results);
 		return results.getClosestCollision();
 	}

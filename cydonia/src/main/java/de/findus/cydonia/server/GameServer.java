@@ -42,6 +42,7 @@ import de.findus.cydonia.events.RemoveEvent;
 import de.findus.cydonia.events.RespawnEvent;
 import de.findus.cydonia.events.RestartRoundEvent;
 import de.findus.cydonia.events.RoundEndedEvent;
+import de.findus.cydonia.events.SwapEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
@@ -297,6 +298,21 @@ public class GameServer extends MainController{
 			}else if("spawnpoint".equalsIgnoreCase(add.getObjectType())) {
 				SpawnPoint sp = getWorldController().addNewSpawnPoint((int)add.getObjectid(), add.getLocation(), add.getObjectSpec());
 			}
+		}else if(e instanceof SwapEvent) {
+			SwapEvent swap = (SwapEvent) e;
+			Object a = null;
+			if(swap.getPlayerA() != 0) {
+				a = getPlayerController().getPlayer(swap.getPlayerA());
+			}else if(swap.getFlubeA() != 0) {
+				a = getWorldController().getFlube(swap.getFlubeA());
+			}
+			Object b = null;
+			if(swap.getPlayerB() != 0) {
+				b = getPlayerController().getPlayer(swap.getPlayerB());
+			}else if(swap.getFlubeB() != 0) {
+				b = getWorldController().getFlube(swap.getFlubeB());
+			}
+			swap(a, b);
 		}else if(e instanceof PlayerQuitEvent) {
 			PlayerQuitEvent quit = (PlayerQuitEvent) e;
 			Player p = getPlayerController().getPlayer(quit.getPlayerId());

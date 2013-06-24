@@ -62,6 +62,12 @@ public class EquipmentFactory {
 		d.clientClass = Pusher.class;
 		d.serverClass = ServerPusher.class;
 		this.descriptions.put(d.typeName, d);
+		
+		d = new EquipmentDescription();
+		d.typeName = "Swapper";
+		d.clientClass = Swapper.class;
+		d.serverClass = ServerSwapper.class;
+		this.descriptions.put(d.typeName, d);
 	}
 	
 	public Equipment create(String equipmentType) {

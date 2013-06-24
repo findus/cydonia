@@ -229,6 +229,36 @@ public abstract class MainController extends Application implements PhysicsColli
 			}
 		}
 	}
+	
+	protected void swap(Object a, Object b) {
+		Vector3f posA = null;
+		if(a instanceof Player) {
+			posA = ((Player) a).getControl().getPhysicsLocation();
+		}else if(a instanceof Flube) {
+			posA = ((Flube) a).getControl().getPhysicsLocation();
+		}
+		
+		Vector3f posB = null;
+		if(b instanceof Player) {
+			posB = ((Player) b).getControl().getPhysicsLocation();
+		}else if(b instanceof Flube) {
+			posB = ((Flube) b).getControl().getPhysicsLocation();
+		}
+		
+		if(posA != null && posB != null) {
+			if(a instanceof Player) {
+				((Player) a).getControl().warp(posB);
+			}else if(a instanceof Flube) {
+				((Flube) a).getControl().setPhysicsLocation(posB);
+			}
+			
+			if(b instanceof Player) {
+				((Player) b).getControl().warp(posA);
+			}else if(b instanceof Flube) {
+				((Flube) b).getControl().setPhysicsLocation(posA);
+			}
+		}
+	}
 
 	/**
 	 * @return the gameConfig
