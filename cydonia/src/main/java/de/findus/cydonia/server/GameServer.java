@@ -48,6 +48,7 @@ import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.Map;
 import de.findus.cydonia.level.MapXMLParser;
 import de.findus.cydonia.level.SpawnPoint;
+import de.findus.cydonia.level.WorldObject;
 import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.main.GameState;
 import de.findus.cydonia.main.MainController;
@@ -300,13 +301,13 @@ public class GameServer extends MainController{
 			}
 		}else if(e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
-			Object a = null;
+			WorldObject a = null;
 			if(swap.getPlayerA() != 0) {
 				a = getPlayerController().getPlayer(swap.getPlayerA());
 			}else if(swap.getFlubeA() != 0) {
 				a = getWorldController().getFlube(swap.getFlubeA());
 			}
-			Object b = null;
+			WorldObject b = null;
 			if(swap.getPlayerB() != 0) {
 				b = getPlayerController().getPlayer(swap.getPlayerB());
 			}else if(swap.getFlubeB() != 0) {

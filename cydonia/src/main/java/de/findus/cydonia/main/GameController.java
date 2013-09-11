@@ -57,6 +57,7 @@ import de.findus.cydonia.events.WorldStateEvent;
 import de.findus.cydonia.level.Flag;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.SpawnPoint;
+import de.findus.cydonia.level.WorldObject;
 import de.findus.cydonia.level.WorldState;
 import de.findus.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.findus.cydonia.messages.EquipmentInfo;
@@ -632,13 +633,13 @@ public class GameController extends MainController implements ScreenController{
 			place(p, f, loc);
 		}else if(e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
-			Object a = null;
+			WorldObject a = null;
 			if(swap.getPlayerA() != 0) {
 				a = getPlayerController().getPlayer(swap.getPlayerA());
 			}else if(swap.getFlubeA() != 0) {
 				a = getWorldController().getFlube(swap.getFlubeA());
 			}
-			Object b = null;
+			WorldObject b = null;
 			if(swap.getPlayerB() != 0) {
 				b = getPlayerController().getPlayer(swap.getPlayerB());
 			}else if(swap.getFlubeB() != 0) {

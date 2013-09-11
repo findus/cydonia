@@ -65,7 +65,7 @@ public class EquipmentFactory {
 		
 		d = new EquipmentDescription();
 		d.typeName = "Swapper";
-		d.clientClass = Swapper.class;
+		d.clientClass = ClientSwapper.class;
 		d.serverClass = ServerSwapper.class;
 		this.descriptions.put(d.typeName, d);
 	}

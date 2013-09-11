@@ -4,32 +4,48 @@
 package de.findus.cydonia.player;
 
 import com.jme3.collision.CollisionResult;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.Light;
+import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Spatial;
 
-import de.findus.cydonia.events.SwapEvent;
 import de.findus.cydonia.level.Flube;
+import de.findus.cydonia.level.WorldObject;
 import de.findus.cydonia.main.MainController;
 
 /**
  * @author Findus
  *
  */
-public class ServerSwapper extends Swapper {
-
+public class ClientSwapper extends Swapper {
+	
+	AmbientLight markLightA;
+	AmbientLight markLightB;
+	
 	/**
 	 * 
 	 */
-	public ServerSwapper() {
-		super();
+	public ClientSwapper() {
+		
 	}
 
 	/**
 	 * @param mainController
 	 */
-	public ServerSwapper(MainController mainController) {
+	public ClientSwapper(MainController mainController) {
 		super(mainController);
 	}
 
-
+	/**
+	 * @param name
+	 * @param player
+	 * @param mainController
+	 */
+	public ClientSwapper(String name, Player player,
+			MainController mainController) {
+		super(name, player, mainController);
+	}
+	
 	@Override
 	public void usePrimary(boolean activate) {
 		if(!activate) return;
@@ -38,19 +54,11 @@ public class ServerSwapper extends Swapper {
 		if(result != null && result.getDistance() <= this.getRange()) {
 			if((result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player"))) {
 				Player target = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
-				if(markerB == target) {
-					markerB = null;
-				}
-				this.markerA = target;
+				markA(target);
 			}else if(getMainController().getWorldController().isFlube(result.getGeometry())) {
 				Flube target = getMainController().getWorldController().getFlube((long)result.getGeometry().getUserData("id"));
-				if(markerB == target) {
-					markerB = null;
-				}
-				this.markerA = target;
+				markA(target);
 			}
-			
-			swap();
 		}
 	}
 	
@@ -62,44 +70,70 @@ public class ServerSwapper extends Swapper {
 		if(result != null && result.getDistance() <= this.getRange()) {
 			if((result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player"))) {
 				Player target = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
-				if(markerA == target) {
-					markerA = null;
-				}
-				this.markerB = target;
+				markB(target);
 			}else if(getMainController().getWorldController().isFlube(result.getGeometry())) {
 				Flube target = getMainController().getWorldController().getFlube((long)result.getGeometry().getUserData("id"));
-				if(markerA == target) {
-					markerA = null;
-				}
-				this.markerB = target;
+				markB(target);
 			}
-			
-			swap();
 		}
 	}
 	
-	private void swap() {
-		if(this.markerA != null && this.markerB != null) {
-			int pA=0, pB=0;
-			long fA=0, fB=0;
-			
-			if(markerA instanceof Player) {
-				pA = ((Player) markerA).getId();
-			}else if(markerA instanceof Flube) {
-				fA = ((Flube) markerA).getId();
+	private void markA(WorldObject s) {
+		if(markerA != null) {
+			unmark(markerA);
+		}
+		if(markerB == s) {
+			unmark(markerB);
+		}
+		
+		markerA = s;
+		Spatial model = markerA.getModel();
+		
+		if(markLightA == null) {
+			markLightA = new AmbientLight();
+			markLightA.setColor(ColorRGBA.Orange);
+			markLightA.setName("MarkLight");
+		}
+		model.addLight(markLightA);
+		System.out.println("mark: " + s);
+	}
+	
+	private void markB(WorldObject s) {
+		if(markerB != null) {
+			unmark(markerB);
+		}
+		if(markerA == s) {
+			unmark(markerA);
+		}
+		
+		markerB = s;
+		Spatial model = markerB.getModel();
+		
+		if(markLightB == null) {
+			markLightB = new AmbientLight();
+			markLightB.setColor(ColorRGBA.Cyan);
+			markLightB.setName("MarkLight");
+		}
+		model.addLight(markLightB);
+		System.out.println("mark: " + s);
+	}
+
+	private void unmark(WorldObject marker) {
+		System.out.println("try to unmark: " + marker);
+		for(Light l : marker.getModel().getLocalLightList()) {
+			if(l.getName().equals("MarkLight")) {
+				marker.getModel().removeLight(l);
+				System.out.println("unmark: " + marker);
 			}
-			
-			if(markerB instanceof Player) {
-				pB = ((Player) markerB).getId();
-			}else if(markerB instanceof Flube) {
-				fB = ((Flube) markerB).getId();
-			}
-			
-			markerA = null;
-			markerB = null;
-			
-			SwapEvent event = new SwapEvent(pA, pB, fA, fB, true);
-			getMainController().getEventMachine().fireEvent(event);
 		}
 	}
+	
+	@Override
+	public void reset() {
+		if(markerA != null) unmark(markerA);
+		if(markerB != null) unmark(markerB);
+		
+		super.reset();
+	}
+
 }

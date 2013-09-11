@@ -10,7 +10,6 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.LoopMode;
-import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.GhostControl;
@@ -19,12 +18,13 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
 import de.findus.cydonia.level.Flag;
+import de.findus.cydonia.level.WorldObject;
 
 /**
  * @author Findus
  *
  */
-public class Player implements AnimEventListener{
+public class Player extends WorldObject implements AnimEventListener{
 	
 	public static float MAX_STEP_HEIGHT = 0.2f;
 	

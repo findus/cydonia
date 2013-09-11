@@ -24,7 +24,7 @@ import de.findus.cydonia.main.GameController;
  * @author Findus
  *
  */
-public class Flube {
+public class Flube extends WorldObject{
 
 	private long id;
 	

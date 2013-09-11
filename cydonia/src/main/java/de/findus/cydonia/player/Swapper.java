@@ -12,13 +12,9 @@ import javax.imageio.ImageIO;
 
 import com.jme3.audio.AudioNode;
 import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh.Type;
-import com.jme3.effect.shapes.EmitterBoxShape;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 
+import de.findus.cydonia.level.WorldObject;
 import de.findus.cydonia.main.MainController;
 import de.findus.cydonia.messages.EquipmentInfo;
 import de.findus.cydonia.messages.SwapperInfo;
@@ -43,9 +39,9 @@ public class Swapper extends AbstractEquipment {
 	
 	protected AudioNode fireSound;
 	
-	protected Object markerA;
+	protected WorldObject markerA;
 	
-	protected Object markerB;
+	protected WorldObject markerB;
 	
 	/**
 	 * 
@@ -77,45 +73,6 @@ public class Swapper extends AbstractEquipment {
 	public String getTypeName() {
 		return TYPENAME;
 	}
-	
-	@Override
-	public void initGeometry() {
-		beam = new ParticleEmitter("Beam", Type.Triangle, 30);
-        Material mat_red = new Material(getMainController().getAssetManager(), 
-                "Common/MatDefs/Misc/Particle.j3md");
-        mat_red.setTexture("Texture", getMainController().getAssetManager().loadTexture(
-                "Effects/Explosion/flame.png"));
-        beam.setMaterial(mat_red);
-        beam.setImagesX(2); 
-        beam.setImagesY(2); // 2x2 texture animation
-        beam.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.5f));
-        beam.setStartColor(new ColorRGBA(1f, 0.5f, 0.5f, 1f));
-        beam.setStartSize(0.02f);
-        beam.setEndSize(0.005f);
-        beam.setGravity(0, 0, 0);
-        beam.setNumParticles(300);
-		beam.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 0, 0.05f));
-		beam.getParticleInfluencer().setVelocityVariation(1f);
-		beam.setParticlesPerSec(0);
-		beam.setShape(new EmitterBoxShape(Vector3f.ZERO, new Vector3f(0.1f, 0.1f, 0.1f)));
-		beam.setLowLife(0.5f);
-		beam.setHighLife(2f);
-		beam.setEnabled(true);
-	    
-	    this.geom.attachChild(beam);
-	    geom.setLocalTranslation(0, 0.3f, 0.5f);
-	    
-	    initSound();
-	}
-
-	private void initSound() {
-		fireSound = new AudioNode(getMainController().getAssetManager(), "de/findus/cydonia/sounds/pew01_mono.wav", false);
-		fireSound.setLooping(false);
-		fireSound.setPositional(true);
-		fireSound.setLocalTranslation(Vector3f.ZERO);
-		fireSound.setVolume(1);
-		this.geom.attachChild(fireSound);
-	}
 
 	private void initHUDImgs() {
 		try {
@@ -124,6 +81,11 @@ public class Swapper extends AbstractEquipment {
 			}
 		} catch (IOException e) {
 		}
+	}
+
+	@Override
+	public void initGeometry() {
+		
 	}
 
 	@Override

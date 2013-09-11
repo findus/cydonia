@@ -9,6 +9,7 @@ import com.jme3.app.Application;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.BulletAppState.ThreadingType;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.light.Light;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -24,6 +25,7 @@ import de.findus.cydonia.level.FlagFactory;
 import de.findus.cydonia.level.Flube;
 import de.findus.cydonia.level.SpawnPoint;
 import de.findus.cydonia.level.WorldController;
+import de.findus.cydonia.level.WorldObject;
 import de.findus.cydonia.player.EquipmentFactory;
 import de.findus.cydonia.player.Picker;
 import de.findus.cydonia.player.Player;
@@ -230,7 +232,7 @@ public abstract class MainController extends Application implements PhysicsColli
 		}
 	}
 	
-	protected void swap(Object a, Object b) {
+	protected void swap(WorldObject a, WorldObject b) {
 		Vector3f posA = null;
 		if(a instanceof Player) {
 			posA = ((Player) a).getControl().getPhysicsLocation();
@@ -262,6 +264,18 @@ public abstract class MainController extends Application implements PhysicsColli
 				getWorldController().attachFlube((Flube) b);
 			}
 		}
+		
+		for(Light l : a.getModel().getLocalLightList()) {
+			if(l.getName().equals("MarkLight")) {
+				a.getModel().removeLight(l);
+			}
+		}
+		for(Light l : b.getModel().getLocalLightList()) {
+			if(l.getName().equals("MarkLight")) {
+				b.getModel().removeLight(l);
+			}
+		}
+		System.out.println(this.getClass().getSimpleName() + " swap");
 	}
 
 	/**
