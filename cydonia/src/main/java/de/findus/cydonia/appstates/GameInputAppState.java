@@ -69,6 +69,8 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
         inputManager.addMapping(JUMP.getCode(), new KeyTrigger(KeyInput.KEY_LSHIFT));
         inputManager.addMapping(USEPRIMARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping(USESECONDARY.getCode(), new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addMapping(SWITCHEQUIPUP.getCode(), new KeyTrigger(KeyInput.KEY_PGUP));
+        inputManager.addMapping(SWITCHEQUIPDOWN.getCode(), new KeyTrigger(KeyInput.KEY_PGDN));
         inputManager.addMapping(SWITCHEQUIPDOWN.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
         inputManager.addMapping(SWITCHEQUIPUP.getCode(), new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputManager.addListener(this, CROSSHAIR.getCode(), HUD.getCode(), STRAFELEFT.getCode(), STRAFERIGHT.getCode(), MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(), ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(), SWITCHEQUIPUP.getCode(), SWITCHEQUIPDOWN.getCode());
@@ -99,10 +101,16 @@ public class GameInputAppState extends AbstractAppState implements ActionListene
 		InputCommand command = InputCommand.parseInputCommand(name);
 		if(command != null) {
 			if(command == SWITCHEQUIPUP) {
+				if(!isPressed) {
+					return;
+				}
 				command = SWITCHEQUIP;
 				isPressed = true;
 			}
 			if(command == SWITCHEQUIPDOWN) {
+				if(!isPressed) {
+					return;
+				}
 				command = SWITCHEQUIP;
 				isPressed = false;
 			}
