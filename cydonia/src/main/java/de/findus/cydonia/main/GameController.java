@@ -12,6 +12,7 @@ import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
@@ -22,6 +23,7 @@ import com.jme3.post.filters.BloomFilter;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
@@ -42,6 +44,7 @@ import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
+import de.findus.cydonia.events.MarkEvent;
 import de.findus.cydonia.events.PhaseEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
@@ -144,7 +147,7 @@ public class GameController extends MainController implements ScreenController{
     
     private Player player;
     
-    private AudioNode pickupSound;
+	private AudioNode pickupSound;
     private AudioNode placeSound;
     
 	private ServerConnector connector;
@@ -631,18 +634,31 @@ public class GameController extends MainController implements ScreenController{
 			Flube f = getWorldController().getFlube(place.getMoveableid());
 			Vector3f loc = place.getLocation();
 			place(p, f, loc);
+		}else if(e instanceof MarkEvent) {
+			MarkEvent mark = (MarkEvent) e;
+			WorldObject o = null;
+			if(mark.getTargetPlayerId() >= 0) {
+				o = getPlayerController().getPlayer(mark.getTargetPlayerId());
+			}else if(mark.getTargetFlubeId() > 0) {
+				o = getWorldController().getFlube(mark.getTargetFlubeId());
+			}
+			if(mark.isUnmark()) {
+				unmark(o);
+			}else {
+				mark(o);
+			}
 		}else if(e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
 			WorldObject a = null;
-			if(swap.getPlayerA() != 0) {
+			if(swap.getPlayerA() >= 0) {
 				a = getPlayerController().getPlayer(swap.getPlayerA());
-			}else if(swap.getFlubeA() != 0) {
+			}else if(swap.getFlubeA() > 0) {
 				a = getWorldController().getFlube(swap.getFlubeA());
 			}
 			WorldObject b = null;
-			if(swap.getPlayerB() != 0) {
+			if(swap.getPlayerB() >= 0) {
 				b = getPlayerController().getPlayer(swap.getPlayerB());
-			}else if(swap.getFlubeB() != 0) {
+			}else if(swap.getFlubeB() > 0) {
 				b = getWorldController().getFlube(swap.getFlubeB());
 			}
 			swap(a, b);
@@ -968,6 +984,31 @@ public class GameController extends MainController implements ScreenController{
 			Vector3f l = f.getModel().getWorldTranslation();
 			placeSound.setLocalTranslation(l);
 			placeSound.playInstance();
+		}
+	}
+	
+	@Override
+	protected void swap(WorldObject a, WorldObject b) {
+		super.swap(a, b);
+		
+		unmark(a);
+		unmark(b);
+	}
+	
+	protected void mark(WorldObject o) {
+		Spatial model = o.getModel();
+		AmbientLight markLight = new AmbientLight();
+		markLight.setColor(ColorRGBA.Magenta);
+		markLight.setName("MarkLight");
+		model.addLight(markLight);
+		System.out.println("mark: " + o);
+	}
+	
+	protected void unmark(WorldObject o) {
+		for(Light l : o.getModel().getLocalLightList()) {
+			if(l.getName().equals("MarkLight")) {
+				o.getModel().removeLight(l);
+			}
 		}
 	}
 	

@@ -33,6 +33,7 @@ import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.HitEvent;
 import de.findus.cydonia.events.InputEvent;
 import de.findus.cydonia.events.KillEvent;
+import de.findus.cydonia.events.MarkEvent;
 import de.findus.cydonia.events.PhaseEvent;
 import de.findus.cydonia.events.PickupEvent;
 import de.findus.cydonia.events.PlaceEvent;
@@ -193,6 +194,7 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 		Serializer.registerClass(PushEvent.class);
 		Serializer.registerClass(HitEvent.class);
 		Serializer.registerClass(BeamEvent.class);
+		Serializer.registerClass(MarkEvent.class);
 		Serializer.registerClass(SwapEvent.class);
 		Serializer.registerClass(PickupEvent.class);
 		Serializer.registerClass(PlaceEvent.class);

@@ -265,16 +265,6 @@ public abstract class MainController extends Application implements PhysicsColli
 			}
 		}
 		
-		for(Light l : a.getModel().getLocalLightList()) {
-			if(l.getName().equals("MarkLight")) {
-				a.getModel().removeLight(l);
-			}
-		}
-		for(Light l : b.getModel().getLocalLightList()) {
-			if(l.getName().equals("MarkLight")) {
-				b.getModel().removeLight(l);
-			}
-		}
 		System.out.println(this.getClass().getSimpleName() + " swap");
 	}
 

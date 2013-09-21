@@ -302,15 +302,15 @@ public class GameServer extends MainController{
 		}else if(e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
 			WorldObject a = null;
-			if(swap.getPlayerA() != 0) {
+			if(swap.getPlayerA() >= 0) {
 				a = getPlayerController().getPlayer(swap.getPlayerA());
-			}else if(swap.getFlubeA() != 0) {
+			}else if(swap.getFlubeA() > 0) {
 				a = getWorldController().getFlube(swap.getFlubeA());
 			}
 			WorldObject b = null;
-			if(swap.getPlayerB() != 0) {
+			if(swap.getPlayerB() >= 0) {
 				b = getPlayerController().getPlayer(swap.getPlayerB());
-			}else if(swap.getFlubeB() != 0) {
+			}else if(swap.getFlubeB() > 0) {
 				b = getWorldController().getFlube(swap.getFlubeB());
 			}
 			swap(a, b);
@@ -496,8 +496,8 @@ public class GameServer extends MainController{
 				if(p.isAlive()) {
 					getPlayerController().handleInput(p, command, value);
 					
-					InputEvent event = new InputEvent(p.getId(), command, value, true);
-					getEventMachine().fireEvent(event);
+//					InputEvent event = new InputEvent(p.getId(), command, value, true);
+//					getEventMachine().fireEvent(event);
 				}else {
 					if(value && p.getTeam() > 0) {
 						long timeToRespawn = p.getGameOverTime() + (getGameConfig().getLong("mp_respawntime") * 1000) - System.currentTimeMillis();
@@ -513,8 +513,8 @@ public class GameServer extends MainController{
 				if(p.isAlive()) {
 					getPlayerController().handleInput(p, command, value);
 					
-					InputEvent event = new InputEvent(p.getId(), command, value, true);
-					getEventMachine().fireEvent(event);
+//					InputEvent event = new InputEvent(p.getId(), command, value, true);
+//					getEventMachine().fireEvent(event);
 				}
 			}
 			break;
