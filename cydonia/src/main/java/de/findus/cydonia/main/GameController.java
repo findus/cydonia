@@ -998,7 +998,7 @@ public class GameController extends MainController implements ScreenController{
 	protected void mark(WorldObject o) {
 		Spatial model = o.getModel();
 		AmbientLight markLight = new AmbientLight();
-		markLight.setColor(ColorRGBA.Magenta);
+		markLight.setColor(ColorRGBA.White.mult(0.5f));
 		markLight.setName("MarkLight");
 		model.addLight(markLight);
 		System.out.println("mark: " + o);
