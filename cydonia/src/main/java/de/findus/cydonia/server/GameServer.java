@@ -3,9 +3,11 @@
  */
 package de.findus.cydonia.server;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -106,6 +108,8 @@ public class GameServer extends MainController{
 	
 	private Thread locationSenderLoop;
 	
+	private Thread consoleListener;
+	
     private GameplayController gameplayController;
     
     /**
@@ -129,6 +133,30 @@ public class GameServer extends MainController{
 			configFrame = new ServerConfigFrame(this);
 			configFrame.pack();
 			CWRITER.addConsole(configFrame);
+		}else {
+			ConsoleWriter.getWriter().addConsole(new Console() {
+				@Override
+				public void writeLine(String line) {
+					System.out.println(line);
+				}
+			});
+			
+			consoleListener = new Thread() {
+				@Override
+				public void run() {
+					while(!Thread.interrupted()) {
+						BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+						String zeile = null;
+						try {
+							zeile = console.readLine();
+							handleCommand(zeile);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			};
+			consoleListener.start();
 		}
 	}
 	
@@ -158,7 +186,12 @@ public class GameServer extends MainController{
 		networkController.stop();
 		locationSenderLoop.interrupt();
 		gameplayController.dispose();
-		configFrame.setVisible(true);
+		if(consoleListener != null && consoleListener.isAlive()) {
+			consoleListener.interrupt();
+		}
+		if(configFrame != null) {
+			configFrame.setVisible(true);
+		}
 //		configFrame.dispose();
 	}
 	
@@ -720,7 +753,7 @@ public class GameServer extends MainController{
 			}
 		}else if("mp_map".equalsIgnoreCase(com[0])) {
 			if(com.length < 2) {
-				CWRITER.writeLine("mp_map is " + getGameConfig().getLong("mp_map"));
+				CWRITER.writeLine("mp_map is " + getGameConfig().getString("mp_map"));
 			}else {
 				loadMap(com[1]);
 			}
