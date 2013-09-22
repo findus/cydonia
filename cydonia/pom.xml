@@ -13,6 +13,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jmonkey.version>3.0.0-SNAPSHOT</jmonkey.version>
+		<mainclass>de.findus.cydonia.main.CydoniaLauncher</mainclass>
 	</properties>
 
 	<dependencies>
@@ -45,10 +46,24 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>${mainclass}</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 		<resources>
 			<resource>
-				<directory>D:\Programmieren\java\cubiverse43\cydonia\src\main\ressources</directory>
+				<directory>src\main\ressources</directory>
 			</resource>
 		</resources>
 	</build>
