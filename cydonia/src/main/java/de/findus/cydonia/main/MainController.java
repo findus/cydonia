@@ -252,7 +252,7 @@ public abstract class MainController extends Application implements PhysicsColli
 				((Player) a).getControl().warp(posB);
 			}else if(a instanceof Flube) {
 				getWorldController().detachFlube((Flube) a);
-				((Flube) a).getControl().setPhysicsLocation(posB);
+				((Flube) a).getControl().setPhysicsLocation(getWorldController().rasterize(posB));
 				getWorldController().attachFlube((Flube) a);
 			}
 			
@@ -260,7 +260,7 @@ public abstract class MainController extends Application implements PhysicsColli
 				((Player) b).getControl().warp(posA);
 			}else if(b instanceof Flube) {
 				getWorldController().detachFlube((Flube) b);
-				((Flube) b).getControl().setPhysicsLocation(posA);
+				((Flube) b).getControl().setPhysicsLocation(getWorldController().rasterize(posA));
 				getWorldController().attachFlube((Flube) b);
 			}
 		}

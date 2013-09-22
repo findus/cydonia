@@ -494,6 +494,13 @@ public class WorldController {
 		return results.getClosestCollision();
 	}
 	
+	public CollisionResults pickRootList(Vector3f source, Vector3f direction) {
+		CollisionResults results = new CollisionResults();
+		Ray ray = new Ray(source, direction);
+		rootNode.collideWith(ray, results);
+		return results;
+	}
+	
 	public boolean isFlube(Spatial obj) {
 		return (obj.getName().startsWith("Flube_"));
 	}
@@ -550,4 +557,11 @@ public class WorldController {
 		return -1;
 	}
 
+	public Vector3f rasterize(Vector3f vector) {
+		Vector3f result = new Vector3f();
+		result.setX(Math.round(vector.getX()));
+		result.setY(Math.round(vector.getY()));
+		result.setZ(Math.round(vector.getZ()));
+		return result;
+	}
 }

@@ -4,6 +4,7 @@
 package de.findus.cydonia.player;
 
 import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
@@ -46,14 +47,23 @@ public class ServerSwapper extends Swapper {
 	public void usePrimary(boolean activate) {
 		if(!activate) return;
 
-		CollisionResult result = getMainController().getWorldController().pickRoot(this.player.getEyePosition().add(player.getViewDir().normalize().mult(0.3f)), this.player.getViewDir());
-		if(result != null && result.getDistance() <= this.getRange()) {
-			if((result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player"))) {
-				Player target = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
-				mark(target);
-			}else if(getMainController().getWorldController().isFlube(result.getGeometry())) {
-				Flube target = getMainController().getWorldController().getFlube((long)result.getGeometry().getUserData("id"));
-				mark(target);
+		CollisionResults results = getMainController().getWorldController().pickRootList(this.player.getEyePosition().add(player.getViewDir().normalize().mult(0.3f)), this.player.getViewDir());
+		for(CollisionResult result : results) {
+			if(result != null && result.getDistance() <= this.getRange()) {
+				if((result.getGeometry().getParent() != null && result.getGeometry().getParent().getName() != null && result.getGeometry().getParent().getName().startsWith("player"))) {
+					Player target = getMainController().getPlayerController().getPlayer(Integer.valueOf(result.getGeometry().getParent().getName().substring(6)));
+					if(target == player) {
+						continue;
+					}
+					mark(target);
+					break;
+				}else if(getMainController().getWorldController().isFlube(result.getGeometry())) {
+					Flube target = getMainController().getWorldController().getFlube((long)result.getGeometry().getUserData("id"));
+					mark(target);
+					break;
+				}
+			}else {
+				break;
 			}
 		}
 	}
