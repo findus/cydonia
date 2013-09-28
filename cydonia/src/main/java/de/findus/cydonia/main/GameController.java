@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import com.jme3.app.StatsView;
@@ -40,6 +41,7 @@ import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
+import de.findus.cydonia.events.ConnectionLostEvent;
 import de.findus.cydonia.events.Event;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.InputEvent;
@@ -619,6 +621,9 @@ public class GameController extends MainController implements ScreenController{
 			stopGame();
 		}else if (e instanceof ConnectionInitEvent) {
 			startGame(((ConnectionInitEvent) e).getLevel());
+		}else if(e instanceof ConnectionLostEvent) {
+			JOptionPane.showMessageDialog(null, ((ConnectionLostEvent) e).getReason() + " \n The game will quit now.", "Connection lost", JOptionPane.OK_OPTION);
+			stopGame();
 		}else if (e instanceof KillEvent) {
 			KillEvent kill = (KillEvent) e;
 			Player p = getPlayerController().getPlayer(kill.getPlayerid());

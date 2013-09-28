@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import com.jme3.network.Client;
 import com.jme3.network.ClientStateListener;
 import com.jme3.network.Message;
@@ -24,6 +22,7 @@ import de.findus.cydonia.events.ChooseTeamEvent;
 import de.findus.cydonia.events.ConfigEvent;
 import de.findus.cydonia.events.ConnectionDeniedEvent;
 import de.findus.cydonia.events.ConnectionInitEvent;
+import de.findus.cydonia.events.ConnectionLostEvent;
 import de.findus.cydonia.events.EventMachine;
 import de.findus.cydonia.events.FlagEvent;
 import de.findus.cydonia.events.HitEvent;
@@ -257,7 +256,7 @@ public class ServerConnector implements MessageListener<Client>, ClientStateList
 
 	@Override
 	public void clientDisconnected(Client client, DisconnectInfo info) {
-		gameController.stop();
-		JOptionPane.showConfirmDialog(null, "The game has been closed! Reason: " + info.reason);
+		ConnectionLostEvent event = new ConnectionLostEvent(info.reason, false);
+		eventMachine.fireEvent(event);
 	}
 }
