@@ -191,25 +191,25 @@ public class PlayerController {
 			picker2.setPlayer(p);
 			p.getEquips().add(picker2);
 			
-			Beamer beamer = (Beamer) mainController.getEquipmentFactory().create("Beamer");
-			beamer.setName("Beamer");
-			beamer.setRange(20);
-			beamer.setPlayer(p);
-			p.getEquips().add(beamer);
-			
-			Phaser phaser = (Phaser) mainController.getEquipmentFactory().create("Phaser");
-			phaser.setName("Phaser");
-			phaser.setDamage(100);
-			phaser.setInterval(1000);
-			phaser.setPlayer(p);
-			p.getEquips().add(phaser);
-			
-			Pusher pusher = (Pusher) mainController.getEquipmentFactory().create("Pusher");
-			pusher.setName("Phaser");
-			pusher.setForce(15);
-			pusher.setInterval(1000);
-			pusher.setPlayer(p);
-			p.getEquips().add(pusher);
+//			Beamer beamer = (Beamer) mainController.getEquipmentFactory().create("Beamer");
+//			beamer.setName("Beamer");
+//			beamer.setRange(20);
+//			beamer.setPlayer(p);
+//			p.getEquips().add(beamer);
+//			
+//			Phaser phaser = (Phaser) mainController.getEquipmentFactory().create("Phaser");
+//			phaser.setName("Phaser");
+//			phaser.setDamage(100);
+//			phaser.setInterval(1000);
+//			phaser.setPlayer(p);
+//			p.getEquips().add(phaser);
+//			
+//			Pusher pusher = (Pusher) mainController.getEquipmentFactory().create("Pusher");
+//			pusher.setName("Phaser");
+//			pusher.setForce(15);
+//			pusher.setInterval(1000);
+//			pusher.setPlayer(p);
+//			p.getEquips().add(pusher);
 			
 			Swapper swapper = (Swapper) mainController.getEquipmentFactory().create("Swapper");
 			swapper.setName("Swapper");
