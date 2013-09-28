@@ -763,6 +763,9 @@ public class GameServer extends MainController{
 			}else {
 				this.mapsDir = com[1];
 			}
+		}else if("sv_shutdown".equalsIgnoreCase(com[0])) {
+			gameplayController.endRound(-1, false);
+			stop();
 		}
 	}
 	

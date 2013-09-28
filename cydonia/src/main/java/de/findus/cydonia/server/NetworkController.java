@@ -158,6 +158,9 @@ public class NetworkController implements MessageListener<HostedConnection>, Con
 	
 	public void stop() {
 		searchResponder.interrupt();
+		for(HostedConnection c : server.getConnections()) {
+			c.close("Server is shutting down!");
+		}
 		server.close();
 	}
 	

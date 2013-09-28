@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import com.jme3.network.Client;
+import com.jme3.network.ClientStateListener;
 import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
@@ -68,7 +71,7 @@ import de.findus.cydonia.player.PlayerInputState;
  * @author Findus
  *
  */
-public class ServerConnector implements MessageListener<Client> {
+public class ServerConnector implements MessageListener<Client>, ClientStateListener {
 	
 	private GameController gameController;
 	
@@ -100,6 +103,7 @@ public class ServerConnector implements MessageListener<Client> {
 		try {
 			client = Network.connectToServer(address, port);
 			client.addMessageListener(this);
+			client.addClientStateListener(this);
 			
 			client.start();
 			while(!client.isConnected()) {
@@ -170,7 +174,7 @@ public class ServerConnector implements MessageListener<Client> {
 	 * Closes the connection to the server.
 	 */
 	public void disconnectFromServer() {
-		if(client != null) {
+		if(client != null && client.isConnected()) {
 			this.client.close();
 		}
 	}
@@ -241,5 +245,19 @@ public class ServerConnector implements MessageListener<Client> {
 		WorldStateEvent event = new WorldStateEvent();
 		event.setWorldState(state);
 		eventMachine.fireEvent(event);
+	}
+
+
+	@Override
+	public void clientConnected(Client arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void clientDisconnected(Client client, DisconnectInfo info) {
+		gameController.stop();
+		JOptionPane.showConfirmDialog(null, "The game has been closed! Reason: " + info.reason);
 	}
 }
