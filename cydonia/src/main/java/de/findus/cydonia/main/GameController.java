@@ -622,7 +622,7 @@ public class GameController extends MainController implements ScreenController{
 		}else if (e instanceof ConnectionInitEvent) {
 			startGame(((ConnectionInitEvent) e).getLevel());
 		}else if(e instanceof ConnectionLostEvent) {
-			JOptionPane.showMessageDialog(null, ((ConnectionLostEvent) e).getReason() + " \n The game will quit now.", "Connection lost", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Connection to the server was lost! \nThe game will quit now.", "Connection lost", JOptionPane.OK_OPTION);
 			stopGame();
 		}else if (e instanceof KillEvent) {
 			KillEvent kill = (KillEvent) e;
@@ -914,6 +914,7 @@ public class GameController extends MainController implements ScreenController{
     	
     }
 	
+    @Override
 	public void killPlayer(Player p) {
 		super.killPlayer(p);
 		
@@ -924,6 +925,7 @@ public class GameController extends MainController implements ScreenController{
 		}
 	}
 
+	@Override
 	protected boolean respawn(final Player p) {
 		boolean res = super.respawn(p);
 		
@@ -936,6 +938,7 @@ public class GameController extends MainController implements ScreenController{
 		return res;
 	}
 	
+	@Override
 	protected void joinPlayer(int playerid, String playername) {
 		super.joinPlayer(playerid, playername);
 		if(playerid == connector.getConnectionId()) {
@@ -943,7 +946,15 @@ public class GameController extends MainController implements ScreenController{
 			stateManager.attach(gameInputAppState);
 	    	startInputSender();
 		}
+		menuController.displayEvent(playername + " joined the game");
 		menuController.updateScoreboard();
+	}
+	
+	@Override
+	protected void quitPlayer(Player p) {
+		super.quitPlayer(p);
+		
+		menuController.displayEvent(p.getName() + " left the game");
 	}
 	
 	@Override

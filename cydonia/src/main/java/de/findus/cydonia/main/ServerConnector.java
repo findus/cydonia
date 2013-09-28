@@ -174,6 +174,7 @@ public class ServerConnector implements MessageListener<Client>, ClientStateList
 	 */
 	public void disconnectFromServer() {
 		if(client != null && client.isConnected()) {
+			this.client.removeClientStateListener(this);
 			this.client.close();
 		}
 	}
