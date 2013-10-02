@@ -16,19 +16,26 @@ public class CydoniaLauncher
 	public static void main(String[] args) {
         boolean server = false;
         boolean window = false;
+        boolean instantConnect = false;
+        String ip = null;
 		
-		for(String arg : args) {
-        	if("--server".equalsIgnoreCase(arg)) {
+		for(int i=0; i<args.length; i++) {
+        	if("--server".equalsIgnoreCase(args[i])) {
         		server = true;
-        	}else if("--window".equalsIgnoreCase(arg)) {
+        	}else if("--window".equalsIgnoreCase(args[i])) {
         		window = true;
+        	}else if(("--ic".equalsIgnoreCase(args[i]) || "--instantconnect".equalsIgnoreCase(args[i])) && args.length > i) {
+        		instantConnect = true;
+        		ip = args[++i];
         	}
         }
 		
 		if(server) {
 			startServer(window);
+		}else if(instantConnect){
+			startClient(ip);
 		}else {
-			startClient();
+			startServerBrowser();
 		}
     }
 	
@@ -42,8 +49,13 @@ public class CydoniaLauncher
 		}).start();
 	}
 	
-	private static void startClient() {
+	private static void startServerBrowser() {
 		ServerBrowser sb = new ServerBrowser();
 		sb.show();
+	}
+	
+	private static void startClient(String ip) {
+		GameController game = new GameController();
+		game.start(ip);
 	}
 }
