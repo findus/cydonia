@@ -440,7 +440,7 @@ public class GameServer extends MainController{
 						if(p.getFlag() != null) {
 							int stolenflagid = p.getFlag().getId();
 							Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
-							if(f.isInBase()) {
+							if(f != null && f.isInBase()) {
 								p.setFlag(null);
 								System.out.println("Team " + p.getTeam() + " scored");
 								FlagEvent event = new FlagEvent(FlagEvent.SCORE, p.getId(), stolenflagid, true);
@@ -450,7 +450,7 @@ public class GameServer extends MainController{
 					}else { // opponents target
 						if(p.getFlag() == null) {
 							Flag f = getWorldController().getFlag(((Integer)target.getUserData("id")).intValue());
-							if(f.isInBase()) {
+							if(f != null && f.isInBase()) {
 								f.setInBase(false);
 								System.out.println("Team " + p.getTeam() + " took flag");
 								FlagEvent event = new FlagEvent(FlagEvent.TAKE, p.getId(), f.getId(), true);
