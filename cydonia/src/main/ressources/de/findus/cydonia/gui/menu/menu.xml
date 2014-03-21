@@ -81,11 +81,13 @@
 			</panel>
 			<panel width="98%" align="center" valign="bottom"
 				backgroundColor="#fff0" childLayout="center" padding="10px">
+				<!-- 
 				<panel align="left" valign="center" backgroundColor="#fff0"
 					childLayout="center">
 					<text id="healthpointstext" font="de/findus/cydonia/gui/fonts/Comic_Sans_MS_30.fnt"
 						color="#80f9" text="100" align="center" valign="top" />
 				</panel>
+				-->
 				<panel align="right" valign="center" backgroundColor="#8888"
 					childLayout="center">
 					<image id="inventoryimg" filename="de/findus/cydonia/gui/hud/inventory_gold.png" />
