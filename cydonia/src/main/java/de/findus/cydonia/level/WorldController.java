@@ -521,6 +521,15 @@ public class WorldController {
 		return false;
 	}
 	
+	public boolean isSwapableFlube(Flube f) {
+		if(f != null) {
+			if(f.getType() >= 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isInFlagArea(Vector3f loc) {
 		for(Flag f : getAllFlags()) {
 			if(f.getOrigin().distance(loc) < FLAGAREARADIUS) {

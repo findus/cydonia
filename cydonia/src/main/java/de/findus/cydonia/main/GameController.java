@@ -641,16 +641,18 @@ public class GameController extends MainController implements ScreenController{
 			place(p, f, loc);
 		}else if(e instanceof MarkEvent) {
 			MarkEvent mark = (MarkEvent) e;
-			WorldObject o = null;
-			if(mark.getTargetPlayerId() >= 0) {
-				o = getPlayerController().getPlayer(mark.getTargetPlayerId());
-			}else if(mark.getTargetFlubeId() > 0) {
-				o = getWorldController().getFlube(mark.getTargetFlubeId());
-			}
-			if(mark.isUnmark()) {
-				unmark(o);
-			}else {
-				mark(o);
+			if(player != null && mark.getPlayerId() == player.getId()) {
+				WorldObject o = null;
+				if(mark.getTargetPlayerId() >= 0) {
+					o = getPlayerController().getPlayer(mark.getTargetPlayerId());
+				}else if(mark.getTargetFlubeId() > 0) {
+					o = getWorldController().getFlube(mark.getTargetFlubeId());
+				}
+				if(mark.isUnmark()) {
+					unhighlight(o);
+				}else {
+					highlight(o);
+				}
 			}
 		}else if(e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
@@ -1007,22 +1009,22 @@ public class GameController extends MainController implements ScreenController{
 	protected void swap(WorldObject a, WorldObject b) {
 		super.swap(a, b);
 		
-		unmark(a);
-		unmark(b);
+		unhighlight(a);
+		unhighlight(b);
 	}
 	
-	protected void mark(WorldObject o) {
+	protected void highlight(WorldObject o) {
 		Spatial model = o.getModel();
-		AmbientLight markLight = new AmbientLight();
-		markLight.setColor(ColorRGBA.White.mult(0.5f));
-		markLight.setName("MarkLight");
-		model.addLight(markLight);
+		AmbientLight highLight = new AmbientLight();
+		highLight.setColor(ColorRGBA.White.mult(0.5f));
+		highLight.setName("HighLight");
+		model.addLight(highLight);
 		System.out.println("mark: " + o);
 	}
 	
-	protected void unmark(WorldObject o) {
+	protected void unhighlight(WorldObject o) {
 		for(Light l : o.getModel().getLocalLightList()) {
-			if(l.getName().equals("MarkLight")) {
+			if(l.getName().equals("HighLight")) {
 				o.getModel().removeLight(l);
 			}
 		}

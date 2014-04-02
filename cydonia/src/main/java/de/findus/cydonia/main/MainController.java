@@ -185,6 +185,7 @@ public abstract class MainController extends Application implements PhysicsColli
 			SpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
 			if(sp != null) {
 				playerController.setHealthpoints(p, 100);
+				playerController.resetEquips(p);
 				p.setAlive(true);
 				p.getControl().zeroForce();
 				p.getControl().setPhysicsLocation(sp.getPosition());
@@ -248,6 +249,9 @@ public abstract class MainController extends Application implements PhysicsColli
 		
 		if(posA != null && posB != null) {
 			if(a instanceof Player) {
+				if(((Player) a).getFlag() != null) {
+					returnFlag(((Player) a).getFlag());
+				}
 				((Player) a).getControl().warp(posB);
 			}else if(a instanceof Flube) {
 				getWorldController().detachFlube((Flube) a);
@@ -256,6 +260,9 @@ public abstract class MainController extends Application implements PhysicsColli
 			}
 			
 			if(b instanceof Player) {
+				if(((Player) b).getFlag() != null) {
+					returnFlag(((Player) b).getFlag());
+				}
 				((Player) b).getControl().warp(posA);
 			}else if(b instanceof Flube) {
 				getWorldController().detachFlube((Flube) b);

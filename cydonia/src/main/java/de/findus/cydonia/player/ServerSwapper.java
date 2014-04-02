@@ -59,7 +59,9 @@ public class ServerSwapper extends Swapper {
 					break;
 				}else if(getMainController().getWorldController().isFlube(result.getGeometry())) {
 					Flube target = getMainController().getWorldController().getFlube((long)result.getGeometry().getUserData("id"));
-					mark(target);
+					if(getMainController().getWorldController().isSwapableFlube(target)) {
+						mark(target);
+					}
 					break;
 				}
 			}else {
@@ -140,11 +142,12 @@ public class ServerSwapper extends Swapper {
 	
 	@Override
 	public void reset() {
-		if(markerA != null) unmark(markerA);
-		if(markerB != null) unmark(markerB);
-		
-		markerA = null;
-		markerB = null;
+		for(int i=0; i<markers.length; i++) {
+			if(markers[i] != null) {
+				unmark(markers[i]);
+				markers[i] = null;
+			}
+		}
 		
 		super.reset();
 	}

@@ -162,6 +162,10 @@ public class PlayerController {
 	public void reset(Player p) {
 		p.setScores(0);
 		
+		resetEquips(p);
+	}
+	
+	public void resetEquips(Player p) {
 		for(Equipment equip : p.getEquips()) {
 			equip.reset();
 		}
