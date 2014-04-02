@@ -32,7 +32,7 @@ import de.findus.cydonia.messages.PusherInfo;
  */
 public class Pusher extends AbstractEquipment {
 
-	private static final String TYPENAME = "Phaser"; 
+	private static final String TYPENAME = "Pusher"; 
 	
 	private static BufferedImage hudImg;
 	

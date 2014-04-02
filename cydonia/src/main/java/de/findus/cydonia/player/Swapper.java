@@ -25,7 +25,7 @@ import de.findus.cydonia.messages.SwapperInfo;
  */
 public class Swapper extends AbstractEquipment {
 
-	private static final String TYPENAME = "Phaser"; 
+	private static final String TYPENAME = "Swapper"; 
 	
 	private static BufferedImage hudImg;
 	
