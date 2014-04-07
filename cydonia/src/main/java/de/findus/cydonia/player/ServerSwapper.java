@@ -102,25 +102,26 @@ public class ServerSwapper extends Swapper {
 		}
 	}
 	
-	private void mark(WorldObject s) {
+	private void mark(WorldObject obj) {
 		for(int i=0; i<markers.length; i++) {
-			if(markers[i] == s) {
+			if(markers[i] == obj) {
 				markers[i] = null;
-				unmark(s);
+				unmark(obj);
 				return;
 			}
 		}
 		
 		for(int i=0; i<markers.length; i++) {
 			if(markers[i] == null) {
-				markers[i] = s;
+				markers[i] = obj;
 				int playerid = -1;
 				long flubeid = 0;
-				if(s instanceof Player) {
-					playerid = ((Player) s).getId();
-				}else if(s instanceof Flube) {
-					flubeid = ((Flube) s).getId();
+				if(obj instanceof Player) {
+					playerid = ((Player) obj).getId();
+				}else if(obj instanceof Flube) {
+					flubeid = ((Flube) obj).getId();
 				}
+				obj.addMark(this.player);
 				MarkEvent ev = new MarkEvent(this.player.getId(), false, flubeid, playerid, true);
 				getMainController().getEventMachine().fireEvent(ev);
 				break;
@@ -128,16 +129,25 @@ public class ServerSwapper extends Swapper {
 		}
 	}
 
-	private void unmark(WorldObject marker) {
+	private void unmark(WorldObject obj) {
 		int playerid = -1;
 		long flubeid = 0;
-		if(marker instanceof Player) {
-			playerid = ((Player) marker).getId();
-		}else if(marker instanceof Flube) {
-			flubeid = ((Flube) marker).getId();
+		if(obj instanceof Player) {
+			playerid = ((Player) obj).getId();
+		}else if(obj instanceof Flube) {
+			flubeid = ((Flube) obj).getId();
 		}
+		obj.removeMark(this.player);
 		MarkEvent ev = new MarkEvent(this.player.getId(), true, flubeid, playerid, true);
 		getMainController().getEventMachine().fireEvent(ev);
+	}
+	
+	public void resetMark(WorldObject obj) {
+		for(int i=0; i<markers.length; i++) {
+			if(markers[i] == obj) {
+				markers[i] = null;
+			}
+		}
 	}
 	
 	@Override

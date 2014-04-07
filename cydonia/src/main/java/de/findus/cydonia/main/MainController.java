@@ -233,6 +233,9 @@ public abstract class MainController extends Application implements PhysicsColli
 	}
 	
 	protected void swap(WorldObject a, WorldObject b) {
+		a.removeAllMarks();
+		b.removeAllMarks();
+		
 		Vector3f posA = null;
 		if(a instanceof Player) {
 			posA = ((Player) a).getControl().getPhysicsLocation();

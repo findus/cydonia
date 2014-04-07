@@ -63,11 +63,13 @@ import de.findus.cydonia.messages.MoveableInfo;
 import de.findus.cydonia.messages.PlayerInfo;
 import de.findus.cydonia.messages.SpawnPointInfo;
 import de.findus.cydonia.player.Beamer;
+import de.findus.cydonia.player.Equipment;
 import de.findus.cydonia.player.EquipmentFactory;
 import de.findus.cydonia.player.EquipmentFactory.ServiceType;
 import de.findus.cydonia.player.InputCommand;
 import de.findus.cydonia.player.Player;
 import de.findus.cydonia.player.PlayerInputState;
+import de.findus.cydonia.player.ServerSwapper;
 
 /**
  * @author Findus
@@ -495,8 +497,20 @@ public class GameServer extends MainController{
 	protected void beam(Player p, Player victim) {
 		super.beam(p, victim);
 		CWRITER.writeLine(p.getName() + " beamed " + victim.getName());
+	}
+	
+	@Override
+	protected void swap(WorldObject a, WorldObject b) {
+		for(Player p : a.getAllMarks()) {
+			for(Equipment e : p.getEquips()) {
+				if(e instanceof ServerSwapper) {
+					((ServerSwapper) e).resetMark(a);
+					((ServerSwapper) e).resetMark(b);
+				}
+			}
+		}
 		
-		
+		super.swap(a, b);
 	}
 	
 	@Override

@@ -641,16 +641,21 @@ public class GameController extends MainController implements ScreenController{
 			place(p, f, loc);
 		}else if(e instanceof MarkEvent) {
 			MarkEvent mark = (MarkEvent) e;
-			if(player != null && mark.getPlayerId() == player.getId()) {
-				WorldObject o = null;
-				if(mark.getTargetPlayerId() >= 0) {
-					o = getPlayerController().getPlayer(mark.getTargetPlayerId());
-				}else if(mark.getTargetFlubeId() > 0) {
-					o = getWorldController().getFlube(mark.getTargetFlubeId());
-				}
-				if(mark.isUnmark()) {
+			WorldObject o = null;
+			if(mark.getTargetPlayerId() >= 0) {
+				o = getPlayerController().getPlayer(mark.getTargetPlayerId());
+			}else if(mark.getTargetFlubeId() > 0) {
+				o = getWorldController().getFlube(mark.getTargetFlubeId());
+			}
+
+			if(mark.isUnmark()) {
+				o.removeMark(getPlayerController().getPlayer(mark.getPlayerId()));
+				if(player != null && mark.getPlayerId() == player.getId()) {
 					unhighlight(o);
-				}else {
+				}
+			}else {
+				o.addMark(getPlayerController().getPlayer(mark.getPlayerId()));
+				if(player != null && mark.getPlayerId() == player.getId()) {
 					highlight(o);
 				}
 			}
