@@ -16,13 +16,17 @@ import com.jme3.font.BitmapText;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
+import com.jme3.post.filters.CartoonEdgeFilter;
 import com.jme3.post.filters.FogFilter;
+import com.jme3.renderer.Caps;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
@@ -31,6 +35,7 @@ import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.EdgeFilteringMode;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
+import com.jme3.texture.Texture;
 
 import de.findus.cydonia.appstates.GameInputAppState;
 import de.findus.cydonia.appstates.GeneralInputAppState;
@@ -346,6 +351,14 @@ public class GameController extends MainController implements ScreenController{
         
         BloomFilter bloom = new BloomFilter(BloomFilter.GlowMode.Objects);
         fpp.addFilter(bloom);
+        
+//        if (renderer.getCaps().contains(Caps.GLSL100)){
+//            //fpp.setNumSamples(4);
+//            CartoonEdgeFilter toon=new CartoonEdgeFilter();
+//            toon.setEdgeColor(ColorRGBA.Yellow);
+//            fpp.addFilter(toon);
+//            viewPort.addProcessor(fpp);
+//        }
         
         beamNode = new Node("Beams");
         getWorldController().attachObject(beamNode);
@@ -1019,21 +1032,27 @@ public class GameController extends MainController implements ScreenController{
 	}
 	
 	protected void highlight(WorldObject o) {
-		Spatial model = o.getModel();
-		AmbientLight highLight = new AmbientLight();
-		highLight.setColor(ColorRGBA.White.mult(0.5f));
-		highLight.setName("HighLight");
-		model.addLight(highLight);
-		System.out.println("mark: " + o);
+//		Spatial model = o.getModel();
+//		AmbientLight highLight = new AmbientLight();
+//		highLight.setColor(ColorRGBA.White.mult(0.5f));
+//		highLight.setName("HighLight");
+//		model.addLight(highLight);
+		if(o instanceof Flube) {
+			((Flube) o).setHighlighted(true);
+		}
 	}
 	
 	protected void unhighlight(WorldObject o) {
-		for(Light l : o.getModel().getLocalLightList()) {
-			if(l.getName().equals("HighLight")) {
-				o.getModel().removeLight(l);
-			}
+//		for(Light l : o.getModel().getLocalLightList()) {
+//			if(l.getName().equals("HighLight")) {
+//				o.getModel().removeLight(l);
+//			}
+//		}
+		if(o instanceof Flube) {
+			((Flube) o).setHighlighted(false);
 		}
 	}
+	
 	
 	public long getRemainingTime() {
 		long passedTime = System.currentTimeMillis() - roundStartTime;

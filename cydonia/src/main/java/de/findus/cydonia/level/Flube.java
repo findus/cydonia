@@ -36,6 +36,10 @@ public class Flube extends WorldObject{
 	
 	private RigidBodyControl control;
 	
+	private Texture highlightGlow;
+	
+	private Material mat_box;
+	
 	public Flube() {
 		
 	}
@@ -44,8 +48,6 @@ public class Flube extends WorldObject{
 		this.id = id;
 		this.type = type;
 		this.origin = origin;
-		
-		Mesh mesh = new Box(0.5f, 0.5f, 0.5f);
 	    
 	    ColorRGBA color = null;
 	    switch (this.type) {
@@ -78,30 +80,34 @@ public class Flube extends WorldObject{
 		}
 		
 	    Texture tex_box = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_white.png");
-		Material mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-		mat_lit.setTexture("DiffuseMap", tex_box);
-	    mat_lit.setBoolean("UseMaterialColors",true);    
-	    mat_lit.setColor("Specular",ColorRGBA.White);
-	    mat_lit.setColor("Diffuse", color);
-	    mat_lit.setColor("Ambient", color);
-	    mat_lit.setFloat("Shininess", 1f);
+		mat_box = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+		mat_box.setTexture("DiffuseMap", tex_box);
+	    mat_box.setBoolean("UseMaterialColors",true);    
+	    mat_box.setColor("Specular",ColorRGBA.White);
+	    mat_box.setColor("Diffuse", color);
+	    mat_box.setColor("Ambient", color);
+	    mat_box.setFloat("Shininess", 1f);
 	    
 //	    if(type == -3) {
-	    	Texture tex_box_glow = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_glow2.png");
-	    	mat_lit.setTexture("GlowMap", tex_box_glow);
+//	    	Texture tex_box_glow = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_glow2.png");
+//	    	mat_box.setTexture("GlowMap", tex_box_glow);
 //	    }
 	    
+	    Mesh mesh = new Box(0.5f, 0.5f, 0.5f);
         model = new Geometry("Flube_" + id, mesh);
-        model.setMaterial(mat_lit);
-		model.setUserData("id", id);
-		model.setShadowMode(ShadowMode.CastAndReceive);
-		model.setUserData("PlaceableSurface", (this.type >= -1));
-		model.setUserData("TargetArea", (this.type <= -3));
-		model.setUserData("Type", this.type);
+        model.setMaterial(mat_box);
+        model.setUserData("id", id);
+        model.setShadowMode(ShadowMode.CastAndReceive);
+        model.setUserData("PlaceableSurface", (this.type >= -1));
+        model.setUserData("TargetArea", (this.type <= -3));
+        model.setUserData("Type", this.type);
 		TangentBinormalGenerator.generate(model);
-        
+		
+		highlightGlow = assetManager.loadTexture(GameController.TEXTURES_PATH + "Box_glow2.png");
+		
         CollisionShape collisionShape = CollisionShapeFactory.createBoxShape(model);
         control = new RigidBodyControl(collisionShape, 0);
+        
         model.addControl(control);
 	}
 
@@ -141,14 +147,14 @@ public class Flube extends WorldObject{
 	}
 
 	/**
-	 * @return the model
+	 * @return the geom
 	 */
 	public Spatial getModel() {
 		return model;
 	}
 
 	/**
-	 * @param model the model to set
+	 * @param geom the geom to set
 	 */
 	public void setModel(Spatial model) {
 		this.model = model;
@@ -166,5 +172,13 @@ public class Flube extends WorldObject{
 	 */
 	public void setControl(RigidBodyControl control) {
 		this.control = control;
+	}
+	
+	public void setHighlighted(boolean highlighted) {
+		if(highlighted) {
+			mat_box.setTexture("GlowMap", highlightGlow);
+		}else {
+			mat_box.setTexture("GlowMap", null);
+		}
 	}
 }
