@@ -1,0 +1,47 @@
+MaterialDef ToonEdgeLighting {
+
+    MaterialParameters {
+        // Fog
+        Color FogColor
+        TextureCubeMap FogSkyBox
+
+        // Toon System
+        Boolean Toon
+        Color EdgesColor 
+        Float EdgeSize
+        Boolean Fog_Edges
+    }
+
+    
+    Technique {
+
+        LightMode MultiPass
+
+        VertexShader GLSL100:   de/findus/cydonia/shaders/ToonBlow_Edges.vert
+        FragmentShader GLSL100: de/findus/cydonia/shaders/ToonBlow_Edges.frag
+
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldViewMatrix
+            ViewMatrix
+            CameraPosition
+            WorldMatrix
+        }
+
+        Defines {
+            FOG : FogColor
+            FOG_SKY : FogSkyBox
+            TOON_EDGES : EdgesColor
+            FOG_EDGES : Fog_Edges
+        }
+
+        RenderState {
+            FaceCull Front
+            DepthTest On
+            DepthWrite On
+        }
+    }
+
+}
