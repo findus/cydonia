@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+	<useStyles filename="de/encala/cydonia/niftystyle/violett/violett-style.xml" />
+	<useControls filename="nifty-default-controls.xml" />
+
+	<screen id="lobbymenu" controller="de.encala.cydonia.main.GameController">
+		<layer id="layer" backgroundColor="#8888" childLayout="center">
+			<panel width="50%" align="center" valign="center"
+				backgroundColor="#555f" childLayout="vertical">
+				<effect>
+					<onStartScreen name="move" mode="in" direction="top"
+						length="500" startDelay="0" inherit="true" />
+				</effect>
+				<control name="textfield" id="playername" text="Player name"
+					width="100%" align="center" valign="center" />
+				<control name="dropDown" id="team" width="100%" align="center"
+					valign="center">
+				</control>
+				<control name="button" label="Join" width="40%" align="center">
+					<interact onClick="joinGame()" />
+				</control>
+				<control name="button" label="Quit" width="40%" align="center">
+					<interact onClick="stopGame()" />
+				</control>
+			</panel>
+		</layer>
+	</screen>
+
+	<screen id="pausemenu" controller="de.encala.cydonia.main.GameController">
+		<layer id="layer" backgroundColor="#8888" childLayout="center">
+			<effect>
+				<onStartScreen name="fade" start="#00" end="#ff"
+					length="500" startDelay="0" inherit="true" />
+				<onEndScreen name="fade" start="#ff" end="#00" length="300"
+					startDelay="0" inherit="true" />
+			</effect>
+			<panel height="25%" width="30%" align="center" valign="center"
+				childLayout="vertical">
+				<control name="button" label="Resume Game" width="40%"
+					align="center">
+					<interact onClick="closeMenu()" />
+				</control>
+				<control name="button" label="Quit Game" width="40%" align="center">
+					<interact onClick="stopGame()" />
+				</control>
+			</panel>
+		</layer>
+	</screen>
+
+	<screen id="ingamescreen" controller="de.encala.cydonia.main.GameController">
+		<layer id="hudlayer" backgroundColor="#fff0" childLayout="center"
+			visible="false">
+			<panel id="eventpanel" width="20%" height="20%" align="left" valign="top" padding="10px" backgroundColor="#fff0" childLayout="vertical" childClip="false"/>
+			<panel width="100%" align="center" valign="top"
+				backgroundColor="#fff0" childLayout="vertical" padding="0px">
+				<panel width="100%" align="center" valign="top"
+					backgroundColor="#fff0" childLayout="center" padding="10px">
+					<panel align="center" valign="top"
+						backgroundColor="#fff0" childLayout="horizontal">
+						<panel padding="0px,20px" childLayout="center">
+							<text id="flagbluetext" font="de/encala/cydonia/gui/fonts/ComicSansMS20.fnt" 
+								color="#00fa" text="Blue flag taken!" align="left" valign="top" visible="false" />
+						</panel>
+						<panel padding="0px,20px" childLayout="center">
+							<text id="timetext" font="de/encala/cydonia/gui/fonts/Comic_Sans_MS_30.fnt"
+								color="#80f9" text="0:00" align="center" valign="top" />
+						</panel>
+						<panel padding="0px,20px" childLayout="center">
+							<text id="flagredtext" font="de/encala/cydonia/gui/fonts/ComicSansMS20.fnt" 
+								color="#f00a" text="Red flag taken!" align="right" valign="top" visible="false" />
+						</panel>
+					</panel>
+				</panel>
+				<panel width="90%" align="center" valign="top"
+					backgroundColor="#fff0" childLayout="center" padding="10px">
+					<text id="yougottheflagtext" font="de/encala/cydonia/gui/fonts/ComicSansMS20.fnt" 
+						color="#80f9" text="You got the opponent's flag. Bring it to your base to score!" align="center" valign="top" visible="false" />
+				</panel>
+			</panel>
+			<panel width="98%" align="center" valign="bottom"
+				backgroundColor="#fff0" childLayout="center" padding="10px">
+				<!-- 
+				<panel align="left" valign="center" backgroundColor="#fff0"
+					childLayout="center">
+					<text id="healthpointstext" font="de/encala/cydonia/gui/fonts/Comic_Sans_MS_30.fnt"
+						color="#80f9" text="100" align="center" valign="top" />
+				</panel>
+				-->
+				<panel align="right" valign="center" backgroundColor="#8888"
+					childLayout="center">
+					<image id="inventoryimg" filename="de/encala/cydonia/gui/hud/inventory_gold.png" />
+				</panel>
+			</panel>
+		</layer>
+		<layer id="scoreboardlayer" backgroundColor="#fff0" childLayout="center"
+			visible="false">
+			<panel height="50%" width="80%" align="center" valign="center"
+				style="nifty-panel-trans" childLayout="vertical">
+				<text id="text" font="de/encala/cydonia/gui/fonts/ComicSansMS20.fnt" color="#000f" text="Scoreboard"
+					height="10%" align="center" valign="center" />
+				<panel id="scorespanel" childLayout="horizontal">
+					<panel id="team1" width="50%" childLayout="vertical"></panel>
+					<panel id="team2" width="50%" childLayout="vertical"></panel>
+				</panel>
+			</panel>
+		</layer>
+		<layer id="messagelayer" backgroundColor="#fff0" childLayout="vertical"
+			visible="false">
+			<panel height="1%" width="90%" align="center" valign="top" backgroundColor="#fff0" />
+			<panel height="10%" width="90%" align="center" valign="top"
+				style="nifty-panel-colored-no-shadow-trans" childLayout="vertical">
+				<text id="messagetext" font="de/encala/cydonia/gui/fonts/ComicSansMS20.fnt" color="#000f"
+					text="Round is over. New round will start automatically in a view seconds..."
+					height="100%" textVAlign="center" align="center" valign="center" />
+			</panel>
+		</layer>
+	</screen>
+</nifty>

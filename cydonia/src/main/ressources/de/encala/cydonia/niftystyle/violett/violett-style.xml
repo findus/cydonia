@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty-styles>
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/fonts.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/panel/nifty-panel.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/button/nifty-button.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/label/nifty-label.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/textfield/nifty-textfield.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/dropdown/nifty-drop-down.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/imageselect/nifty-image-select.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/checkbox/nifty-checkbox.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/radiobutton/nifty-radiobutton.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/scrollbar/nifty-scrollbar-style.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/slider/nifty-slider-style.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/scrollpanel/nifty-scrollpanel-style.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/console/nifty-console-style.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/chat-control/nifty-chat-control.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/menu/nifty-menu-style.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/listbox/nifty-listbox-style.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/window/nifty-window.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/hint/nifty-hint.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/tabs/nifty-tabs.xml" />
+  <useStyles filename="de/encala/cydonia/niftystyle/violett/messagebox/nifty-messagebox.xml" />
+</nifty-styles>
