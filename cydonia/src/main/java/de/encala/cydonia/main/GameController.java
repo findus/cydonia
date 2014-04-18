@@ -1,9 +1,12 @@
 package de.encala.cydonia.main;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -192,7 +195,13 @@ public class GameController extends MainController implements ScreenController {
 			loadSettings = true;
 			settings.setTitle(APPTITLE);
 		}
-		settings.setSettingsDialogImage("/de/encala/cydonia/gui/logo43.jpg");
+		try {
+			BufferedImage favicon = ImageIO.read(GameController.class.getResourceAsStream("/de/encala/cydonia/gui/favicon.png"));
+			settings.setIcons(new BufferedImage[]{favicon});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		settings.setSettingsDialogImage("/de/encala/cydonia/gui/logo43_05.jpg");
 
 		// show settings dialog
 		if (showSettings) {

@@ -13,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,8 +27,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -44,6 +47,7 @@ import javax.swing.text.Keymap;
 
 import com.sun.jmx.remote.internal.ArrayQueue;
 
+import de.encala.cydonia.main.GameController;
 import de.encala.cydonia.server.GameServer.ServerStateListener;
 
 /**
@@ -91,6 +95,13 @@ public class ServerConfigFrame extends JFrame implements KeyListener,
 		this.server = server;
 
 		this.setTitle("Cydonia 43 - Server");
+		
+		try {
+			BufferedImage favicon = ImageIO.read(GameController.class.getResourceAsStream("/de/encala/cydonia/gui/favicon.png"));
+			this.setIconImage(favicon);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		this.commandHistory = new LinkedList<String>();
 

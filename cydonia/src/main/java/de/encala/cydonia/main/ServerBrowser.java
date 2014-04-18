@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -17,6 +18,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -70,6 +72,13 @@ public class ServerBrowser implements ActionListener {
 				frame.dispose();
 			}
 		});
+		
+		try {
+			BufferedImage favicon = ImageIO.read(GameController.class.getResourceAsStream("/de/encala/cydonia/gui/favicon.png"));
+			frame.setIconImage(favicon);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		model = new DefaultListModel<String>();
 		list = new JList<String>(model);
