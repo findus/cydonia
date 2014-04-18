@@ -77,7 +77,8 @@ public class WorldController {
 		rootNode.setShadowMode(ShadowMode.Off);
 
 		rootNode.addLight(al);
-		setAmbientBrightness(0.15f);
+//		setAmbientBrightness(0.15f);
+		setAmbientBrightness(0.25f);
 
 		DirectionalLight dl = new DirectionalLight();
 		dl.setColor(ColorRGBA.White.mult(0.3f));

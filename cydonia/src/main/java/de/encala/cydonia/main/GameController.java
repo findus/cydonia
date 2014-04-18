@@ -1303,7 +1303,7 @@ public class GameController extends MainController implements ScreenController {
 			for (SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Inherit);
 			}
-			getWorldController().setAmbientBrightness(0.3f);
+			getWorldController().setAmbientBrightness(0.5f);
 		} else if ("ctf".equalsIgnoreCase(mode)) {
 			for (Player p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
@@ -1312,7 +1312,7 @@ public class GameController extends MainController implements ScreenController {
 			for (SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Always);
 			}
-			getWorldController().setAmbientBrightness(0.15f);
+			getWorldController().setAmbientBrightness(0.25f);
 		}
 	}
 
