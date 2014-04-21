@@ -159,7 +159,7 @@ public class FirstPersonCamera implements AnalogListener {
 
 	protected void mapJoystick(Joystick joystick) {
 
-		// Map it differently if there are Z axis
+		// ServerMap it differently if there are Z axis
 		if (joystick.getAxis(JoystickAxis.Z_ROTATION) != null
 				&& joystick.getAxis(JoystickAxis.Z_AXIS) != null) {
 

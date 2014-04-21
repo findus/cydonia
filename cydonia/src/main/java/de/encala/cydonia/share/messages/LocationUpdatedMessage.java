@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.player.Player;
+import de.encala.cydonia.server.player.ServerPlayer;
 
 /**
  * @author encala
@@ -18,11 +18,11 @@ import de.encala.cydonia.game.player.Player;
 @Serializable
 public class LocationUpdatedMessage extends AbstractMessage {
 
-	public static LocationUpdatedMessage getUpdate(Collection<Player> playerlist) {
+	public static LocationUpdatedMessage getUpdate(Collection<ServerPlayer> playerlist) {
 		LocationUpdatedMessage upd = new LocationUpdatedMessage();
 
 		LinkedList<PlayerPhysic> plist = new LinkedList<PlayerPhysic>();
-		for (Player p : playerlist) {
+		for (ServerPlayer p : playerlist) {
 			PlayerPhysic physic = new PlayerPhysic();
 			physic.setId(p.getId());
 			physic.setTranslation(p.getControl().getPhysicsLocation());

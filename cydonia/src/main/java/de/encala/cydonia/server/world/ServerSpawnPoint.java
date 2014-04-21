@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.game.level;
+package de.encala.cydonia.server.world;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
@@ -15,11 +15,13 @@ import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Box;
 import com.jme3.util.TangentBinormalGenerator;
 
+import de.encala.cydonia.share.messages.SpawnPointInfo;
+
 /**
  * @author encala
  * 
  */
-public class SpawnPoint {
+public class ServerSpawnPoint {
 
 	private int id;
 
@@ -29,11 +31,11 @@ public class SpawnPoint {
 
 	private Node node;
 
-	public SpawnPoint() {
+	public ServerSpawnPoint() {
 
 	}
 
-	public SpawnPoint(int id, Vector3f position, int team,
+	public ServerSpawnPoint(int id, Vector3f position, int team,
 			AssetManager assetManager) {
 		this.id = id;
 		this.position = position;
@@ -115,6 +117,10 @@ public class SpawnPoint {
 	 */
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public SpawnPointInfo getInfo() {
+		return new SpawnPointInfo(this);
 	}
 
 	public Node getNode() {

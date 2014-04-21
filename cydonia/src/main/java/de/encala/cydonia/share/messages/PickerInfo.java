@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.level.Flube;
-import de.encala.cydonia.game.player.Picker;
+import de.encala.cydonia.server.equipment.ServerPicker;
+import de.encala.cydonia.server.world.ServerFlube;
 
 @Serializable
 public class PickerInfo implements EquipmentInfo {
@@ -22,15 +22,15 @@ public class PickerInfo implements EquipmentInfo {
 
 	}
 
-	public PickerInfo(Picker picker) {
+	public PickerInfo(ServerPicker picker) {
 		this.name = picker.getName();
 		this.range = picker.getRange();
 		this.capacity = picker.getCapacity();
 		this.repository = new LinkedList<Long>();
-		for (Flube f : picker.getRepository()) {
+		for (ServerFlube f : picker.getRepository()) {
 			this.repository.add(f.getId());
 		}
-		this.playerid = picker.getPlayer().getId();
+		this.playerid = picker.getServerPlayer().getId();
 		this.typeName = picker.getTypeName();
 	}
 

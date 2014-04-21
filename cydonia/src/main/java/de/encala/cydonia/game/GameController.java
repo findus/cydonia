@@ -3,6 +3,7 @@ package de.encala.cydonia.game;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,53 +11,53 @@ import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import com.jme3.app.Application;
 import com.jme3.app.StatsView;
 import com.jme3.asset.AssetNotFoundException;
 import com.jme3.audio.AudioNode;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.BulletAppState.ThreadingType;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
-import com.jme3.post.filters.CartoonEdgeFilter;
 import com.jme3.post.filters.FogFilter;
-import com.jme3.renderer.Caps;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.EdgeFilteringMode;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
-import com.jme3.texture.Texture;
 
 import de.encala.cydonia.game.ExtendedSettingsDialog.SelectionListener;
 import de.encala.cydonia.game.appstates.GameInputAppState;
 import de.encala.cydonia.game.appstates.GeneralInputAppState;
 import de.encala.cydonia.game.appstates.MenuController;
+import de.encala.cydonia.game.equipment.ClientEquipment;
+import de.encala.cydonia.game.equipment.ClientEquipmentFactory;
+import de.encala.cydonia.game.equipment.ClientPicker;
 import de.encala.cydonia.game.level.Flag;
+import de.encala.cydonia.game.level.FlagFactory;
 import de.encala.cydonia.game.level.Flube;
 import de.encala.cydonia.game.level.SpawnPoint;
+import de.encala.cydonia.game.level.WorldController;
 import de.encala.cydonia.game.level.WorldObject;
-import de.encala.cydonia.game.level.WorldState;
-import de.encala.cydonia.game.player.Beamer;
-import de.encala.cydonia.game.player.Equipment;
-import de.encala.cydonia.game.player.EquipmentFactory;
-import de.encala.cydonia.game.player.InputCommand;
 import de.encala.cydonia.game.player.Player;
-import de.encala.cydonia.game.player.PlayerInputState;
-import de.encala.cydonia.game.player.EquipmentFactory.ServiceType;
-import de.encala.cydonia.share.MainController;
+import de.encala.cydonia.game.player.PlayerController;
+import de.encala.cydonia.share.GameConfig;
 import de.encala.cydonia.share.events.AddEvent;
 import de.encala.cydonia.share.events.BeamEvent;
 import de.encala.cydonia.share.events.ChooseTeamEvent;
@@ -65,6 +66,8 @@ import de.encala.cydonia.share.events.ConnectionDeniedEvent;
 import de.encala.cydonia.share.events.ConnectionInitEvent;
 import de.encala.cydonia.share.events.ConnectionLostEvent;
 import de.encala.cydonia.share.events.Event;
+import de.encala.cydonia.share.events.EventListener;
+import de.encala.cydonia.share.events.EventMachine;
 import de.encala.cydonia.share.events.FlagEvent;
 import de.encala.cydonia.share.events.InputEvent;
 import de.encala.cydonia.share.events.KillEvent;
@@ -92,6 +95,9 @@ import de.encala.cydonia.share.messages.PlayerInfo;
 import de.encala.cydonia.share.messages.PlayerPhysic;
 import de.encala.cydonia.share.messages.SpawnPointInfo;
 import de.encala.cydonia.share.messages.ViewDirMessage;
+import de.encala.cydonia.share.messages.WorldState;
+import de.encala.cydonia.share.player.InputCommand;
+import de.encala.cydonia.share.player.PlayerInputState;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.controls.DropDown;
 import de.lessvoid.nifty.controls.TextField;
@@ -105,10 +111,20 @@ import de.lessvoid.nifty.screen.ScreenController;
  * 
  * @author encala
  */
-public class GameController extends MainController implements ScreenController {
+public class GameController extends Application implements
+PhysicsCollisionListener, EventListener, ScreenController {
 
 	public static final String TEXTURES_PATH = "de/encala/cydonia/textures/";
 	public static final String APPTITLE = "Cydonia 43";
+	
+	public static final boolean DEBUG = false;
+
+	public static float PLAYER_SPEED = 5f;
+	public static float PHYSICS_ACCURACY = (1f / 192);
+
+	public static Transform ROTATE90LEFT = new Transform(
+			new Quaternion().fromRotationMatrix(new Matrix3f(1, 0,
+					FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
 	/**
 	 * The time in seconds it should take to compensate a deviation from the
@@ -147,7 +163,7 @@ public class GameController extends MainController implements ScreenController {
 
 	private MenuController menuController;
 
-	private EquipmentFactory equipmentFactory;
+	private ClientEquipmentFactory equipmentFactory;
 
 	private Vector3f walkDirection = new Vector3f();
 	private boolean left = false, right = false, up = false, down = false;
@@ -180,7 +196,19 @@ public class GameController extends MainController implements ScreenController {
 	private int winTeam;
 	private int team1score;
 	private int team2score;
+	private GameConfig gameConfig;
+	private WorldController worldController;
+	private PlayerController playerController;
+	private BulletAppState bulletAppState;
+	private EventMachine eventMachine;
+	private ConcurrentLinkedQueue<Event> eventQueue;
 
+	public GameController() {
+		super();
+		
+		gameConfig = new GameConfig(true);
+	}
+	
 	public void start(String server) {
 		this.serverAddress = server;
 		this.start();
@@ -289,10 +317,8 @@ public class GameController extends MainController implements ScreenController {
 
 	@Override
 	public void stop(boolean waitfor) {
-		stopInputSender();
-		connector.disconnectFromServer();
-		getEventMachine().stop();
-
+		cleanup();
+		
 		super.stop(waitfor);
 		// System.exit(0);
 	}
@@ -300,10 +326,29 @@ public class GameController extends MainController implements ScreenController {
 	@Override
 	public void initialize() {
 		super.initialize();
+		
+		eventMachine = new EventMachine();
+		eventQueue = new ConcurrentLinkedQueue<Event>();
+
+		bulletAppState = new BulletAppState();
+		bulletAppState.setEnabled(false);
+		bulletAppState.setThreadingType(ThreadingType.PARALLEL);
+		stateManager.attach(bulletAppState);
+		bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
+		bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
+		bulletAppState.getPhysicsSpace().addCollisionListener(this);
+
+		FlagFactory.init(assetManager);
+
+		worldController = new WorldController(assetManager,
+				bulletAppState.getPhysicsSpace());
+		eventMachine.registerListener(this);
+
+		playerController = new PlayerController(assetManager, this);
 
 		setPauseOnLostFocus(false);
 
-		this.equipmentFactory = new EquipmentFactory(ServiceType.CLIENT, this);
+		this.equipmentFactory = new ClientEquipmentFactory(this);
 
 		guiNode.setQueueBucket(Bucket.Gui);
 		guiNode.setCullHint(CullHint.Never);
@@ -424,6 +469,13 @@ public class GameController extends MainController implements ScreenController {
 		InitialStateMessage init = new InitialStateMessage();
 		connector.sendMessage(init);
 	}
+	
+	protected void cleanup() {
+		stopInputSender();
+		connector.disconnectFromServer();
+		getEventMachine().stop();
+		bulletAppState.setEnabled(false);
+	}
 
 	private void setWorldState(WorldState state) {
 		this.roundStartTime = System.currentTimeMillis()
@@ -448,13 +500,13 @@ public class GameController extends MainController implements ScreenController {
 			getPlayerController().setHealthpoints(p, info.getHealthpoints());
 			p.setScores(info.getScores());
 
-			Equipment cur = p.getCurrentEquipment();
+			ClientEquipment cur = p.getCurrentEquipment();
 			if (cur != null && cur.getGeometry() != null) {
 				p.getNode().detachChild(cur.getGeometry());
 			}
 			p.getEquips().clear();
 			for (EquipmentInfo ei : info.getEquipInfos()) {
-				Equipment equip = getEquipmentFactory()
+				ClientEquipment equip = getEquipmentFactory()
 						.create(ei.getTypeName());
 				if (equip != null) {
 					equip.setPlayer(p);
@@ -596,6 +648,9 @@ public class GameController extends MainController implements ScreenController {
 	@Override
 	public void update() {
 		super.update(); // makes sure to execute AppTasks
+		
+		handleEvents();
+		
 		if (speed == 0 || paused) {
 			return;
 		}
@@ -618,7 +673,6 @@ public class GameController extends MainController implements ScreenController {
 
 		// update game specific things
 		useLatestLocationUpdate();
-		computeBeams(tpf);
 		movePlayers(tpf);
 		menuController.actualizeScreen();
 		menuController.updateHUD();
@@ -985,48 +1039,69 @@ public class GameController extends MainController implements ScreenController {
 
 	}
 
-	private void computeBeams(float tpf) {
-		for (Player p : getPlayerController().getAllPlayers()) {
-			if (p.getCurrentEquipment() instanceof Beamer) {
-				Beamer beamer = (Beamer) p.getCurrentEquipment();
-				beamer.update();
-			}
-		}
-	}
-
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
 
 	}
 
-	@Override
 	public void killPlayer(Player p) {
-		super.killPlayer(p);
-
 		if (p == null)
 			return;
+		if (p.getFlag() != null) {
+			returnFlag(p.getFlag());
+		}
+		p.setGameOverTime(System.currentTimeMillis());
+		worldController.detachPlayer(p);
+		p.setAlive(false);
+
 		getPlayerController().playDieAnim(p);
 		if (p.getId() == player.getId()) {
 			gameOver();
 		}
 	}
 
-	@Override
 	protected boolean respawn(final Player p) {
-		boolean res = super.respawn(p);
-
-		if (res) {
+		if (p == null)
+			return false;
+	
+		if ("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+			SpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
+			if (sp != null) {
+				playerController.setHealthpoints(p, 100);
+				playerController.resetEquips(p);
+				p.setAlive(true);
+				p.getControl().zeroForce();
+				p.getControl().setPhysicsLocation(sp.getPosition());
+				worldController.attachPlayer(p);
+				if (player != null && p.getId() == player.getId()) {
+					p.getModel().setCullHint(CullHint.Always);
+					resumeGame();
+				}
+				return true;
+			}
+		} else if ("editor".equalsIgnoreCase(getGameConfig().getString(
+				"mp_gamemode"))) {
+			playerController.setHealthpoints(p, 100);
+			p.setAlive(true);
+			p.getControl().zeroForce();
+			p.getControl().setPhysicsLocation(Vector3f.UNIT_Y);
+			worldController.attachPlayer(p);
 			if (player != null && p.getId() == player.getId()) {
 				p.getModel().setCullHint(CullHint.Always);
 				resumeGame();
 			}
+			return true;
 		}
-		return res;
+	
+		return false;
 	}
 
-	@Override
 	protected void joinPlayer(int playerid, String playername) {
-		super.joinPlayer(playerid, playername);
+		Player p = playerController.createNew(playerid);
+		p.setName(playername);
+	
+		getPlayerController().setDefaultEquipment(p);
+		
 		if (playerid == connector.getConnectionId()) {
 			player = getPlayerController().getPlayer(playerid);
 			stateManager.attach(gameInputAppState);
@@ -1036,29 +1111,37 @@ public class GameController extends MainController implements ScreenController {
 		menuController.updateScoreboard();
 	}
 
-	@Override
 	protected void quitPlayer(Player p) {
-		super.quitPlayer(p);
+		if (p == null)
+			return;
+		if (p.getFlag() != null) {
+			returnFlag(p.getFlag());
+		}
+		worldController.detachPlayer(p);
+		playerController.removePlayer(p.getId());
 
 		menuController.displayEvent(p.getName() + " left the game");
 	}
 
-	@Override
 	protected void chooseTeam(Player p, int team) {
-		super.chooseTeam(p, team);
+		if (p == null)
+			return;
+		playerController.setTeam(p, team);
 	}
 
-	@Override
 	protected void beam(Player p, Player victim) {
-		super.beam(p, victim);
-
+		p.setScores(p.getScores() + 1);
+		killPlayer(victim);
+		
 		menuController
 				.displayEvent(p.getName() + " beamed " + victim.getName());
 	}
 
-	@Override
 	protected void scoreFlag(Player p, Flag flag) {
-		super.scoreFlag(p, flag);
+		p.setFlag(null);
+		flag.setPlayer(null);
+		p.setScores(p.getScores() + 3);
+		returnFlag(flag);
 
 		menuController.displayEvent(p.getName() + " scored.");
 		if (p.getTeam() == 1) {
@@ -1068,7 +1151,6 @@ public class GameController extends MainController implements ScreenController {
 		}
 	}
 
-	@Override
 	protected void pickup(Player p, Flube f) {
 		if (f != null) {
 			Vector3f loc = f.getModel().getWorldTranslation();
@@ -1076,12 +1158,26 @@ public class GameController extends MainController implements ScreenController {
 			pickupSound.playInstance();
 		}
 
-		super.pickup(p, f);
+		if (f != null) {
+			getWorldController().detachFlube(f);
+			if (p != null) {
+				if (p.getCurrentEquipment() instanceof ClientPicker) {
+					ClientPicker picker = (ClientPicker) p.getCurrentEquipment();
+					picker.getRepository().add(f);
+				}
+			}
+		}
 	}
 
-	@Override
 	protected void place(Player p, Flube f, Vector3f loc) {
-		super.place(p, f, loc);
+		f.getControl().setPhysicsLocation(loc);
+		getWorldController().attachFlube(f);
+		if (p != null) {
+			if (p.getCurrentEquipment() instanceof ClientPicker) {
+				ClientPicker picker = (ClientPicker) p.getCurrentEquipment();
+				picker.getRepository().remove(f);
+			}
+		}
 
 		if (f != null) {
 			Vector3f l = f.getModel().getWorldTranslation();
@@ -1090,9 +1186,49 @@ public class GameController extends MainController implements ScreenController {
 		}
 	}
 
-	@Override
 	protected void swap(WorldObject a, WorldObject b) {
-		super.swap(a, b);
+		a.removeAllMarks();
+		b.removeAllMarks();
+	
+		Vector3f posA = null;
+		if (a instanceof Player) {
+			posA = ((Player) a).getControl().getPhysicsLocation();
+		} else if (a instanceof Flube) {
+			posA = ((Flube) a).getControl().getPhysicsLocation();
+		}
+	
+		Vector3f posB = null;
+		if (b instanceof Player) {
+			posB = ((Player) b).getControl().getPhysicsLocation();
+		} else if (b instanceof Flube) {
+			posB = ((Flube) b).getControl().getPhysicsLocation();
+		}
+	
+		if (posA != null && posB != null) {
+			if (a instanceof Player) {
+				if (((Player) a).getFlag() != null) {
+					returnFlag(((Player) a).getFlag());
+				}
+				((Player) a).getControl().warp(posB);
+			} else if (a instanceof Flube) {
+				getWorldController().detachFlube((Flube) a);
+				((Flube) a).getControl().setPhysicsLocation(
+						getWorldController().rasterize(posB));
+				getWorldController().attachFlube((Flube) a);
+			}
+	
+			if (b instanceof Player) {
+				if (((Player) b).getFlag() != null) {
+					returnFlag(((Player) b).getFlag());
+				}
+				((Player) b).getControl().warp(posA);
+			} else if (b instanceof Flube) {
+				getWorldController().detachFlube((Flube) b);
+				((Flube) b).getControl().setPhysicsLocation(
+						getWorldController().rasterize(posA));
+				getWorldController().attachFlube((Flube) b);
+			}
+		}
 
 		unhighlight(a);
 		unhighlight(b);
@@ -1261,8 +1397,7 @@ public class GameController extends MainController implements ScreenController {
 		this.down = down;
 	}
 
-	@Override
-	public EquipmentFactory getEquipmentFactory() {
+	public ClientEquipmentFactory getEquipmentFactory() {
 		return this.equipmentFactory;
 	}
 
@@ -1360,6 +1495,83 @@ public class GameController extends MainController implements ScreenController {
 
 	public long getGameOverTime() {
 		return gameOverTime;
+	}
+
+	/**
+	 * @return the gameConfig
+	 */
+	public GameConfig getGameConfig() {
+		return gameConfig;
+	}
+
+	/**
+	 * @return the bulletAppState
+	 */
+	public BulletAppState getBulletAppState() {
+		return bulletAppState;
+	}
+
+	/**
+	 * @return the worldController
+	 */
+	public WorldController getWorldController() {
+		return worldController;
+	}
+
+	/**
+	 * @return the playerController
+	 */
+	public PlayerController getPlayerController() {
+		return playerController;
+	}
+
+	/**
+	 * @return the eventMachine
+	 */
+	public EventMachine getEventMachine() {
+		return eventMachine;
+	}
+
+	protected void returnFlag(Flag flag) {
+		getWorldController().returnFlag(flag);
+	}
+
+	protected void takeFlag(Player p, Flag flag) {
+		flag.setInBase(false);
+		Node parent = flag.getModel().getParent();
+		if (parent != null) {
+			parent.detachChild(flag.getModel());
+		}
+		flag.getModel().setLocalTranslation(0, 1, 0);
+		// flag.getModel().setLocalScale(Vector3f.UNIT_XYZ.divide(p.getModel().getLocalScale()));
+		p.getNode().attachChild(flag.getModel());
+		p.setFlag(flag);
+		flag.setPlayer(p);
+		System.out.println("takenflag");
+	}
+
+	protected void phase(Player attacker, Player victim, float damage) {
+		getPlayerController().setHealthpoints(victim,
+				victim.getHealthpoints() - damage);
+		if (victim.getHealthpoints() <= 0) {
+			beam(attacker, victim);
+		}
+	}
+
+	protected void push(Player attacker, Player victim, Vector3f force) {
+		victim.getControl().applyCentralForce(force);
+	}
+
+	private void handleEvents() {
+		Event e = null;
+		while ((e = eventQueue.poll()) != null) {
+			this.handleEvent(e);
+		}
+	}
+
+	@Override
+	public void newEvent(Event e) {
+		eventQueue.offer(e);
 	}
 
 	/**

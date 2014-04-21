@@ -3,8 +3,8 @@
  */
 package de.encala.cydonia.game.appstates;
 
-import static de.encala.cydonia.game.player.InputCommand.EXIT;
-import static de.encala.cydonia.game.player.InputCommand.FPS;
+import static de.encala.cydonia.share.player.InputCommand.EXIT;
+import static de.encala.cydonia.share.player.InputCommand.FPS;
 
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -14,7 +14,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 
 import de.encala.cydonia.game.GameController;
-import de.encala.cydonia.game.player.InputCommand;
+import de.encala.cydonia.share.player.InputCommand;
 
 /**
  * This Appstate controls user inputs and maps them to commands. Should be

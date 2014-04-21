@@ -6,7 +6,7 @@ package de.encala.cydonia.share.messages;
 import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.level.SpawnPoint;
+import de.encala.cydonia.server.world.ServerSpawnPoint;
 
 /**
  * @author encala
@@ -28,7 +28,7 @@ public class SpawnPointInfo {
 
 	}
 
-	public SpawnPointInfo(SpawnPoint sp) {
+	public SpawnPointInfo(ServerSpawnPoint sp) {
 		this.id = sp.getId();
 		this.setPosition(sp.getPosition());
 		this.team = sp.getTeam();

@@ -6,7 +6,7 @@ package de.encala.cydonia.share.messages;
 import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.level.Flag;
+import de.encala.cydonia.server.world.ServerFlag;
 
 /**
  * @author encala
@@ -32,7 +32,7 @@ public class FlagInfo {
 
 	}
 
-	public FlagInfo(Flag f) {
+	public FlagInfo(ServerFlag f) {
 		this.id = f.getId();
 		this.inBase = f.isInBase();
 		if (f.getPlayer() != null) {

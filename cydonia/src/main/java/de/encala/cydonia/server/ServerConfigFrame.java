@@ -22,15 +22,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 
 import javax.imageio.ImageIO;
-import javax.swing.Action;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -41,11 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.Keymap;
-
-import com.sun.jmx.remote.internal.ArrayQueue;
 
 import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.server.GameServer.ServerStateListener;
@@ -181,7 +172,7 @@ public class ServerConfigFrame extends JFrame implements KeyListener,
 		c.gridy = 2;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
-		infoPanel.add(new JLabel("Map: "), c);
+		infoPanel.add(new JLabel("ServerMap: "), c);
 		c.gridx = 1;
 		c.gridy = 2;
 		c.gridwidth = 1;

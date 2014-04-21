@@ -6,7 +6,7 @@ package de.encala.cydonia.share.messages;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.player.InputCommand;
+import de.encala.cydonia.share.player.InputCommand;
 
 /**
  * @author encala

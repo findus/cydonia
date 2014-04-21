@@ -3,20 +3,20 @@
  */
 package de.encala.cydonia.game.appstates;
 
-import static de.encala.cydonia.game.player.InputCommand.ATTACK;
-import static de.encala.cydonia.game.player.InputCommand.CROSSHAIR;
-import static de.encala.cydonia.game.player.InputCommand.HUD;
-import static de.encala.cydonia.game.player.InputCommand.JUMP;
-import static de.encala.cydonia.game.player.InputCommand.MOVEBACK;
-import static de.encala.cydonia.game.player.InputCommand.MOVEFRONT;
-import static de.encala.cydonia.game.player.InputCommand.SCOREBOARD;
-import static de.encala.cydonia.game.player.InputCommand.STRAFELEFT;
-import static de.encala.cydonia.game.player.InputCommand.STRAFERIGHT;
-import static de.encala.cydonia.game.player.InputCommand.SWITCHEQUIP;
-import static de.encala.cydonia.game.player.InputCommand.SWITCHEQUIPDOWN;
-import static de.encala.cydonia.game.player.InputCommand.SWITCHEQUIPUP;
-import static de.encala.cydonia.game.player.InputCommand.USEPRIMARY;
-import static de.encala.cydonia.game.player.InputCommand.USESECONDARY;
+import static de.encala.cydonia.share.player.InputCommand.ATTACK;
+import static de.encala.cydonia.share.player.InputCommand.CROSSHAIR;
+import static de.encala.cydonia.share.player.InputCommand.HUD;
+import static de.encala.cydonia.share.player.InputCommand.JUMP;
+import static de.encala.cydonia.share.player.InputCommand.MOVEBACK;
+import static de.encala.cydonia.share.player.InputCommand.MOVEFRONT;
+import static de.encala.cydonia.share.player.InputCommand.SCOREBOARD;
+import static de.encala.cydonia.share.player.InputCommand.STRAFELEFT;
+import static de.encala.cydonia.share.player.InputCommand.STRAFERIGHT;
+import static de.encala.cydonia.share.player.InputCommand.SWITCHEQUIP;
+import static de.encala.cydonia.share.player.InputCommand.SWITCHEQUIPDOWN;
+import static de.encala.cydonia.share.player.InputCommand.SWITCHEQUIPUP;
+import static de.encala.cydonia.share.player.InputCommand.USEPRIMARY;
+import static de.encala.cydonia.share.player.InputCommand.USESECONDARY;
 
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -32,7 +32,7 @@ import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 
 import de.encala.cydonia.game.GameController;
-import de.encala.cydonia.game.player.InputCommand;
+import de.encala.cydonia.share.player.InputCommand;
 
 /**
  * This Appstate controls user inputs and maps them to commands. Should be

@@ -20,8 +20,6 @@ import com.jme3.network.message.CompressedMessage;
 import com.jme3.network.serializing.Serializer;
 
 import de.encala.cydonia.game.level.Map;
-import de.encala.cydonia.game.level.WorldState;
-import de.encala.cydonia.game.player.PlayerInputState;
 import de.encala.cydonia.share.GameConfig;
 import de.encala.cydonia.share.events.AddEvent;
 import de.encala.cydonia.share.events.AttackEvent;
@@ -50,7 +48,6 @@ import de.encala.cydonia.share.events.RestartRoundEvent;
 import de.encala.cydonia.share.events.RoundEndedEvent;
 import de.encala.cydonia.share.events.SwapEvent;
 import de.encala.cydonia.share.events.WorldStateEvent;
-import de.encala.cydonia.share.messages.BeamerInfo;
 import de.encala.cydonia.share.messages.BulletPhysic;
 import de.encala.cydonia.share.messages.ConnectionInitMessage;
 import de.encala.cydonia.share.messages.EditorInfo;
@@ -62,14 +59,14 @@ import de.encala.cydonia.share.messages.InputMessage;
 import de.encala.cydonia.share.messages.JoinMessage;
 import de.encala.cydonia.share.messages.LocationUpdatedMessage;
 import de.encala.cydonia.share.messages.MoveableInfo;
-import de.encala.cydonia.share.messages.PhaserInfo;
 import de.encala.cydonia.share.messages.PickerInfo;
 import de.encala.cydonia.share.messages.PlayerInfo;
 import de.encala.cydonia.share.messages.PlayerPhysic;
-import de.encala.cydonia.share.messages.PusherInfo;
 import de.encala.cydonia.share.messages.SpawnPointInfo;
 import de.encala.cydonia.share.messages.SwapperInfo;
 import de.encala.cydonia.share.messages.ViewDirMessage;
+import de.encala.cydonia.share.messages.WorldState;
+import de.encala.cydonia.share.player.PlayerInputState;
 
 /**
  * @author encala
@@ -177,10 +174,7 @@ public class NetworkController implements MessageListener<HostedConnection>,
 		Serializer.registerClass(GameConfig.class);
 		Serializer.registerClass(PlayerInfo.class);
 		Serializer.registerClass(PickerInfo.class);
-		Serializer.registerClass(BeamerInfo.class);
 		Serializer.registerClass(SwapperInfo.class);
-		Serializer.registerClass(PhaserInfo.class);
-		Serializer.registerClass(PusherInfo.class);
 		Serializer.registerClass(EditorInfo.class);
 		Serializer.registerClass(MoveableInfo.class);
 		Serializer.registerClass(FlagInfo.class);

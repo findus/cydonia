@@ -5,7 +5,7 @@ package de.encala.cydonia.share.messages;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.player.Swapper;
+import de.encala.cydonia.server.equipment.ServerSwapper;
 
 /**
  * @author encala
@@ -26,10 +26,10 @@ public class SwapperInfo implements EquipmentInfo {
 
 	}
 
-	public SwapperInfo(Swapper swapper) {
+	public SwapperInfo(ServerSwapper swapper) {
 		this.name = swapper.getName();
 		this.range = swapper.getRange();
-		this.playerid = swapper.getPlayer().getId();
+		this.playerid = swapper.getServerPlayer().getId();
 		this.typeName = swapper.getTypeName();
 	}
 

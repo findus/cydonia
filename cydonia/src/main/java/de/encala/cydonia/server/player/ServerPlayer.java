@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.game.player;
+package de.encala.cydonia.server.player;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -17,9 +17,9 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
-import de.encala.cydonia.game.equipment.ClientEquipment;
-import de.encala.cydonia.game.level.Flag;
-import de.encala.cydonia.game.level.WorldObject;
+import de.encala.cydonia.server.equipment.ServerEquipment;
+import de.encala.cydonia.server.world.ServerFlag;
+import de.encala.cydonia.server.world.ServerWorldObject;
 import de.encala.cydonia.share.player.ForceCharacterControl;
 import de.encala.cydonia.share.player.PlayerInputState;
 
@@ -27,7 +27,7 @@ import de.encala.cydonia.share.player.PlayerInputState;
  * @author encala
  * 
  */
-public class Player extends WorldObject implements AnimEventListener {
+public class ServerPlayer extends ServerWorldObject implements AnimEventListener {
 
 	public static float MAX_STEP_HEIGHT = 0.2f;
 
@@ -71,11 +71,11 @@ public class Player extends WorldObject implements AnimEventListener {
 
 	private boolean jumping = false;
 
-	private List<ClientEquipment> equips = new LinkedList<ClientEquipment>();
+	private List<ServerEquipment> equips = new LinkedList<ServerEquipment>();
 
 	private int currEquip;
 
-	private Flag flag;
+	private ServerFlag flag;
 
 	/**
 	 * Constructs a new ServerPlayer and inits its physics and model.
@@ -86,7 +86,7 @@ public class Player extends WorldObject implements AnimEventListener {
 	 * @param assetManager
 	 *            the used instance of AssetManager
 	 */
-	public Player(int id) {
+	public ServerPlayer(int id) {
 		this.id = id;
 
 		inputs = new PlayerInputState();
@@ -235,7 +235,7 @@ public class Player extends WorldObject implements AnimEventListener {
 		}
 	}
 
-	public ClientEquipment getCurrentEquipment() {
+	public ServerEquipment getCurrentEquipment() {
 		if (this.equips.size() > this.currEquip) {
 			return this.equips.get(this.currEquip);
 		} else {
@@ -405,7 +405,7 @@ public class Player extends WorldObject implements AnimEventListener {
 	/**
 	 * @return the equips
 	 */
-	public List<ClientEquipment> getEquips() {
+	public List<ServerEquipment> getEquips() {
 		return equips;
 	}
 
@@ -413,7 +413,7 @@ public class Player extends WorldObject implements AnimEventListener {
 	 * @param equips
 	 *            the equips to set
 	 */
-	public void setEquips(List<ClientEquipment> equips) {
+	public void setEquips(List<ServerEquipment> equips) {
 		if (equips.size() <= this.currEquip) {
 			this.currEquip = equips.size() - 1;
 		}
@@ -423,7 +423,7 @@ public class Player extends WorldObject implements AnimEventListener {
 	/**
 	 * @return the flag
 	 */
-	public Flag getFlag() {
+	public ServerFlag getFlag() {
 		return flag;
 	}
 
@@ -431,7 +431,7 @@ public class Player extends WorldObject implements AnimEventListener {
 	 * @param flag
 	 *            the flag to set
 	 */
-	public void setFlag(Flag flag) {
+	public void setFlag(ServerFlag flag) {
 		this.flag = flag;
 	}
 

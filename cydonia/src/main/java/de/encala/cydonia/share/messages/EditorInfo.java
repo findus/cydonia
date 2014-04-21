@@ -2,7 +2,7 @@ package de.encala.cydonia.share.messages;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.player.Editor;
+import de.encala.cydonia.server.equipment.ServerEditor;
 
 @Serializable
 public class EditorInfo implements EquipmentInfo {
@@ -18,12 +18,12 @@ public class EditorInfo implements EquipmentInfo {
 
 	}
 
-	public EditorInfo(Editor editor) {
+	public EditorInfo(ServerEditor editor) {
 		this.name = editor.getName();
 		this.range = editor.getRange();
 		this.objectType = editor.getObjectType();
 		this.objectSpec = editor.getObjectSpec();
-		this.playerid = editor.getPlayer().getId();
+		this.playerid = editor.getServerPlayer().getId();
 		this.typeName = editor.getTypeName();
 	}
 
@@ -49,15 +49,15 @@ public class EditorInfo implements EquipmentInfo {
 		return objectType;
 	}
 
+	public int getObjectSpec() {
+		return objectSpec;
+	}
+
 	/**
 	 * @return the playerid
 	 */
 	public int getPlayerid() {
 		return playerid;
-	}
-
-	public int getObjectSpec() {
-		return objectSpec;
 	}
 
 }

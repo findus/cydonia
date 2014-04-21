@@ -10,9 +10,9 @@ import java.util.List;
 import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.player.Equipment;
-import de.encala.cydonia.game.player.Player;
-import de.encala.cydonia.game.player.PlayerInputState;
+import de.encala.cydonia.server.equipment.ServerEquipment;
+import de.encala.cydonia.server.player.ServerPlayer;
+import de.encala.cydonia.share.player.PlayerInputState;
 
 /**
  * @author encala
@@ -46,7 +46,7 @@ public class PlayerInfo {
 
 	}
 
-	public PlayerInfo(Player p) {
+	public PlayerInfo(ServerPlayer p) {
 		this.playerid = p.getId();
 		this.name = p.getName();
 		this.team = p.getTeam();
@@ -55,7 +55,7 @@ public class PlayerInfo {
 		this.scores = p.getScores();
 		this.setCurrEquip(p.getCurrEquipIndex());
 		List<EquipmentInfo> eis = new LinkedList<EquipmentInfo>();
-		for (Equipment e : p.getEquips()) {
+		for (ServerEquipment e : p.getEquips()) {
 			eis.add(e.getInfo());
 		}
 		this.equipInfos = eis;

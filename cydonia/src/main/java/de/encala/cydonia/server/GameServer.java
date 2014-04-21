@@ -12,35 +12,42 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jdom2.JDOMException;
 import org.xml.sax.InputSource;
 
+import com.jme3.app.Application;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.BulletAppState.ThreadingType;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.collision.CollisionResult;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.network.message.CompressedMessage;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 
-import de.encala.cydonia.game.GameState;
-import de.encala.cydonia.game.level.Flag;
-import de.encala.cydonia.game.level.Flube;
-import de.encala.cydonia.game.level.Map;
-import de.encala.cydonia.game.level.MapXMLParser;
-import de.encala.cydonia.game.level.SpawnPoint;
-import de.encala.cydonia.game.level.WorldObject;
-import de.encala.cydonia.game.level.WorldState;
-import de.encala.cydonia.game.player.Beamer;
-import de.encala.cydonia.game.player.Equipment;
-import de.encala.cydonia.game.player.EquipmentFactory;
-import de.encala.cydonia.game.player.InputCommand;
-import de.encala.cydonia.game.player.Player;
-import de.encala.cydonia.game.player.PlayerInputState;
-import de.encala.cydonia.game.player.ServerSwapper;
-import de.encala.cydonia.game.player.EquipmentFactory.ServiceType;
-import de.encala.cydonia.share.MainController;
+import de.encala.cydonia.server.equipment.ServerEquipment;
+import de.encala.cydonia.server.equipment.ServerEquipmentFactory;
+import de.encala.cydonia.server.equipment.ServerPicker;
+import de.encala.cydonia.server.equipment.ServerSwapper;
+import de.encala.cydonia.server.player.ServerPlayer;
+import de.encala.cydonia.server.player.ServerPlayerController;
+import de.encala.cydonia.server.world.MapXMLParser;
+import de.encala.cydonia.server.world.ServerFlag;
+import de.encala.cydonia.server.world.ServerFlagFactory;
+import de.encala.cydonia.server.world.ServerFlube;
+import de.encala.cydonia.server.world.ServerMap;
+import de.encala.cydonia.server.world.ServerSpawnPoint;
+import de.encala.cydonia.server.world.ServerWorldController;
+import de.encala.cydonia.server.world.ServerWorldObject;
+import de.encala.cydonia.share.GameConfig;
 import de.encala.cydonia.share.events.AddEvent;
 import de.encala.cydonia.share.events.BeamEvent;
 import de.encala.cydonia.share.events.ChooseTeamEvent;
@@ -48,6 +55,8 @@ import de.encala.cydonia.share.events.ConfigEvent;
 import de.encala.cydonia.share.events.ConnectionAddedEvent;
 import de.encala.cydonia.share.events.ConnectionRemovedEvent;
 import de.encala.cydonia.share.events.Event;
+import de.encala.cydonia.share.events.EventListener;
+import de.encala.cydonia.share.events.EventMachine;
 import de.encala.cydonia.share.events.FlagEvent;
 import de.encala.cydonia.share.events.InputEvent;
 import de.encala.cydonia.share.events.KillEvent;
@@ -70,14 +79,25 @@ import de.encala.cydonia.share.messages.LocationUpdatedMessage;
 import de.encala.cydonia.share.messages.MoveableInfo;
 import de.encala.cydonia.share.messages.PlayerInfo;
 import de.encala.cydonia.share.messages.SpawnPointInfo;
+import de.encala.cydonia.share.messages.WorldState;
+import de.encala.cydonia.share.player.InputCommand;
+import de.encala.cydonia.share.player.PlayerInputState;
 
 /**
  * @author encala
  * 
  */
-public class GameServer extends MainController {
+public class GameServer extends Application implements
+PhysicsCollisionListener, EventListener {
 
 	public static final String APPTITLE = "Cydonia Server";
+	
+	public static float PLAYER_SPEED = 5f;
+	public static float PHYSICS_ACCURACY = (1f / 192);
+
+	public static Transform ROTATE90LEFT = new Transform(
+			new Quaternion().fromRotationMatrix(new Matrix3f(1, 0,
+					FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
 
 	public static final int RELOAD_TIME = 500;
 
@@ -100,7 +120,7 @@ public class GameServer extends MainController {
 			}
 		}
 
-		MainController gameServer = new GameServer(window);
+		GameServer gameServer = new GameServer(window);
 		gameServer.start();
 	}
 
@@ -113,7 +133,7 @@ public class GameServer extends MainController {
 	private Thread consoleListener;
 
 	private GameplayController gameplayController;
-
+	
 	/**
 	 * Used for moving players. Allocated only once and reused for performance
 	 * reasons.
@@ -122,12 +142,26 @@ public class GameServer extends MainController {
 
 	private NetworkController networkController;
 
-	private EquipmentFactory equipmentFactory;
+	private ServerEquipmentFactory equipmentFactory;
 
 	private Collection<ServerStateListener> stateListeners;
 
+	private GameConfig gameConfig;
+
+	private ServerWorldController worldController;
+
+	private ServerPlayerController playerController;
+
+	private BulletAppState bulletAppState;
+
+	private EventMachine eventMachine;
+
+	private ConcurrentLinkedQueue<Event> eventQueue;
+
 	public GameServer(boolean window) {
 		super();
+		
+		gameConfig = new GameConfig(true);
 
 		this.stateListeners = new LinkedList<ServerStateListener>();
 
@@ -185,7 +219,9 @@ public class GameServer extends MainController {
 	}
 
 	protected void cleanup() {
-		super.cleanup();
+		bulletAppState.setEnabled(false);
+		eventMachine.stop();
+		
 		networkController.stop();
 		locationSenderLoop.interrupt();
 		gameplayController.dispose();
@@ -201,8 +237,27 @@ public class GameServer extends MainController {
 	@Override
 	public void initialize() {
 		super.initialize();
+		
+		eventMachine = new EventMachine();
+		eventQueue = new ConcurrentLinkedQueue<Event>();
 
-		this.equipmentFactory = new EquipmentFactory(ServiceType.SERVER, this);
+		bulletAppState = new BulletAppState();
+		bulletAppState.setEnabled(false);
+		bulletAppState.setThreadingType(ThreadingType.PARALLEL);
+		stateManager.attach(bulletAppState);
+		bulletAppState.getPhysicsSpace().setMaxSubSteps(16);
+		bulletAppState.getPhysicsSpace().setAccuracy(PHYSICS_ACCURACY);
+		bulletAppState.getPhysicsSpace().addCollisionListener(this);
+
+		ServerFlagFactory.init(assetManager);
+
+		worldController = new ServerWorldController(assetManager,
+				bulletAppState.getPhysicsSpace());
+		eventMachine.registerListener(this);
+
+		playerController = new ServerPlayerController(assetManager, this);
+
+		this.equipmentFactory = new ServerEquipmentFactory(this);
 
 		// loadMap(getGameConfig().getString("mp_map"));
 
@@ -220,6 +275,9 @@ public class GameServer extends MainController {
 	@Override
 	public void update() {
 		super.update(); // makes sure to execute AppTasks
+		
+		handleEvents();
+		
 		if (speed == 0 || paused) {
 			return;
 		}
@@ -228,8 +286,6 @@ public class GameServer extends MainController {
 
 		// update states
 		stateManager.update(tpf);
-
-		computeBeams(tpf);
 
 		// update game specific things
 		movePlayers(tpf);
@@ -243,28 +299,27 @@ public class GameServer extends MainController {
 		stateManager.postRender();
 	}
 
-	@Override
 	protected void handleEvent(Event e) {
 		if (e instanceof ConnectionAddedEvent) {
 			connectionAdded(((ConnectionAddedEvent) e).getClientid());
 		} else if (e instanceof ConnectionRemovedEvent) {
 			connectionRemoved(((ConnectionRemovedEvent) e).getClientid());
 		} else if (e instanceof RestartRoundEvent) {
-			for (Player p : getPlayerController().getAllPlayers()) {
+			for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 				if (p.isAlive()) {
 					killPlayer(p);
 				}
 				getPlayerController().reset(p);
 			}
 			getWorldController().resetWorld();
-			// for (Player p : getPlayerController().getAllPlayers()) {
+			// for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 			// respawn(p);
 			// }
 			getBulletAppState().setEnabled(true);
 		} else if (e instanceof RoundEndedEvent) {
 			getBulletAppState().setEnabled(false);
 			RoundEndedEvent roundEnded = (RoundEndedEvent) e;
-			for (Player p : getPlayerController().getAllPlayers()) {
+			for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 				p.setInputState(new PlayerInputState());
 				if (p.getId() == roundEnded.getWinteam()) {
 					p.setScores(p.getScores() + 1);
@@ -273,90 +328,90 @@ public class GameServer extends MainController {
 		} else if (e instanceof FlagEvent) {
 			FlagEvent flagev = (FlagEvent) e;
 			if (flagev.getType() == FlagEvent.TAKE) {
-				Flag f = getWorldController().getFlag(flagev.getFlagid());
-				Player p = getPlayerController()
+				ServerFlag f = getWorldController().getFlag(flagev.getFlagid());
+				ServerPlayer p = getPlayerController()
 						.getPlayer(flagev.getPlayerid());
 				takeFlag(p, f);
 			} else if (flagev.getType() == FlagEvent.SCORE) {
-				Flag f = getWorldController().getFlag(flagev.getFlagid());
-				Player p = getPlayerController()
+				ServerFlag f = getWorldController().getFlag(flagev.getFlagid());
+				ServerPlayer p = getPlayerController()
 						.getPlayer(flagev.getPlayerid());
 				scoreFlag(p, f);
 			} else if (flagev.getType() == FlagEvent.RETURN) {
-				Flag f = getWorldController().getFlag(flagev.getFlagid());
+				ServerFlag f = getWorldController().getFlag(flagev.getFlagid());
 				returnFlag(f);
 			}
 		} else if (e instanceof KillEvent) {
 			KillEvent kill = (KillEvent) e;
-			Player p = getPlayerController().getPlayer(kill.getPlayerid());
+			ServerPlayer p = getPlayerController().getPlayer(kill.getPlayerid());
 			killPlayer(p);
 		} else if (e instanceof PhaseEvent) {
 			PhaseEvent phase = (PhaseEvent) e;
-			Player attacker = getPlayerController().getPlayer(
+			ServerPlayer attacker = getPlayerController().getPlayer(
 					phase.getAttackerId());
-			Player victim = getPlayerController()
+			ServerPlayer victim = getPlayerController()
 					.getPlayer(phase.getVictimId());
 			phase(attacker, victim, phase.getDamage());
 		} else if (e instanceof PushEvent) {
 			PushEvent push = (PushEvent) e;
-			Player attacker = getPlayerController().getPlayer(
+			ServerPlayer attacker = getPlayerController().getPlayer(
 					push.getAttackerId());
-			Player victim = getPlayerController().getPlayer(push.getVictimId());
+			ServerPlayer victim = getPlayerController().getPlayer(push.getVictimId());
 			push(attacker, victim, push.getForce());
 		} else if (e instanceof BeamEvent) {
 			BeamEvent beam = (BeamEvent) e;
-			Player p = getPlayerController().getPlayer(beam.getSourceid());
-			Player victim = getPlayerController().getPlayer(beam.getTargetid());
+			ServerPlayer p = getPlayerController().getPlayer(beam.getSourceid());
+			ServerPlayer victim = getPlayerController().getPlayer(beam.getTargetid());
 			beam(p, victim);
 		} else if (e instanceof PickupEvent) {
 			PickupEvent pickup = (PickupEvent) e;
-			Player p = getPlayerController().getPlayer(pickup.getPlayerid());
-			Flube f = getWorldController().getFlube(pickup.getMoveableid());
+			ServerPlayer p = getPlayerController().getPlayer(pickup.getPlayerid());
+			ServerFlube f = getWorldController().getFlube(pickup.getMoveableid());
 			pickup(p, f);
 		} else if (e instanceof PlaceEvent) {
 			PlaceEvent place = (PlaceEvent) e;
-			Player p = getPlayerController().getPlayer(place.getPlayerid());
-			Flube f = getWorldController().getFlube(place.getMoveableid());
+			ServerPlayer p = getPlayerController().getPlayer(place.getPlayerid());
+			ServerFlube f = getWorldController().getFlube(place.getMoveableid());
 			Vector3f loc = place.getLocation();
 			place(p, f, loc);
 		} else if (e instanceof RemoveEvent) {
 			RemoveEvent remove = (RemoveEvent) e;
 			if ("flube".equalsIgnoreCase(remove.getObjectType())) {
-				Flube f = getWorldController().getFlube(remove.getObjectid());
+				ServerFlube f = getWorldController().getFlube(remove.getObjectid());
 				getWorldController().removeFlube(f);
 			} else if ("flag".equalsIgnoreCase(remove.getObjectType())) {
-				Flag f = getWorldController().getFlag(
+				ServerFlag f = getWorldController().getFlag(
 						(int) remove.getObjectid());
 				getWorldController().removeFlag(f);
 			} else if ("spawnpoint".equalsIgnoreCase(remove.getObjectType())) {
-				SpawnPoint sp = getWorldController().getSpawnPoint(
+				ServerSpawnPoint sp = getWorldController().getSpawnPoint(
 						(int) remove.getObjectid());
 				getWorldController().removeSpawnPoint(sp);
 			}
 		} else if (e instanceof AddEvent) {
 			AddEvent add = (AddEvent) e;
 			if ("flube".equalsIgnoreCase(add.getObjectType())) {
-				Flube f = getWorldController().addNewFlube(add.getObjectid(),
+				ServerFlube f = getWorldController().addNewFlube(add.getObjectid(),
 						add.getLocation(), add.getObjectSpec());
 				getWorldController().attachFlube(f);
 			} else if ("flag".equalsIgnoreCase(add.getObjectType())) {
-				Flag f = getWorldController().addNewFlag(
+				ServerFlag f = getWorldController().addNewFlag(
 						(int) add.getObjectid(), add.getLocation(),
 						add.getObjectSpec());
 			} else if ("spawnpoint".equalsIgnoreCase(add.getObjectType())) {
-				SpawnPoint sp = getWorldController().addNewSpawnPoint(
+				ServerSpawnPoint sp = getWorldController().addNewSpawnPoint(
 						(int) add.getObjectid(), add.getLocation(),
 						add.getObjectSpec());
 			}
 		} else if (e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
-			WorldObject a = null;
+			ServerWorldObject a = null;
 			if (swap.getPlayerA() >= 0) {
 				a = getPlayerController().getPlayer(swap.getPlayerA());
 			} else if (swap.getFlubeA() > 0) {
 				a = getWorldController().getFlube(swap.getFlubeA());
 			}
-			WorldObject b = null;
+			ServerWorldObject b = null;
 			if (swap.getPlayerB() >= 0) {
 				b = getPlayerController().getPlayer(swap.getPlayerB());
 			} else if (swap.getFlubeB() > 0) {
@@ -365,7 +420,7 @@ public class GameServer extends MainController {
 			swap(a, b);
 		} else if (e instanceof PlayerQuitEvent) {
 			PlayerQuitEvent quit = (PlayerQuitEvent) e;
-			Player p = getPlayerController().getPlayer(quit.getPlayerId());
+			ServerPlayer p = getPlayerController().getPlayer(quit.getPlayerId());
 			quitPlayer(p);
 		}
 	}
@@ -374,7 +429,7 @@ public class GameServer extends MainController {
 		if (gameplayController.getGameState() != ServerGameState.RUNNING) {
 			return;
 		}
-		for (Player p : this.getPlayerController().getAllPlayers()) {
+		for (ServerPlayer p : this.getPlayerController().getAllPlayers()) {
 			if (p.isAlive()) {
 				Vector3f viewDir = p.getViewDir().clone();
 				if ("ctf".equalsIgnoreCase(getGameConfig().getString(
@@ -414,42 +469,6 @@ public class GameServer extends MainController {
 		}
 	}
 
-	private void computeBeams(float tpf) {
-		for (Player p : getPlayerController().getAllPlayers()) {
-			if (p.getCurrentEquipment() instanceof Beamer) {
-				Beamer beamer = (Beamer) p.getCurrentEquipment();
-				if (beamer.isBeaming()) {
-					CollisionResult result = getWorldController().pickRoot(
-							beamer.getPlayer()
-									.getEyePosition()
-									.add(beamer.getPlayer().getViewDir()
-											.normalize().mult(0.3f)),
-							beamer.getPlayer().getViewDir());
-					if (result != null
-							&& result.getGeometry().getParent() != null
-							&& result.getGeometry().getParent().getName() != null
-							&& result.getGeometry().getParent().getName()
-									.startsWith("player")) {
-						Player victim = getPlayerController().getPlayer(
-								Integer.valueOf(result.getGeometry()
-										.getParent().getName().substring(6)));
-						if (victim != null
-								&& victim.getTeam() != beamer.getPlayer()
-										.getTeam()) {
-							getPlayerController().setHealthpoints(victim,
-									victim.getHealthpoints() - 20 * tpf);
-							if (victim.getHealthpoints() <= 0) {
-								BeamEvent ev = new BeamEvent(p.getId(),
-										victim.getId(), true);
-								getEventMachine().fireEvent(ev);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
 		// collisionen müssen nur im spielmodus "ctf" berechnet werden
@@ -480,14 +499,14 @@ public class GameServer extends MainController {
 
 		if (target != null && other != null) {
 			if (other.getName().startsWith("player")) {
-				Player p = getPlayerController().getPlayer(
+				ServerPlayer p = getPlayerController().getPlayer(
 						Integer.parseInt(other.getName().substring(6)));
 				if (p != null) {
 					if (p.getTeam() == ((Integer) target.getUserData("team"))
 							.intValue()) { // own target
 						if (p.getFlag() != null) {
 							int stolenflagid = p.getFlag().getId();
-							Flag f = getWorldController().getFlag(
+							ServerFlag f = getWorldController().getFlag(
 									((Integer) target.getUserData("id"))
 											.intValue());
 							if (f != null && f.isInBase()) {
@@ -502,7 +521,7 @@ public class GameServer extends MainController {
 						}
 					} else { // opponents target
 						if (p.getFlag() == null) {
-							Flag f = getWorldController().getFlag(
+							ServerFlag f = getWorldController().getFlag(
 									((Integer) target.getUserData("id"))
 											.intValue());
 							if (f != null && f.isInBase()) {
@@ -521,7 +540,10 @@ public class GameServer extends MainController {
 	}
 
 	protected void joinPlayer(int playerid, String playername) {
-		super.joinPlayer(playerid, playername);
+		ServerPlayer p = playerController.createNew(playerid);
+		p.setName(playername);
+	
+		getPlayerController().setDefaultEquipment(p);
 
 		CWRITER.writeLine(playername + " joined");
 
@@ -529,34 +551,64 @@ public class GameServer extends MainController {
 		getEventMachine().fireEvent(join);
 	}
 
-	protected void quitPlayer(Player p) {
-		super.quitPlayer(p);
+	protected void quitPlayer(ServerPlayer p) {
+		if (p == null)
+			return;
+		if (p.getFlag() != null) {
+			returnFlag(p.getFlag());
+		}
+		worldController.detachPlayer(p);
+		playerController.removePlayer(p.getId());
 		if (p != null) {
 			CWRITER.writeLine(p.getName() + " quit");
 		}
 	}
 
-	protected boolean respawn(Player p) {
-		boolean res = super.respawn(p);
+	protected boolean respawn(ServerPlayer p) {
+		if (p == null)
+			return false;
+	
+		if ("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+			ServerSpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
+			if (sp != null) {
+				playerController.setHealthpoints(p, 100);
+				playerController.resetEquips(p);
+				p.setAlive(true);
+				p.getControl().zeroForce();
+				p.getControl().setPhysicsLocation(sp.getPosition());
+				worldController.attachPlayer(p);
+				CWRITER.writeLine(p.getName() + " respawned");
 
-		if (res) {
+				RespawnEvent respawn = new RespawnEvent(p.getId(), true);
+				getEventMachine().fireEvent(respawn);
+				return true;
+			}
+		} else if ("editor".equalsIgnoreCase(getGameConfig().getString(
+				"mp_gamemode"))) {
+			playerController.setHealthpoints(p, 100);
+			p.setAlive(true);
+			p.getControl().zeroForce();
+			p.getControl().setPhysicsLocation(Vector3f.UNIT_Y);
+			worldController.attachPlayer(p);
 			CWRITER.writeLine(p.getName() + " respawned");
 
 			RespawnEvent respawn = new RespawnEvent(p.getId(), true);
 			getEventMachine().fireEvent(respawn);
+			return true;
 		}
-		return res;
+	
+		return false;
 	}
 
-	protected void beam(Player p, Player victim) {
-		super.beam(p, victim);
+	protected void beam(ServerPlayer p, ServerPlayer victim) {
+		p.setScores(p.getScores() + 1);
+		killPlayer(victim);
 		CWRITER.writeLine(p.getName() + " beamed " + victim.getName());
 	}
 
-	@Override
-	protected void swap(WorldObject a, WorldObject b) {
-		for (Player p : a.getAllMarks()) {
-			for (Equipment e : p.getEquips()) {
+	protected void swap(ServerWorldObject a, ServerWorldObject b) {
+		for (ServerPlayer p : a.getAllMarks()) {
+			for (ServerEquipment e : p.getEquips()) {
 				if (e instanceof ServerSwapper) {
 					((ServerSwapper) e).resetMark(a);
 					((ServerSwapper) e).resetMark(b);
@@ -564,21 +616,65 @@ public class GameServer extends MainController {
 			}
 		}
 
-		super.swap(a, b);
+		a.removeAllMarks();
+		b.removeAllMarks();
+	
+		Vector3f posA = null;
+		if (a instanceof ServerPlayer) {
+			posA = ((ServerPlayer) a).getControl().getPhysicsLocation();
+		} else if (a instanceof ServerFlube) {
+			posA = ((ServerFlube) a).getControl().getPhysicsLocation();
+		}
+	
+		Vector3f posB = null;
+		if (b instanceof ServerPlayer) {
+			posB = ((ServerPlayer) b).getControl().getPhysicsLocation();
+		} else if (b instanceof ServerFlube) {
+			posB = ((ServerFlube) b).getControl().getPhysicsLocation();
+		}
+	
+		if (posA != null && posB != null) {
+			if (a instanceof ServerPlayer) {
+				if (((ServerPlayer) a).getFlag() != null) {
+					returnFlag(((ServerPlayer) a).getFlag());
+				}
+				((ServerPlayer) a).getControl().warp(posB);
+			} else if (a instanceof ServerFlube) {
+				getWorldController().detachFlube((ServerFlube) a);
+				((ServerFlube) a).getControl().setPhysicsLocation(
+						getWorldController().rasterize(posB));
+				getWorldController().attachFlube((ServerFlube) a);
+			}
+	
+			if (b instanceof ServerPlayer) {
+				if (((ServerPlayer) b).getFlag() != null) {
+					returnFlag(((ServerPlayer) b).getFlag());
+				}
+				((ServerPlayer) b).getControl().warp(posA);
+			} else if (b instanceof ServerFlube) {
+				getWorldController().detachFlube((ServerFlube) b);
+				((ServerFlube) b).getControl().setPhysicsLocation(
+						getWorldController().rasterize(posA));
+				getWorldController().attachFlube((ServerFlube) b);
+			}
+		}
 	}
 
-	@Override
-	protected void scoreFlag(Player p, Flag flag) {
-		super.scoreFlag(p, flag);
+	protected void scoreFlag(ServerPlayer p, ServerFlag flag) {
+		p.setFlag(null);
+		flag.setPlayer(null);
+		p.setScores(p.getScores() + 3);
+		returnFlag(flag);
+		// TODO: score team
+		System.out.println("scoredflag");
 		if (p != null) {
 			gameplayController.playerScored(p);
 			CWRITER.writeLine(p.getName() + " scored the flag");
 		}
 	}
 
-	@Override
-	protected void returnFlag(Flag flag) {
-		super.returnFlag(flag);
+	protected void returnFlag(ServerFlag flag) {
+		getWorldController().returnFlag(flag);
 
 		String teamname = "";
 		if (flag.getTeam() == 1) {
@@ -591,7 +687,7 @@ public class GameServer extends MainController {
 
 	public void handlePlayerInput(int playerid, InputCommand command,
 			boolean value) {
-		Player p = getPlayerController().getPlayer(playerid);
+		ServerPlayer p = getPlayerController().getPlayer(playerid);
 		switch (command) {
 		case USEPRIMARY:
 			if (gameplayController.getGameState() == ServerGameState.RUNNING) {
@@ -646,11 +742,10 @@ public class GameServer extends MainController {
 		}
 	}
 
-	protected void chooseTeam(Player p, int team) {
-		super.chooseTeam(p, team);
-
+	protected void chooseTeam(ServerPlayer p, int team) {
 		if (p == null)
 			return;
+		playerController.setTeam(p, team);
 
 		ChooseTeamEvent event = new ChooseTeamEvent(p.getId(), team, true);
 		getEventMachine().fireEvent(event);
@@ -664,32 +759,32 @@ public class GameServer extends MainController {
 		PlayerInfo[] playerinfos = new PlayerInfo[getPlayerController()
 				.getPlayerCount()];
 		int i = 0;
-		for (Player p : getPlayerController().getAllPlayers()) {
+		for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 			playerinfos[i] = new PlayerInfo(p);
 			i++;
 		}
 
-		Collection<Flube> flubes = getWorldController().getAllFlubes();
+		Collection<ServerFlube> flubes = getWorldController().getAllFlubes();
 		MoveableInfo[] flubeinfos = new MoveableInfo[flubes.size()];
 		int j = 0;
-		for (Flube m : flubes) {
+		for (ServerFlube m : flubes) {
 			flubeinfos[j] = new MoveableInfo(m);
 			j++;
 		}
 
-		Collection<Flag> flags = getWorldController().getAllFlags();
+		Collection<ServerFlag> flags = getWorldController().getAllFlags();
 		FlagInfo[] flaginfos = new FlagInfo[flags.size()];
 		int k = 0;
-		for (Flag f : flags) {
+		for (ServerFlag f : flags) {
 			flaginfos[k] = new FlagInfo(f);
 			k++;
 		}
 
-		Collection<SpawnPoint> spawnPoints = getWorldController()
+		Collection<ServerSpawnPoint> spawnPoints = getWorldController()
 				.getAllSpawnPoints();
 		SpawnPointInfo[] spinfos = new SpawnPointInfo[spawnPoints.size()];
 		int l = 0;
-		for (SpawnPoint sp : spawnPoints) {
+		for (ServerSpawnPoint sp : spawnPoints) {
 			spinfos[l] = new SpawnPointInfo(sp);
 			l++;
 		}
@@ -778,7 +873,7 @@ public class GameServer extends MainController {
 	}
 
 	public void setViewDir(int playerid, Vector3f dir) {
-		Player p = getPlayerController().getPlayer(playerid);
+		ServerPlayer p = getPlayerController().getPlayer(playerid);
 		if (p == null || dir == null)
 			return;
 		p.setViewDir(dir);
@@ -801,7 +896,7 @@ public class GameServer extends MainController {
 	}
 
 	public void connectionRemoved(int clientid) {
-		Player p = getPlayerController().getPlayer(clientid);
+		ServerPlayer p = getPlayerController().getPlayer(clientid);
 
 		if (p != null) {
 			PlayerQuitEvent quit = new PlayerQuitEvent(p.getId(), true);
@@ -862,7 +957,7 @@ public class GameServer extends MainController {
 			public String call() throws Exception {
 				getWorldController().unloadCurrentWorld();
 
-				for (Player p : getPlayerController().getAllPlayers()) {
+				for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 					getPlayerController().setDefaultEquipment(p);
 				}
 
@@ -872,14 +967,14 @@ public class GameServer extends MainController {
 							+ MAPEXTENSION;
 					File mapFile = new File(filename);
 					if (!mapFile.exists()) {
-						CWRITER.writeLine("Map file not found: " + filename);
+						CWRITER.writeLine("ServerMap file not found: " + filename);
 					} else {
 						InputSource is = new InputSource(
 								new FileReader(mapFile));
 
 						MapXMLParser mapXMLParser = new MapXMLParser(
 								assetManager);
-						Map map = mapXMLParser.loadMap(is);
+						ServerMap map = mapXMLParser.loadMap(is);
 						getWorldController().loadWorld(map);
 						broadcastInitialState();
 						changeConfig("mp_map", mapname);
@@ -914,14 +1009,14 @@ public class GameServer extends MainController {
 		changeConfig("mp_gamemode", mode);
 		if ("editor".equalsIgnoreCase(mode)) {
 			gameplayController.endRound(-1, true);
-			for (Player p : getPlayerController().getAllPlayers()) {
+			for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
 				p.getControl().setGravity(0);
 			}
 			CWRITER.writeLine("switched gamemode to 'editor'");
 		} else if ("ctf".equalsIgnoreCase(mode)) {
 			gameplayController.endRound(-1, true);
-			for (Player p : getPlayerController().getAllPlayers()) {
+			for (ServerPlayer p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);
 				p.getControl().setGravity(25);
 			}
@@ -936,8 +1031,7 @@ public class GameServer extends MainController {
 		getEventMachine().fireEvent(event);
 	}
 
-	@Override
-	public EquipmentFactory getEquipmentFactory() {
+	public ServerEquipmentFactory getEquipmentFactory() {
 		return this.equipmentFactory;
 	}
 
@@ -957,6 +1051,113 @@ public class GameServer extends MainController {
 		for (ServerStateListener sl : stateListeners) {
 			sl.stateChanged();
 		}
+	}
+
+	/**
+	 * @return the gameConfig
+	 */
+	public GameConfig getGameConfig() {
+		return gameConfig;
+	}
+
+	/**
+	 * @return the bulletAppState
+	 */
+	public BulletAppState getBulletAppState() {
+		return bulletAppState;
+	}
+
+	/**
+	 * @return the worldController
+	 */
+	public ServerWorldController getWorldController() {
+		return worldController;
+	}
+
+	/**
+	 * @return the playerController
+	 */
+	public ServerPlayerController getPlayerController() {
+		return playerController;
+	}
+
+	/**
+	 * @return the eventMachine
+	 */
+	public EventMachine getEventMachine() {
+		return eventMachine;
+	}
+
+	protected void takeFlag(ServerPlayer p, ServerFlag flag) {
+		flag.setInBase(false);
+		Node parent = flag.getModel().getParent();
+		if (parent != null) {
+			parent.detachChild(flag.getModel());
+		}
+		flag.getModel().setLocalTranslation(0, 1, 0);
+		// flag.getModel().setLocalScale(Vector3f.UNIT_XYZ.divide(p.getModel().getLocalScale()));
+		p.getNode().attachChild(flag.getModel());
+		p.setFlag(flag);
+		flag.setPlayer(p);
+		System.out.println("takenflag");
+	}
+
+	protected void killPlayer(ServerPlayer p) {
+		if (p == null)
+			return;
+		if (p.getFlag() != null) {
+			returnFlag(p.getFlag());
+		}
+		p.setGameOverTime(System.currentTimeMillis());
+		worldController.detachPlayer(p);
+		p.setAlive(false);
+	}
+
+	protected void phase(ServerPlayer attacker, ServerPlayer victim, float damage) {
+		getPlayerController().setHealthpoints(victim,
+				victim.getHealthpoints() - damage);
+		if (victim.getHealthpoints() <= 0) {
+			beam(attacker, victim);
+		}
+	}
+
+	protected void push(ServerPlayer attacker, ServerPlayer victim, Vector3f force) {
+		victim.getControl().applyCentralForce(force);
+	}
+
+	protected void pickup(ServerPlayer p, ServerFlube flube) {
+		if (flube != null) {
+			getWorldController().detachFlube(flube);
+			if (p != null) {
+				if (p.getCurrentEquipment() instanceof ServerPicker) {
+					ServerPicker picker = (ServerPicker) p.getCurrentEquipment();
+					picker.getRepository().add(flube);
+				}
+			}
+		}
+	}
+
+	protected void place(ServerPlayer p, ServerFlube f, Vector3f loc) {
+		f.getControl().setPhysicsLocation(loc);
+		getWorldController().attachFlube(f);
+		if (p != null) {
+			if (p.getCurrentEquipment() instanceof ServerPicker) {
+				ServerPicker picker = (ServerPicker) p.getCurrentEquipment();
+				picker.getRepository().remove(f);
+			}
+		}
+	}
+
+	private void handleEvents() {
+		Event e = null;
+		while ((e = eventQueue.poll()) != null) {
+			this.handleEvent(e);
+		}
+	}
+
+	@Override
+	public void newEvent(Event e) {
+		eventQueue.offer(e);
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.game.player;
+package de.encala.cydonia.server.player;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -9,13 +9,9 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh.Type;
-import com.jme3.effect.shapes.EmitterBoxShape;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -26,75 +22,39 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
-import de.encala.cydonia.game.GameController;
-import de.encala.cydonia.game.equipment.ClientEditor;
-import de.encala.cydonia.game.equipment.ClientEquipment;
-import de.encala.cydonia.game.equipment.ClientPicker;
-import de.encala.cydonia.game.equipment.ClientSwapper;
+import de.encala.cydonia.server.GameServer;
+import de.encala.cydonia.server.equipment.ServerEditor;
+import de.encala.cydonia.server.equipment.ServerEquipment;
+import de.encala.cydonia.server.equipment.ServerPicker;
+import de.encala.cydonia.server.equipment.ServerSwapper;
 import de.encala.cydonia.share.player.InputCommand;
 
 /**
  * @author encala
  * 
  */
-public class PlayerController {
+public class ServerPlayerController {
 
 	private AssetManager assetManager;
 
-	private GameController gameController;
+	private GameServer gameServer;
 
-	private ConcurrentHashMap<Integer, Player> players;
+	private ConcurrentHashMap<Integer, ServerPlayer> players;
 
-	private ParticleEmitter dieEmit;
-
-	public PlayerController(AssetManager assetManager,
-			GameController mainController) {
+	public ServerPlayerController(AssetManager assetManager,
+			GameServer gameServer) {
 		this.assetManager = assetManager;
-		this.gameController = mainController;
+		this.gameServer = gameServer;
 
-		players = new ConcurrentHashMap<Integer, Player>();
-
-		dieEmit = new ParticleEmitter("dieEmit", Type.Point, 200);
-		Material mat_red = new Material(assetManager,
-				"Common/MatDefs/Misc/Particle.j3md");
-		mat_red.setTexture("Texture",
-				assetManager.loadTexture("Effects/Explosion/flame.png"));
-
-		Material mat = new Material(assetManager,
-				"Common/MatDefs/Misc/Particle.j3md");
-		mat.setBoolean("PointSprite", true);
-		mat.setTexture("Texture",
-				assetManager.loadTexture("Effects/Explosion/flash.png"));
-
-		dieEmit.setMaterial(mat);
-		dieEmit.setImagesX(2);
-		dieEmit.setImagesY(2);
-		dieEmit.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.0f));
-		dieEmit.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
-		dieEmit.setStartSize(0.03f);
-		dieEmit.setEndSize(0.01f);
-		dieEmit.setGravity(0, 0, 0);
-		dieEmit.setNumParticles(100);
-		dieEmit.setShape(new EmitterBoxShape(new Vector3f(-0.5f, -0.8f, -0.5f),
-				new Vector3f(0.5f, 0.8f, 0.5f)));
-		dieEmit.getParticleInfluencer().setInitialVelocity(
-				new Vector3f(0f, 0.1f, 0f));
-		dieEmit.getParticleInfluencer().setVelocityVariation(0.1f);
-		dieEmit.setRandomAngle(true);
-		dieEmit.setParticlesPerSec(0f);
-		dieEmit.setLowLife(0.2f);
-		dieEmit.setHighLife(0.5f);
-		dieEmit.setEnabled(true);
-		this.gameController.getWorldController().getRootNode()
-				.attachChild(dieEmit);
+		players = new ConcurrentHashMap<Integer, ServerPlayer>();
 	}
 
-	public Player createNew(int id) {
-		Player p = new Player(id);
-		if ("ctf".equalsIgnoreCase(gameController.getGameConfig().getString(
+	public ServerPlayer createNew(int id) {
+		ServerPlayer p = new ServerPlayer(id);
+		if ("ctf".equalsIgnoreCase(gameServer.getGameConfig().getString(
 				"mp_gamemode"))) {
 			p.getControl().setGravity(25);
-		} else if ("editor".equalsIgnoreCase(gameController.getGameConfig()
+		} else if ("editor".equalsIgnoreCase(gameServer.getGameConfig()
 				.getString("mp_gamemode"))) {
 			p.getControl().setGravity(0);
 		}
@@ -104,11 +64,11 @@ public class PlayerController {
 		return p;
 	}
 
-	public Player getPlayer(int id) {
+	public ServerPlayer getPlayer(int id) {
 		return players.get(id);
 	}
 
-	public Collection<Player> getAllPlayers() {
+	public Collection<ServerPlayer> getAllPlayers() {
 		return players.values();
 	}
 
@@ -120,7 +80,7 @@ public class PlayerController {
 		players.clear();
 	}
 
-	public void updateModel(Player p) {
+	public void updateModel(ServerPlayer p) {
 		if (p == null)
 			return;
 
@@ -143,7 +103,7 @@ public class PlayerController {
 		p.setModel(model);
 	}
 
-	public void setTransparency(Player p, float transparency) {
+	public void setTransparency(ServerPlayer p, float transparency) {
 		Node n = (Node) p.getModel();
 		if (n == null)
 			return;
@@ -171,143 +131,143 @@ public class PlayerController {
 		}
 	}
 
-	public void setHealthpoints(Player p, double health) {
+	public void setHealthpoints(ServerPlayer p, double health) {
 		if (p == null)
 			return;
 		p.setHealthpoints(health);
 		setTransparency(p, (float) p.getHealthpoints() * 0.008f + 0.2f);
 	}
 
-	public void reset(Player p) {
+	public void reset(ServerPlayer p) {
 		p.setScores(0);
 
 		resetEquips(p);
 	}
 
-	public void resetEquips(Player p) {
-		for (ClientEquipment equip : p.getEquips()) {
+	public void resetEquips(ServerPlayer p) {
+		for (ServerEquipment equip : p.getEquips()) {
 			equip.reset();
 		}
 	}
 
-	public void setDefaultEquipment(Player p) {
-		ClientEquipment cur = p.getCurrentEquipment();
+	public void setDefaultEquipment(ServerPlayer p) {
+		ServerEquipment cur = p.getCurrentEquipment();
 		if (cur != null && cur.getGeometry() != null) {
 			p.getNode().detachChild(cur.getGeometry());
 		}
 		p.setCurrEquip(0);
 		p.getEquips().clear();
 
-		String gameMode = gameController.getGameConfig().getString(
+		String gameMode = gameServer.getGameConfig().getString(
 				"mp_gamemode");
 		if ("ctf".equals(gameMode)) {
-			ClientPicker picker1 = (ClientPicker) gameController.getEquipmentFactory()
+			ServerPicker picker1 = (ServerPicker) gameServer.getEquipmentFactory()
 					.create("Picker");
 			picker1.setName("LongRangePicker");
 			picker1.setRange(15);
 			picker1.setCapacity(1);
-			picker1.setPlayer(p);
+			picker1.setServerPlayer(p);
 			p.getEquips().add(picker1);
 
-			ClientPicker picker2 = (ClientPicker) gameController.getEquipmentFactory()
+			ServerPicker picker2 = (ServerPicker) gameServer.getEquipmentFactory()
 					.create("Picker");
 			picker2.setName("ShortRangePicker");
 			picker2.setRange(5);
 			picker2.setCapacity(3);
-			picker2.setPlayer(p);
+			picker2.setServerPlayer(p);
 			p.getEquips().add(picker2);
 
-			ClientSwapper swapper = (ClientSwapper) gameController.getEquipmentFactory()
+			ServerSwapper swapper = (ServerSwapper) gameServer.getEquipmentFactory()
 					.create("Swapper");
 			swapper.setName("Swapper");
 			swapper.setRange(100);
-			swapper.setPlayer(p);
+			swapper.setServerPlayer(p);
 			p.getEquips().add(swapper);
 		} else if ("editor".equals(gameMode)) {
-			ClientEditor editor1 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor1 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor1.setName("EditorDarkGray");
 			editor1.setRange(50);
 			editor1.setObjectType("flube");
 			editor1.setObjectSpec(-2);
-			editor1.setPlayer(p);
+			editor1.setServerPlayer(p);
 			p.getEquips().add(editor1);
 
-			ClientEditor editor2 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor2 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor2.setName("EditorLightGray");
 			editor2.setRange(50);
 			editor2.setObjectType("flube");
 			editor2.setObjectSpec(-1);
-			editor2.setPlayer(p);
+			editor2.setServerPlayer(p);
 			p.getEquips().add(editor2);
 
-			ClientEditor editor3 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor3 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor3.setName("EditorWhite");
 			editor3.setRange(50);
 			editor3.setObjectType("flube");
 			editor3.setObjectSpec(0);
-			editor3.setPlayer(p);
+			editor3.setServerPlayer(p);
 			p.getEquips().add(editor3);
 
-			ClientEditor editor4 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor4 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor4.setName("EditorBlue");
 			editor4.setRange(50);
 			editor4.setObjectType("flube");
 			editor4.setObjectSpec(1);
-			editor4.setPlayer(p);
+			editor4.setServerPlayer(p);
 			p.getEquips().add(editor4);
 
-			ClientEditor editor5 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor5 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor5.setName("EditorRed");
 			editor5.setRange(50);
 			editor5.setObjectType("flube");
 			editor5.setObjectSpec(2);
-			editor5.setPlayer(p);
+			editor5.setServerPlayer(p);
 			p.getEquips().add(editor5);
 
-			ClientEditor editor6 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor6 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor6.setName("EditorFlagBlue");
 			editor6.setRange(50);
 			editor6.setObjectType("flag");
 			editor6.setObjectSpec(1);
-			editor6.setPlayer(p);
+			editor6.setServerPlayer(p);
 			p.getEquips().add(editor6);
 
-			ClientEditor editor7 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor7 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor7.setName("EditorFlagRed");
 			editor7.setRange(50);
 			editor7.setObjectType("flag");
 			editor7.setObjectSpec(2);
-			editor7.setPlayer(p);
+			editor7.setServerPlayer(p);
 			p.getEquips().add(editor7);
 
-			ClientEditor editor8 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor8 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor8.setName("EditorSpawnBlue");
 			editor8.setRange(50);
 			editor8.setObjectType("spawnpoint");
 			editor8.setObjectSpec(1);
-			editor8.setPlayer(p);
+			editor8.setServerPlayer(p);
 			p.getEquips().add(editor8);
 
-			ClientEditor editor9 = (ClientEditor) gameController.getEquipmentFactory()
+			ServerEditor editor9 = (ServerEditor) gameServer.getEquipmentFactory()
 					.create("Editor");
 			editor9.setName("EditorSpawnRed");
 			editor9.setRange(50);
 			editor9.setObjectType("spawnpoint");
 			editor9.setObjectSpec(2);
-			editor9.setPlayer(p);
+			editor9.setServerPlayer(p);
 			p.getEquips().add(editor9);
 		}
 	}
 
-	public void setTeam(Player p, int team) {
+	public void setTeam(ServerPlayer p, int team) {
 		if (p == null)
 			return;
 
@@ -319,7 +279,7 @@ public class PlayerController {
 		return players.size();
 	}
 
-	public void handleInput(Player p, InputCommand command, boolean value) {
+	public void handleInput(ServerPlayer p, InputCommand command, boolean value) {
 		switch (command) {
 		case MOVEFRONT:
 			p.inputs.setForward(value);
@@ -335,7 +295,7 @@ public class PlayerController {
 			break;
 		case JUMP:
 			if (value) {
-				if ("ctf".equalsIgnoreCase(gameController.getGameConfig()
+				if ("ctf".equalsIgnoreCase(gameServer.getGameConfig()
 						.getString("mp_gamemode"))) {
 					p.jump();
 				}
@@ -355,10 +315,5 @@ public class PlayerController {
 		}
 
 		p.updateAnimationState();
-	}
-
-	public void playDieAnim(Player p) {
-		dieEmit.setLocalTranslation(p.getControl().getPhysicsLocation());
-		dieEmit.emitAllParticles();
 	}
 }

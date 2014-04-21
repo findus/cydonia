@@ -6,7 +6,7 @@ package de.encala.cydonia.server;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.encala.cydonia.game.player.Player;
+import de.encala.cydonia.server.player.ServerPlayer;
 import de.encala.cydonia.share.GameConfig;
 import de.encala.cydonia.share.events.EventMachine;
 import de.encala.cydonia.share.events.RestartRoundEvent;
@@ -110,7 +110,7 @@ public class GameplayController {
 		timer.cancel();
 	}
 
-	public void playerScored(Player p) {
+	public void playerScored(ServerPlayer p) {
 		if (p.getTeam() == 1) {
 			team1score++;
 		} else if (p.getTeam() == 2) {

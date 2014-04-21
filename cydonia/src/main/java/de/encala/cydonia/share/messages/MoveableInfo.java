@@ -6,7 +6,7 @@ package de.encala.cydonia.share.messages;
 import com.jme3.math.Vector3f;
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.level.Flube;
+import de.encala.cydonia.server.world.ServerFlube;
 
 /**
  * @author encala
@@ -38,7 +38,7 @@ public class MoveableInfo {
 		this.origin = origin;
 	}
 
-	public MoveableInfo(Flube m) {
+	public MoveableInfo(ServerFlube m) {
 		this.id = m.getId();
 		this.inWorld = m.getModel().getParent() != null;
 		this.location = m.getControl().getPhysicsLocation();

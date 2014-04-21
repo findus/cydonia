@@ -5,7 +5,7 @@ package de.encala.cydonia.share.events;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.game.level.WorldState;
+import de.encala.cydonia.share.messages.WorldState;
 
 /**
  * @author encala
