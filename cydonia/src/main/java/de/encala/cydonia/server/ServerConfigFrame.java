@@ -47,7 +47,7 @@ import javax.swing.text.Keymap;
 
 import com.sun.jmx.remote.internal.ArrayQueue;
 
-import de.encala.cydonia.main.GameController;
+import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.server.GameServer.ServerStateListener;
 
 /**

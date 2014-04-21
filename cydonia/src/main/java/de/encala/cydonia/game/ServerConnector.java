@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.main;
+package de.encala.cydonia.game;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -64,6 +64,7 @@ import de.encala.cydonia.messages.SpawnPointInfo;
 import de.encala.cydonia.messages.SwapperInfo;
 import de.encala.cydonia.messages.ViewDirMessage;
 import de.encala.cydonia.player.PlayerInputState;
+import de.encala.cydonia.share.GameConfig;
 
 /**
  * The central connection controller.

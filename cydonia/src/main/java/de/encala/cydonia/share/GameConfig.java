@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.main;
+package de.encala.cydonia.share;
 
 import java.util.HashMap;
 
@@ -59,7 +59,7 @@ public class GameConfig {
 	}
 
 	/**
-	 * Same as {@link #copyFrom(de.encala.cydonia.main.GameConfig) }, except
+	 * Same as {@link #copyFrom(de.encala.cydonia.share.GameConfig) }, except
 	 * doesn't overwrite settings that are already set.
 	 * 
 	 * @param other

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.main;
+package de.encala.cydonia.game;
 
 import java.awt.BorderLayout;
 import java.awt.DisplayMode;

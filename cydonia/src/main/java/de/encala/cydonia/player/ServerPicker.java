@@ -10,8 +10,8 @@ import com.jme3.scene.Spatial;
 import de.encala.cydonia.events.PickupEvent;
 import de.encala.cydonia.events.PlaceEvent;
 import de.encala.cydonia.level.Flube;
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.server.GameServer;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

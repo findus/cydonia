@@ -11,7 +11,7 @@ import com.jme3.scene.Spatial;
 
 import de.encala.cydonia.level.Flube;
 import de.encala.cydonia.level.WorldObject;
-import de.encala.cydonia.main.MainController;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

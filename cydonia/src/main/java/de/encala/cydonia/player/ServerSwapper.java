@@ -15,7 +15,7 @@ import de.encala.cydonia.events.MarkEvent;
 import de.encala.cydonia.events.SwapEvent;
 import de.encala.cydonia.level.Flube;
 import de.encala.cydonia.level.WorldObject;
-import de.encala.cydonia.main.MainController;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

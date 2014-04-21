@@ -21,10 +21,10 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
 
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.messages.EquipmentInfo;
 import de.encala.cydonia.messages.PhaserInfo;
 import de.encala.cydonia.messages.PusherInfo;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

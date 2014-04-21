@@ -7,8 +7,8 @@ import java.awt.image.BufferedImage;
 
 import com.jme3.scene.Node;
 
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.messages.EquipmentInfo;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

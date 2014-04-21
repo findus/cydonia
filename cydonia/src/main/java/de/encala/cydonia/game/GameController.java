@@ -1,4 +1,4 @@
-package de.encala.cydonia.main;
+package de.encala.cydonia.game;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -67,12 +67,12 @@ import de.encala.cydonia.events.RestartRoundEvent;
 import de.encala.cydonia.events.RoundEndedEvent;
 import de.encala.cydonia.events.SwapEvent;
 import de.encala.cydonia.events.WorldStateEvent;
+import de.encala.cydonia.game.ExtendedSettingsDialog.SelectionListener;
 import de.encala.cydonia.level.Flag;
 import de.encala.cydonia.level.Flube;
 import de.encala.cydonia.level.SpawnPoint;
 import de.encala.cydonia.level.WorldObject;
 import de.encala.cydonia.level.WorldState;
-import de.encala.cydonia.main.ExtendedSettingsDialog.SelectionListener;
 import de.encala.cydonia.messages.EquipmentInfo;
 import de.encala.cydonia.messages.FlagInfo;
 import de.encala.cydonia.messages.InitialStateMessage;
@@ -91,6 +91,7 @@ import de.encala.cydonia.player.InputCommand;
 import de.encala.cydonia.player.Player;
 import de.encala.cydonia.player.PlayerInputState;
 import de.encala.cydonia.player.EquipmentFactory.ServiceType;
+import de.encala.cydonia.share.MainController;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.controls.DropDown;
 import de.lessvoid.nifty.controls.TextField;

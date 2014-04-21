@@ -9,9 +9,9 @@ import java.util.TimerTask;
 import de.encala.cydonia.events.EventMachine;
 import de.encala.cydonia.events.RestartRoundEvent;
 import de.encala.cydonia.events.RoundEndedEvent;
-import de.encala.cydonia.main.GameConfig;
-import de.encala.cydonia.main.GameState;
+import de.encala.cydonia.game.GameState;
 import de.encala.cydonia.player.Player;
+import de.encala.cydonia.share.GameConfig;
 
 /**
  * @author encala

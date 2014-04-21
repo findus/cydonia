@@ -15,9 +15,9 @@ import com.jme3.effect.ParticleEmitter;
 import com.jme3.scene.Node;
 
 import de.encala.cydonia.level.WorldObject;
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.messages.EquipmentInfo;
 import de.encala.cydonia.messages.SwapperInfo;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

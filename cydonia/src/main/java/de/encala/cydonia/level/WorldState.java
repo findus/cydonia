@@ -5,11 +5,11 @@ package de.encala.cydonia.level;
 
 import com.jme3.network.serializing.Serializable;
 
-import de.encala.cydonia.main.GameConfig;
 import de.encala.cydonia.messages.FlagInfo;
 import de.encala.cydonia.messages.MoveableInfo;
 import de.encala.cydonia.messages.PlayerInfo;
 import de.encala.cydonia.messages.SpawnPointInfo;
+import de.encala.cydonia.share.GameConfig;
 
 /**
  * @author encala

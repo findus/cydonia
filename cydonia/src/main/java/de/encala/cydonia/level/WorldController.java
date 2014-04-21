@@ -30,9 +30,9 @@ import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.player.ForceCharacterControl;
 import de.encala.cydonia.player.Player;
+import de.encala.cydonia.share.MainController;
 
 /**
  * This is the central controller for the games virtual world. It loads the

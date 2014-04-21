@@ -6,7 +6,7 @@ package de.encala.cydonia.player;
 import com.jme3.collision.CollisionResult;
 
 import de.encala.cydonia.events.PhaseEvent;
-import de.encala.cydonia.main.MainController;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

@@ -45,6 +45,7 @@ import de.encala.cydonia.events.RespawnEvent;
 import de.encala.cydonia.events.RestartRoundEvent;
 import de.encala.cydonia.events.RoundEndedEvent;
 import de.encala.cydonia.events.SwapEvent;
+import de.encala.cydonia.game.GameState;
 import de.encala.cydonia.level.Flag;
 import de.encala.cydonia.level.Flube;
 import de.encala.cydonia.level.Map;
@@ -52,8 +53,6 @@ import de.encala.cydonia.level.MapXMLParser;
 import de.encala.cydonia.level.SpawnPoint;
 import de.encala.cydonia.level.WorldObject;
 import de.encala.cydonia.level.WorldState;
-import de.encala.cydonia.main.GameState;
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.messages.ConnectionInitMessage;
 import de.encala.cydonia.messages.FlagInfo;
 import de.encala.cydonia.messages.FlubeStatePartMessage;
@@ -70,6 +69,7 @@ import de.encala.cydonia.player.Player;
 import de.encala.cydonia.player.PlayerInputState;
 import de.encala.cydonia.player.ServerSwapper;
 import de.encala.cydonia.player.EquipmentFactory.ServiceType;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

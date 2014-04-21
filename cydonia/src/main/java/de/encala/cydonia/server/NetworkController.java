@@ -48,7 +48,6 @@ import de.encala.cydonia.events.SwapEvent;
 import de.encala.cydonia.events.WorldStateEvent;
 import de.encala.cydonia.level.Map;
 import de.encala.cydonia.level.WorldState;
-import de.encala.cydonia.main.GameConfig;
 import de.encala.cydonia.messages.BeamerInfo;
 import de.encala.cydonia.messages.BulletPhysic;
 import de.encala.cydonia.messages.ConnectionInitMessage;
@@ -70,6 +69,7 @@ import de.encala.cydonia.messages.SpawnPointInfo;
 import de.encala.cydonia.messages.SwapperInfo;
 import de.encala.cydonia.messages.ViewDirMessage;
 import de.encala.cydonia.player.PlayerInputState;
+import de.encala.cydonia.share.GameConfig;
 
 /**
  * @author encala

@@ -26,7 +26,7 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
-import de.encala.cydonia.main.MainController;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

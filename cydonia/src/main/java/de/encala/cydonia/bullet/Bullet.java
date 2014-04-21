@@ -12,7 +12,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 
-import de.encala.cydonia.main.GameController;
+import de.encala.cydonia.game.GameController;
 
 /**
  * @author encala

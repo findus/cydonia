@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.encala.cydonia.main;
+package de.encala.cydonia.game;
 
 /**
  * @author encala

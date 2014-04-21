@@ -16,7 +16,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
 
-import de.encala.cydonia.main.GameController;
+import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.messages.SpawnPointInfo;
 
 /**

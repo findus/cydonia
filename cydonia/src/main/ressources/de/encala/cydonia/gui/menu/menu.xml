@@ -5,7 +5,7 @@
 	<useStyles filename="de/encala/cydonia/niftystyle/violett/violett-style.xml" />
 	<useControls filename="nifty-default-controls.xml" />
 
-	<screen id="lobbymenu" controller="de.encala.cydonia.main.GameController">
+	<screen id="lobbymenu" controller="de.encala.cydonia.game.GameController">
 		<layer id="layer" backgroundColor="#8888" childLayout="center">
 			<panel width="50%" align="center" valign="center"
 				backgroundColor="#555f" childLayout="vertical">
@@ -28,7 +28,7 @@
 		</layer>
 	</screen>
 
-	<screen id="pausemenu" controller="de.encala.cydonia.main.GameController">
+	<screen id="pausemenu" controller="de.encala.cydonia.game.GameController">
 		<layer id="layer" backgroundColor="#8888" childLayout="center">
 			<effect>
 				<onStartScreen name="fade" start="#00" end="#ff"
@@ -49,7 +49,7 @@
 		</layer>
 	</screen>
 
-	<screen id="ingamescreen" controller="de.encala.cydonia.main.GameController">
+	<screen id="ingamescreen" controller="de.encala.cydonia.game.GameController">
 		<layer id="hudlayer" backgroundColor="#fff0" childLayout="center"
 			visible="false">
 			<panel id="eventpanel" width="20%" height="20%" align="left" valign="top" padding="10px" backgroundColor="#fff0" childLayout="vertical" childClip="false"/>

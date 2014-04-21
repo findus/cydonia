@@ -11,8 +11,8 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
+import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.level.Flag;
-import de.encala.cydonia.main.GameController;
 import de.encala.cydonia.player.Player;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;

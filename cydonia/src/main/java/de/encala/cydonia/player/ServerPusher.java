@@ -7,7 +7,7 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.math.Vector3f;
 
 import de.encala.cydonia.events.PushEvent;
-import de.encala.cydonia.main.MainController;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

@@ -1,5 +1,7 @@
-package de.encala.cydonia.main;
+package de.encala.cydonia;
 
+import de.encala.cydonia.game.GameController;
+import de.encala.cydonia.game.ServerBrowser;
 import de.encala.cydonia.server.GameServer;
 
 /**

@@ -31,7 +31,7 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 
-import de.encala.cydonia.main.GameController;
+import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.player.InputCommand;
 
 /**

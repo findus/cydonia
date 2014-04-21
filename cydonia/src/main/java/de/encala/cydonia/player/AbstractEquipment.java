@@ -3,7 +3,7 @@
  */
 package de.encala.cydonia.player;
 
-import de.encala.cydonia.main.MainController;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

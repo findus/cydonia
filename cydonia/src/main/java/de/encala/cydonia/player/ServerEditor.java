@@ -11,8 +11,8 @@ import de.encala.cydonia.events.RemoveEvent;
 import de.encala.cydonia.level.Flag;
 import de.encala.cydonia.level.Flube;
 import de.encala.cydonia.level.SpawnPoint;
-import de.encala.cydonia.main.MainController;
 import de.encala.cydonia.server.GameServer;
+import de.encala.cydonia.share.MainController;
 
 /**
  * @author encala

@@ -13,7 +13,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 
-import de.encala.cydonia.main.GameController;
+import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.player.InputCommand;
 
 /**
