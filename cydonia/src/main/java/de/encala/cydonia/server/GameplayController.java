@@ -6,11 +6,11 @@ package de.encala.cydonia.server;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.encala.cydonia.events.EventMachine;
-import de.encala.cydonia.events.RestartRoundEvent;
-import de.encala.cydonia.events.RoundEndedEvent;
-import de.encala.cydonia.player.Player;
+import de.encala.cydonia.game.player.Player;
 import de.encala.cydonia.share.GameConfig;
+import de.encala.cydonia.share.events.EventMachine;
+import de.encala.cydonia.share.events.RestartRoundEvent;
+import de.encala.cydonia.share.events.RoundEndedEvent;
 
 /**
  * @author encala

@@ -16,19 +16,19 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 
-import de.encala.cydonia.events.Event;
-import de.encala.cydonia.events.EventListener;
-import de.encala.cydonia.events.EventMachine;
-import de.encala.cydonia.level.Flag;
-import de.encala.cydonia.level.FlagFactory;
-import de.encala.cydonia.level.Flube;
-import de.encala.cydonia.level.SpawnPoint;
-import de.encala.cydonia.level.WorldController;
-import de.encala.cydonia.level.WorldObject;
-import de.encala.cydonia.player.EquipmentFactory;
-import de.encala.cydonia.player.Picker;
-import de.encala.cydonia.player.Player;
-import de.encala.cydonia.player.PlayerController;
+import de.encala.cydonia.game.level.Flag;
+import de.encala.cydonia.game.level.FlagFactory;
+import de.encala.cydonia.game.level.Flube;
+import de.encala.cydonia.game.level.SpawnPoint;
+import de.encala.cydonia.game.level.WorldController;
+import de.encala.cydonia.game.level.WorldObject;
+import de.encala.cydonia.game.player.EquipmentFactory;
+import de.encala.cydonia.game.player.Picker;
+import de.encala.cydonia.game.player.Player;
+import de.encala.cydonia.game.player.PlayerController;
+import de.encala.cydonia.share.events.Event;
+import de.encala.cydonia.share.events.EventListener;
+import de.encala.cydonia.share.events.EventMachine;
 
 /**
  * @author encala
