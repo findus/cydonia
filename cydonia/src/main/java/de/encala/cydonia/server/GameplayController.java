@@ -9,7 +9,6 @@ import java.util.TimerTask;
 import de.encala.cydonia.events.EventMachine;
 import de.encala.cydonia.events.RestartRoundEvent;
 import de.encala.cydonia.events.RoundEndedEvent;
-import de.encala.cydonia.game.GameState;
 import de.encala.cydonia.player.Player;
 import de.encala.cydonia.share.GameConfig;
 
@@ -30,7 +29,7 @@ public class GameplayController {
 
 	private Timer timer;
 
-	private GameState gameState;
+	private ServerGameState serverGameState;
 
 	private TimerTask endRoundTask;
 
@@ -71,7 +70,7 @@ public class GameplayController {
 		team1score = 0;
 		team2score = 0;
 		roundStartTime = System.currentTimeMillis();
-		gameState = GameState.RUNNING;
+		serverGameState = ServerGameState.RUNNING;
 		RestartRoundEvent start = new RestartRoundEvent(true);
 		eventMachine.fireEvent(start);
 	}
@@ -81,7 +80,7 @@ public class GameplayController {
 
 		endRoundTask.cancel();
 
-		gameState = GameState.ROUNDOVER;
+		serverGameState = ServerGameState.ROUNDOVER;
 		RoundEndedEvent end = new RoundEndedEvent(winteam, true);
 		eventMachine.fireEvent(end);
 
@@ -101,10 +100,10 @@ public class GameplayController {
 	}
 
 	/**
-	 * @return the gameState
+	 * @return the serverGameState
 	 */
-	public GameState getGameState() {
-		return gameState;
+	public ServerGameState getGameState() {
+		return serverGameState;
 	}
 
 	public void dispose() {

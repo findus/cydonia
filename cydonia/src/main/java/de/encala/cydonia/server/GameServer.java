@@ -371,7 +371,7 @@ public class GameServer extends MainController {
 	}
 
 	private void movePlayers(float tpf) {
-		if (gameplayController.getGameState() != GameState.RUNNING) {
+		if (gameplayController.getGameState() != ServerGameState.RUNNING) {
 			return;
 		}
 		for (Player p : this.getPlayerController().getAllPlayers()) {
@@ -594,7 +594,7 @@ public class GameServer extends MainController {
 		Player p = getPlayerController().getPlayer(playerid);
 		switch (command) {
 		case USEPRIMARY:
-			if (gameplayController.getGameState() == GameState.RUNNING) {
+			if (gameplayController.getGameState() == ServerGameState.RUNNING) {
 				if (p.isAlive()) {
 					getPlayerController().handleInput(p, command, value);
 
@@ -614,7 +614,7 @@ public class GameServer extends MainController {
 			}
 			break;
 		case USESECONDARY:
-			if (gameplayController.getGameState() == GameState.RUNNING) {
+			if (gameplayController.getGameState() == ServerGameState.RUNNING) {
 				if (p.isAlive()) {
 					getPlayerController().handleInput(p, command, value);
 
@@ -636,7 +636,7 @@ public class GameServer extends MainController {
 			break;
 
 		default:
-			if (gameplayController.getGameState() == GameState.RUNNING) {
+			if (gameplayController.getGameState() == ServerGameState.RUNNING) {
 				getPlayerController().handleInput(p, command, value);
 				InputEvent event = new InputEvent(p.getId(), command, value,
 						true);
