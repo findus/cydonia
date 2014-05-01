@@ -135,7 +135,7 @@ public class MenuController {
 				hideHUD();
 				long timeToRespawn = gameController.getGameOverTime()
 						+ (gameController.getGameConfig().getLong(
-								"mp_respawntime") * 1000)
+								"respawntime") * 1000)
 						- System.currentTimeMillis();
 				if (timeToRespawn < 0) {
 					showMessage("Press 'Fire' to join the game!");

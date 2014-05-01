@@ -17,15 +17,15 @@ public class GameConfig {
 	private static final HashMap<String, Object> defaults = new HashMap<String, Object>();
 
 	static {
-		defaults.put("mp_timelimit", 10 * 60L);
-		defaults.put("mp_scorelimit", 3);
-		defaults.put("mp_map", "");
-		defaults.put("mp_respawntime", 5L);
+		defaults.put("timelimit", 10 * 60L);
+		defaults.put("scorelimit", 3);
+		defaults.put("map", "");
+		defaults.put("respawntime", 5L);
 
 		/*
 		 * Possible values: "editor", "ctf"
 		 */
-		defaults.put("mp_gamemode", "ctf");
+		defaults.put("gamemode", "ctf");
 	}
 
 	private HashMap<String, Object> map = new HashMap<String, Object>();
@@ -157,6 +157,40 @@ public class GameConfig {
 	 * Set an object on the settings.
 	 */
 	public void putObject(String key, Object value) {
+		if(value instanceof String && map.containsKey(key)) {
+			Object oldvalue = map.get(key);
+			if(oldvalue instanceof String) {
+				String s = String.valueOf((String)value);
+				if(s != null) {
+					map.put(key, s);
+					return;
+				}
+			}else if(oldvalue instanceof Integer) {
+				Integer i = Integer.valueOf((String)value);
+				if(i != null) {
+					map.put(key, i);
+					return;
+				}
+			}else if(oldvalue instanceof Float) {
+				Float f = Float.valueOf((String)value);
+				if(f != null) {
+					map.put(key, f);
+					return;
+				}
+			}else if(oldvalue instanceof Long) {
+				Long l = Long.valueOf((String)value);
+				if(l != null) {
+					map.put(key, l);
+					return;
+				}
+			}else if(oldvalue instanceof Boolean) {
+				Boolean b = Boolean.valueOf((String)value);
+				if(b != null) {
+					map.put(key, b);
+					return;
+				}
+			}
+		}
 		map.put(key, value);
 	}
 

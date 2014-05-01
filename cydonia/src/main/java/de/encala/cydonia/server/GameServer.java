@@ -9,10 +9,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jdom2.JDOMException;
 import org.xml.sax.InputSource;
@@ -259,7 +263,7 @@ PhysicsCollisionListener, EventListener {
 
 		this.equipmentFactory = new ServerEquipmentFactory(this);
 
-		// loadMap(getGameConfig().getString("mp_map"));
+		// loadMap(getGameConfig().getString("map"));
 
 		networkController = new NetworkController(this, getEventMachine());
 
@@ -422,6 +426,14 @@ PhysicsCollisionListener, EventListener {
 			PlayerQuitEvent quit = (PlayerQuitEvent) e;
 			ServerPlayer p = getPlayerController().getPlayer(quit.getPlayerId());
 			quitPlayer(p);
+		} else if (e instanceof ConfigEvent) {
+			ConfigEvent conf = (ConfigEvent) e;
+			String key = conf.getKey();
+			if("map".equalsIgnoreCase(key)) {
+				loadMap(getGameConfig().getString(key));
+			}else if("gamemode".equalsIgnoreCase(key)) {
+				switchGameMode(getGameConfig().getString(key));
+			}
 		}
 	}
 
@@ -433,7 +445,7 @@ PhysicsCollisionListener, EventListener {
 			if (p.isAlive()) {
 				Vector3f viewDir = p.getViewDir().clone();
 				if ("ctf".equalsIgnoreCase(getGameConfig().getString(
-						"mp_gamemode"))) {
+						"gamemode"))) {
 					viewDir.setY(0).normalizeLocal();
 				}
 				Vector3f viewLeft = new Vector3f();
@@ -453,7 +465,7 @@ PhysicsCollisionListener, EventListener {
 				walkDirection.normalizeLocal().multLocal(
 						PHYSICS_ACCURACY * PLAYER_SPEED);
 				if ("editor".equalsIgnoreCase(getGameConfig().getString(
-						"mp_gamemode"))) {
+						"gamemode"))) {
 					walkDirection.multLocal(1.5f);
 				}
 
@@ -461,7 +473,7 @@ PhysicsCollisionListener, EventListener {
 
 				if (getWorldController().isBelowBottomOfPlayground(p)
 						&& "ctf".equalsIgnoreCase(getGameConfig().getString(
-								"mp_gamemode"))) {
+								"gamemode"))) {
 					KillEvent ev = new KillEvent(p.getId(), true);
 					getEventMachine().fireEvent(ev);
 				}
@@ -472,7 +484,7 @@ PhysicsCollisionListener, EventListener {
 	@Override
 	public void collision(PhysicsCollisionEvent e) {
 		// collisionen müssen nur im spielmodus "ctf" berechnet werden
-		if (!"ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode")))
+		if (!"ctf".equalsIgnoreCase(getGameConfig().getString("gamemode")))
 			return;
 
 		Spatial other = null;
@@ -568,7 +580,7 @@ PhysicsCollisionListener, EventListener {
 		if (p == null)
 			return false;
 	
-		if ("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+		if ("ctf".equalsIgnoreCase(getGameConfig().getString("gamemode"))) {
 			ServerSpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
 			if (sp != null) {
 				playerController.setHealthpoints(p, 100);
@@ -584,7 +596,7 @@ PhysicsCollisionListener, EventListener {
 				return true;
 			}
 		} else if ("editor".equalsIgnoreCase(getGameConfig().getString(
-				"mp_gamemode"))) {
+				"gamemode"))) {
 			playerController.setHealthpoints(p, 100);
 			p.setAlive(true);
 			p.getControl().zeroForce();
@@ -700,7 +712,7 @@ PhysicsCollisionListener, EventListener {
 				} else {
 					if (value && p.getTeam() > 0) {
 						long timeToRespawn = p.getGameOverTime()
-								+ (getGameConfig().getLong("mp_respawntime") * 1000)
+								+ (getGameConfig().getLong("respawntime") * 1000)
 								- System.currentTimeMillis();
 						if (timeToRespawn < 0) {
 							respawn(p);
@@ -905,49 +917,41 @@ PhysicsCollisionListener, EventListener {
 	}
 
 	public void handleCommand(String command) {
-		String[] com = command.split("\\s+");
+		List<String> matchList = new ArrayList<String>();
+		Pattern regex = Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'");
+		Matcher regexMatcher = regex.matcher(command);
+		while (regexMatcher.find()) {
+		    matchList.add(stripParameterQuotes(regexMatcher.group()));
+		} 
+		String[] com = matchList.toArray(new String[matchList.size()]);
 
-		if ("mp_restartround".equalsIgnoreCase(com[0])) {
+		if ("restartround".equalsIgnoreCase(com[0])) {
 			gameplayController.endRound(-1, true);
-		} else if ("mp_gamemode".equalsIgnoreCase(com[0])) {
-			if (com.length < 2) {
-				CWRITER.writeLine("mp_gamemode is "
-						+ getGameConfig().getString("mp_gamemode"));
-			} else if (!com[1].equalsIgnoreCase(getGameConfig().getString(
-					"mp_gamemode"))) {
-				switchGameMode(com[1]);
+		} else if("set".equalsIgnoreCase(com[0])) {
+			if(com.length < 3) {
+				CWRITER.writeLine("Syntax error! Usage: set <key> <value>");
+			}else if(getGameConfig().getObject(com[1]) == null) {
+				CWRITER.writeLine("no such key: " + com[1]);
+			}else {
+				changeConfig(com[1], com[2]);
 			}
-		} else if ("mp_scorelimit".equalsIgnoreCase(com[0])) {
+		} else if ("mapsdir".equalsIgnoreCase(com[0])) {
 			if (com.length < 2) {
-				CWRITER.writeLine("mp_scorelimit is "
-						+ getGameConfig().getInteger("mp_scorelimit"));
-			} else {
-				changeConfig("mp_scorelimit", com[1]);
-			}
-		} else if ("mp_timelimit".equalsIgnoreCase(com[0])) {
-			if (com.length < 2) {
-				CWRITER.writeLine("mp_timelimit is "
-						+ getGameConfig().getLong("mp_timelimit"));
-			} else {
-				changeConfig("mp_timelimit", com[1]);
-			}
-		} else if ("mp_map".equalsIgnoreCase(com[0])) {
-			if (com.length < 2) {
-				CWRITER.writeLine("mp_map is "
-						+ getGameConfig().getString("mp_map"));
-			} else {
-				loadMap(com[1]);
-			}
-		} else if ("sv_mapsdir".equalsIgnoreCase(com[0])) {
-			if (com.length < 2) {
-				CWRITER.writeLine("sv_mapsdir is " + this.mapsDir);
+				CWRITER.writeLine("mapsdir is " + this.mapsDir);
 			} else {
 				this.mapsDir = com[1];
 			}
-		} else if ("sv_shutdown".equalsIgnoreCase(com[0])) {
+		} else if ("shutdown".equalsIgnoreCase(com[0])) {
 			gameplayController.endRound(-1, false);
 			stop();
 		}
+	}
+	
+	private String stripParameterQuotes(String param) {
+		if(param.startsWith("\"") && param.endsWith("\"")) {
+			return param.substring(1, param.length()-1);
+		}
+		return param;
 	}
 
 	private void loadMap(final String mapname) {
@@ -977,7 +981,7 @@ PhysicsCollisionListener, EventListener {
 						ServerMap map = mapXMLParser.loadMap(is);
 						getWorldController().loadWorld(map);
 						broadcastInitialState();
-						changeConfig("mp_map", mapname);
+						changeConfig("map", mapname);
 						gameplayController.restartRound();
 						informStateListeners();
 						CWRITER.writeLine("loaded map: " + mapname);
@@ -1006,7 +1010,7 @@ PhysicsCollisionListener, EventListener {
 	}
 
 	private void switchGameMode(String mode) {
-		changeConfig("mp_gamemode", mode);
+		changeConfig("gamemode", mode);
 		if ("editor".equalsIgnoreCase(mode)) {
 			gameplayController.endRound(-1, true);
 			for (ServerPlayer p : getPlayerController().getAllPlayers()) {

@@ -52,10 +52,10 @@ public class ServerPlayerController {
 	public ServerPlayer createNew(int id) {
 		ServerPlayer p = new ServerPlayer(id);
 		if ("ctf".equalsIgnoreCase(gameServer.getGameConfig().getString(
-				"mp_gamemode"))) {
+				"gamemode"))) {
 			p.getControl().setGravity(25);
 		} else if ("editor".equalsIgnoreCase(gameServer.getGameConfig()
-				.getString("mp_gamemode"))) {
+				.getString("gamemode"))) {
 			p.getControl().setGravity(0);
 		}
 
@@ -159,7 +159,7 @@ public class ServerPlayerController {
 		p.getEquips().clear();
 
 		String gameMode = gameServer.getGameConfig().getString(
-				"mp_gamemode");
+				"gamemode");
 		if ("ctf".equals(gameMode)) {
 			ServerPicker picker1 = (ServerPicker) gameServer.getEquipmentFactory()
 					.create("Picker");
@@ -296,7 +296,7 @@ public class ServerPlayerController {
 		case JUMP:
 			if (value) {
 				if ("ctf".equalsIgnoreCase(gameServer.getGameConfig()
-						.getString("mp_gamemode"))) {
+						.getString("gamemode"))) {
 					p.jump();
 				}
 			}

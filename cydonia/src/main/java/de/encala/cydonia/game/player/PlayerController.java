@@ -92,10 +92,10 @@ public class PlayerController {
 	public Player createNew(int id) {
 		Player p = new Player(id);
 		if ("ctf".equalsIgnoreCase(gameController.getGameConfig().getString(
-				"mp_gamemode"))) {
+				"gamemode"))) {
 			p.getControl().setGravity(25);
 		} else if ("editor".equalsIgnoreCase(gameController.getGameConfig()
-				.getString("mp_gamemode"))) {
+				.getString("gamemode"))) {
 			p.getControl().setGravity(0);
 		}
 
@@ -199,7 +199,7 @@ public class PlayerController {
 		p.getEquips().clear();
 
 		String gameMode = gameController.getGameConfig().getString(
-				"mp_gamemode");
+				"gamemode");
 		if ("ctf".equals(gameMode)) {
 			ClientPicker picker1 = (ClientPicker) gameController.getEquipmentFactory()
 					.create("Picker");
@@ -336,7 +336,7 @@ public class PlayerController {
 		case JUMP:
 			if (value) {
 				if ("ctf".equalsIgnoreCase(gameController.getGameConfig()
-						.getString("mp_gamemode"))) {
+						.getString("gamemode"))) {
 					p.jump();
 				}
 			}

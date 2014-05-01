@@ -231,7 +231,7 @@ public class ServerConfigFrame extends JFrame implements KeyListener,
 			if (!dir.exists()) {
 				dir.mkdirs();
 			}
-			server.handleCommand("sv_mapsdir " + dir.getPath());
+			server.handleCommand("mapsdir \"" + dir.getPath() + "\"");
 			if (dir.exists() && dir.isDirectory()) {
 				for (String s : getDefaultMapNames()) {
 					File f = new File(dir.getPath()
@@ -345,7 +345,7 @@ public class ServerConfigFrame extends JFrame implements KeyListener,
 			commandInput.setText("");
 		} else if ("loadMap".equals(e.getActionCommand())) {
 			if (maplist.getSelectedValue() != null) {
-				server.handleCommand("mp_map " + maplist.getSelectedValue());
+				server.handleCommand("set map " + maplist.getSelectedValue());
 			}
 		} else if ("saveMap".equals(e.getActionCommand())) {
 			saveMap();

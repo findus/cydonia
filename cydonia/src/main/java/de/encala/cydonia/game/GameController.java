@@ -559,7 +559,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			SpawnPoint spawn = getWorldController().addNewSpawnPoint(id,
 					position, team);
 			if ("editor".equalsIgnoreCase(getGameConfig().getString(
-					"mp_gamemode"))) {
+					"gamemode"))) {
 				spawn.getNode().setCullHint(CullHint.Inherit);
 			} else {
 				spawn.getNode().setCullHint(CullHint.Always);
@@ -567,7 +567,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		}
 
 		// getWorldController().setUpWorldLights();
-		if ("editor".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+		if ("editor".equalsIgnoreCase(getGameConfig().getString("gamemode"))) {
 			getWorldController().setAmbientBrightness(0.3f);
 		} else {
 			getWorldController().setAmbientBrightness(0.15f);
@@ -892,7 +892,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 						(int) add.getObjectid(), add.getLocation(),
 						add.getObjectSpec());
 				if ("editor".equalsIgnoreCase(getGameConfig().getString(
-						"mp_gamemode"))) {
+						"gamemode"))) {
 					sp.getNode().setCullHint(CullHint.Dynamic);
 				} else {
 					sp.getNode().setCullHint(CullHint.Always);
@@ -900,10 +900,10 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			}
 		} else if (e instanceof ConfigEvent) {
 			ConfigEvent event = (ConfigEvent) e;
-			if ("mp_gamemode".equalsIgnoreCase(event.getKey())) {
+			if ("gamemode".equalsIgnoreCase(event.getKey())) {
 				switchGameMode((String) event.getNewValue());
-			} else if ("mp_scorelimit".equalsIgnoreCase(event.getKey())) {
-				getGameConfig().putObject("mp_scorelimit",
+			} else if ("scorelimit".equalsIgnoreCase(event.getKey())) {
+				getGameConfig().putObject("scorelimit",
 						(Integer) event.getNewValue());
 			}
 		} else if (e instanceof WorldStateEvent) {
@@ -993,7 +993,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			if (p.isAlive()) {
 				Vector3f viewDir = p.getViewDir().clone();
 				if ("ctf".equalsIgnoreCase(getGameConfig().getString(
-						"mp_gamemode"))) {
+						"gamemode"))) {
 					viewDir.setY(0).normalizeLocal();
 				}
 				Vector3f viewLeft = new Vector3f();
@@ -1012,7 +1012,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 				walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
 				if ("editor".equalsIgnoreCase(getGameConfig().getString(
-						"mp_gamemode"))) {
+						"gamemode"))) {
 					walkDirection.multLocal(1.5f);
 				}
 
@@ -1064,7 +1064,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		if (p == null)
 			return false;
 	
-		if ("ctf".equalsIgnoreCase(getGameConfig().getString("mp_gamemode"))) {
+		if ("ctf".equalsIgnoreCase(getGameConfig().getString("gamemode"))) {
 			SpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
 			if (sp != null) {
 				playerController.setHealthpoints(p, 100);
@@ -1080,7 +1080,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 				return true;
 			}
 		} else if ("editor".equalsIgnoreCase(getGameConfig().getString(
-				"mp_gamemode"))) {
+				"gamemode"))) {
 			playerController.setHealthpoints(p, 100);
 			p.setAlive(true);
 			p.getControl().zeroForce();
@@ -1258,7 +1258,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	public long getRemainingTime() {
 		long passedTime = System.currentTimeMillis() - roundStartTime;
-		return getGameConfig().getLong("mp_timelimit") * 1000 - passedTime;
+		return getGameConfig().getLong("timelimit") * 1000 - passedTime;
 	}
 
 	public int getWinTeam() {
@@ -1439,7 +1439,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	}
 
 	private void switchGameMode(String mode) {
-		getGameConfig().putString("mp_gamemode", mode);
+		getGameConfig().putString("gamemode", mode);
 		if ("editor".equalsIgnoreCase(mode)) {
 			for (Player p : getPlayerController().getAllPlayers()) {
 				getPlayerController().setDefaultEquipment(p);

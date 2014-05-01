@@ -6,6 +6,7 @@ package de.encala.cydonia.server;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import de.encala.cydonia.server.GameServer.ServerStateListener;
 import de.encala.cydonia.server.player.ServerPlayer;
 import de.encala.cydonia.share.GameConfig;
 import de.encala.cydonia.share.events.EventMachine;
@@ -56,7 +57,7 @@ public class GameplayController {
 			endRoundTask.cancel();
 		}
 
-		if (gameConfig.getLong("mp_timelimit") > 0) {
+		if (gameConfig.getLong("timelimit") > 0) {
 			endRoundTask = new TimerTask() {
 				@Override
 				public void run() {
@@ -64,7 +65,7 @@ public class GameplayController {
 				}
 			};
 			timer.schedule(endRoundTask,
-					gameConfig.getLong("mp_timelimit") * 1000);
+					gameConfig.getLong("timelimit") * 1000);
 		}
 
 		team1score = 0;
@@ -117,10 +118,10 @@ public class GameplayController {
 			team2score++;
 		}
 
-		if (gameConfig.getInteger("mp_scorelimit") > 0) {
-			if (team1score >= gameConfig.getInteger("mp_scorelimit")) {
+		if (gameConfig.getInteger("scorelimit") > 0) {
+			if (team1score >= gameConfig.getInteger("scorelimit")) {
 				endRound(1, true);
-			} else if (team2score >= gameConfig.getInteger("mp_scorelimit")) {
+			} else if (team2score >= gameConfig.getInteger("scorelimit")) {
 				endRound(2, true);
 			}
 		}
