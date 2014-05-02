@@ -27,7 +27,10 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 
+import de.encala.cydonia.game.ClientState;
 import de.encala.cydonia.game.GameController;
+import de.encala.cydonia.game.GameState;
+import de.encala.cydonia.share.messages.InputMessage;
 import de.encala.cydonia.share.player.InputCommand;
 
 /**
@@ -121,7 +124,16 @@ public class GameInputAppState extends AbstractAppState implements
 				command = SWITCHEQUIP;
 				isPressed = false;
 			}
-			gameController.handlePlayerInput(command, isPressed);
+			
+			if (InputCommand.forwarded.contains(command)) {
+				InputMessage msg = new InputMessage(gameController.getPlayer().getId(), command, isPressed);
+				gameController.getConnector().sendMessage(msg);
+			}
+			
+			if (gameController.getGamestate() == GameState.RUNNING
+					&& InputCommand.usedirect.contains(command)) {
+				gameController.getPlayerController().handleInput(gameController.getPlayer(), command, isPressed);
+			}
 		}
 	}
 	

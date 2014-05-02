@@ -911,45 +911,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		latestLocationUpdate = update;
 	}
 
-	public void handlePlayerInput(InputCommand command, boolean value) {
-		// send input to server if necessary
-		if (InputCommand.forwarded.contains(command)) {
-			InputMessage msg = new InputMessage(player.getId(), command, value);
-			connector.sendMessage(msg);
-		}
-
-		switch (command) {
-		case EXIT:
-			if (value) {
-				if (clientState == ClientState.GAME) {
-					openMenu();
-				} else if (clientState == ClientState.MENU) {
-					closeMenu();
-				}
-			}
-			break;
-
-		case FPS:
-			if (value) {
-				showFps = !showFps;
-				if (showFps) {
-					fpsText.setCullHint(CullHint.Inherit);
-				} else {
-					fpsText.setCullHint(CullHint.Always);
-				}
-			}
-			break;
-
-		default:
-			if (getClientstate() == ClientState.GAME
-					&& getGamestate() == GameState.RUNNING
-					&& InputCommand.usedirect.contains(command)) {
-				getPlayerController().handleInput(player, command, value);
-			}
-			break;
-		}
-	}
-
 	/**
 	 * Moves the player according to user input state.
 	 * 
@@ -1456,6 +1417,15 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	public long getGameOverTime() {
 		return gameOverTime;
 	}
+	
+	public void switchFPS() {
+		showFps = !showFps;
+		if (showFps) {
+			fpsText.setCullHint(CullHint.Inherit);
+		} else {
+			fpsText.setCullHint(CullHint.Always);
+		}
+	}
 
 	/**
 	 * @return the gameConfig
@@ -1490,6 +1460,10 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	 */
 	public EventMachine getEventMachine() {
 		return eventMachine;
+	}
+
+	public ServerConnector getConnector() {
+		return connector;
 	}
 
 	protected void returnFlag(Flag flag) {

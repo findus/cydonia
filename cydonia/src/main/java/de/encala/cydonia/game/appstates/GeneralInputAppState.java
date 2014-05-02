@@ -12,7 +12,9 @@ import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.scene.Spatial.CullHint;
 
+import de.encala.cydonia.game.ClientState;
 import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.share.player.InputCommand;
 
@@ -45,8 +47,8 @@ public class GeneralInputAppState extends AbstractAppState implements
 				KeyInput.KEY_ESCAPE));
 		inputManager
 				.addMapping(FPS.getCode(), new KeyTrigger(KeyInput.KEY_F12));
+		
 		inputManager.addListener(this, EXIT.getCode(), FPS.getCode());
-
 	}
 
 	@Override
@@ -63,7 +65,26 @@ public class GeneralInputAppState extends AbstractAppState implements
 	public void onAction(String name, boolean isPressed, float tpf) {
 		InputCommand command = InputCommand.parseInputCommand(name);
 		if (command != null) {
-			gameController.handlePlayerInput(command, isPressed);
+			switch (command) {
+			case EXIT:
+				if (isPressed) {
+					if (gameController.getClientstate() == ClientState.GAME) {
+						gameController.openMenu();
+					} else if (gameController.getClientstate() == ClientState.MENU) {
+						gameController.closeMenu();
+					}
+				}
+				break;
+
+			case FPS:
+				if (isPressed) {
+					gameController.switchFPS();
+				}
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 }
