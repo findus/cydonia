@@ -981,7 +981,6 @@ PhysicsCollisionListener, EventListener {
 						ServerMap map = mapXMLParser.loadMap(is);
 						getWorldController().loadWorld(map);
 						broadcastInitialState();
-						changeConfig("map", mapname);
 						gameplayController.restartRound();
 						informStateListeners();
 						CWRITER.writeLine("loaded map: " + mapname);
