@@ -179,7 +179,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	private ServerConnector connector;
 
-	private Thread inputSender;
+
 
 	private LocationUpdatedMessage latestLocationUpdate;
 
@@ -469,7 +469,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	}
 	
 	protected void cleanup() {
-		stopInputSender();
+		stateManager.detach(gameInputAppState);
 		connector.disconnectFromServer();
 		getEventMachine().stop();
 		bulletAppState.setEnabled(false);
@@ -606,7 +606,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	public void resumeGame() {
 		setGamestate(GameState.RUNNING);
 		// stateManager.attach(gameInputAppState);
-		startInputSender();
+//		startInputSender();
 		menuController.actualizeScreen();
 	}
 
@@ -615,7 +615,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	 */
 	public void openMenu() {
 		stateManager.detach(gameInputAppState);
-		stopInputSender();
 		clientState = ClientState.MENU;
 		menuController.actualizeScreen();
 	}
@@ -624,7 +623,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		if (getGamestate() == GameState.RUNNING
 				|| getGamestate() == GameState.SPECTATE) {
 			stateManager.attach(gameInputAppState);
-			startInputSender();
 		}
 		clientState = ClientState.GAME;
 		menuController.actualizeScreen();
@@ -636,7 +634,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	public void gameOver() {
 		gameOverTime = System.currentTimeMillis();
-		stopInputSender();
+//		stopInputSender();
 		setGamestate(GameState.SPECTATE);
 		menuController.actualizeScreen();
 		menuController
@@ -921,13 +919,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		}
 
 		switch (command) {
-//		case SCOREBOARD:
-//			if (value) {
-//				menuController.showScoreboard();
-//			} else {
-//				menuController.hideScoreboard();
-//			}
-//			break;
 		case EXIT:
 			if (value) {
 				if (clientState == ClientState.GAME) {
@@ -948,20 +939,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 				}
 			}
 			break;
-
-//		case HUD:
-//			if (value) {
-//				menuController.setShowHUD(!menuController.isShowHUD());
-//				menuController.actualizeScreen();
-//			}
-//			break;
-//
-//		case CROSSHAIR:
-//			if (value) {
-//				showCrosshair = !showCrosshair;
-//				gameInputAppState.crosshair(showCrosshair);
-//			}
-//			break;
 
 		default:
 			if (getClientstate() == ClientState.GAME
@@ -1103,7 +1080,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		if (playerid == connector.getConnectionId()) {
 			player = getPlayerController().getPlayer(playerid);
 			stateManager.attach(gameInputAppState);
-			startInputSender();
+			
 		}
 		menuController.displayEvent(playername + " joined the game");
 		menuController.updateScoreboard();
@@ -1417,23 +1394,12 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		return guiNode;
 	}
 
-	/**
-	 * Starts the input sender loop.
-	 */
-	public void startInputSender() {
-		if (inputSender == null || !inputSender.isAlive()) {
-			inputSender = new Thread(new InputSenderLoop());
-			inputSender.start();
-		}
-	}
+	public void sendViewDir() {
+		ViewDirMessage msg = new ViewDirMessage();
+		msg.setPlayerid(getPlayer().getId());
+		msg.setViewDir(getPlayer().getViewDir());
 
-	/**
-	 * Stops the input sender loop.
-	 */
-	public void stopInputSender() {
-		if (inputSender != null) {
-			inputSender.interrupt();
-		}
+		connector.sendMessage(msg);
 	}
 
 	private void switchGameMode(String mode) {
@@ -1568,31 +1534,5 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		eventQueue.offer(e);
 	}
 
-	/**
-	 * This class is used to send the user input state to the server in constant
-	 * time intervals.
-	 * 
-	 * @author encala
-	 * 
-	 */
-	private class InputSenderLoop implements Runnable {
-
-		@Override
-		public void run() {
-			while (!Thread.interrupted()) {
-				ViewDirMessage msg = new ViewDirMessage();
-				msg.setPlayerid(player.getId());
-				msg.setViewDir(player.getViewDir());
-
-				connector.sendMessage(msg);
-
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					break;
-				}
-			}
-		}
-
-	}
+	
 }

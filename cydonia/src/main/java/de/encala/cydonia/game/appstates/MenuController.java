@@ -19,7 +19,9 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 
+import de.encala.cydonia.game.ClientState;
 import de.encala.cydonia.game.GameController;
+import de.encala.cydonia.game.GameState;
 import de.encala.cydonia.game.level.Flag;
 import de.encala.cydonia.game.player.Player;
 import de.encala.cydonia.share.player.InputCommand;
@@ -388,5 +390,4 @@ public class MenuController implements ActionListener{
 			}
 		}
 	}
-
 }

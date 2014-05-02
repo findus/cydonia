@@ -43,6 +43,8 @@ public class GameInputAppState extends AbstractAppState implements
 	private GameController gameController;
 	private InputManager inputManager;
 	private FirstPersonCamera camController;
+	
+	private Thread viewDirSender;
 
 	/**
 	 * Constructor.
@@ -89,10 +91,14 @@ public class GameInputAppState extends AbstractAppState implements
 
 		camController.registerWithInput(inputManager);
 		camController.setEnabled(true);
+		
+		startViewDirSender();
 	}
 
 	@Override
 	public void stateDetached(AppStateManager stateManager) {
+		stopViewDirSender();
+		
 		inputManager.removeListener(this);
 		camController.setEnabled(false);
 	}
@@ -117,5 +123,48 @@ public class GameInputAppState extends AbstractAppState implements
 			}
 			gameController.handlePlayerInput(command, isPressed);
 		}
+	}
+	
+	/**
+	 * Starts the input sender loop.
+	 */
+	public void startViewDirSender() {
+		if (viewDirSender == null || !viewDirSender.isAlive()) {
+			viewDirSender = new Thread(new ViewDirSenderLoop());
+			viewDirSender.start();
+		}
+	}
+
+	/**
+	 * Stops the input sender loop.
+	 */
+	public void stopViewDirSender() {
+		if (viewDirSender != null) {
+			viewDirSender.interrupt();
+		}
+	}
+	
+	/**
+	 * This class is used to send the user input state to the server in constant
+	 * time intervals.
+	 * 
+	 * @author encala
+	 * 
+	 */
+	private class ViewDirSenderLoop implements Runnable {
+
+		@Override
+		public void run() {
+			while (!Thread.interrupted()) {
+				gameController.sendViewDir();
+
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					break;
+				}
+			}
+		}
+
 	}
 }
