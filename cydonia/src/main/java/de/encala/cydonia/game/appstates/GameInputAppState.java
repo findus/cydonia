@@ -4,12 +4,10 @@
 package de.encala.cydonia.game.appstates;
 
 import static de.encala.cydonia.share.player.InputCommand.ATTACK;
-import static de.encala.cydonia.share.player.InputCommand.CROSSHAIR;
 import static de.encala.cydonia.share.player.InputCommand.HUD;
 import static de.encala.cydonia.share.player.InputCommand.JUMP;
 import static de.encala.cydonia.share.player.InputCommand.MOVEBACK;
 import static de.encala.cydonia.share.player.InputCommand.MOVEFRONT;
-import static de.encala.cydonia.share.player.InputCommand.SCOREBOARD;
 import static de.encala.cydonia.share.player.InputCommand.STRAFELEFT;
 import static de.encala.cydonia.share.player.InputCommand.STRAFERIGHT;
 import static de.encala.cydonia.share.player.InputCommand.SWITCHEQUIP;
@@ -20,8 +18,6 @@ import static de.encala.cydonia.share.player.InputCommand.USESECONDARY;
 
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
-import com.jme3.font.BitmapFont;
-import com.jme3.font.BitmapText;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
@@ -47,7 +43,6 @@ public class GameInputAppState extends AbstractAppState implements
 	private GameController gameController;
 	private InputManager inputManager;
 	private FirstPersonCamera camController;
-	private BitmapText crosshair;
 
 	/**
 	 * Constructor.
@@ -63,8 +58,6 @@ public class GameInputAppState extends AbstractAppState implements
 
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
-		inputManager.addMapping(CROSSHAIR.getCode(), new KeyTrigger(
-				KeyInput.KEY_O));
 		inputManager
 				.addMapping(HUD.getCode(), new KeyTrigger(KeyInput.KEY_F11));
 		inputManager.addMapping(STRAFELEFT.getCode(), new KeyTrigger(
@@ -89,30 +82,17 @@ public class GameInputAppState extends AbstractAppState implements
 				new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
 		inputManager.addMapping(SWITCHEQUIPUP.getCode(), new MouseAxisTrigger(
 				MouseInput.AXIS_WHEEL, true));
-		inputManager.addListener(this, CROSSHAIR.getCode(), HUD.getCode(),
-				STRAFELEFT.getCode(), STRAFERIGHT.getCode(),
+		inputManager.addListener(this, STRAFELEFT.getCode(), STRAFERIGHT.getCode(),
 				MOVEFRONT.getCode(), MOVEBACK.getCode(), JUMP.getCode(),
 				ATTACK.getCode(), USEPRIMARY.getCode(), USESECONDARY.getCode(),
 				SWITCHEQUIPUP.getCode(), SWITCHEQUIPDOWN.getCode());
 
-		inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(
-				KeyInput.KEY_TAB));
-		inputManager.addListener(this, SCOREBOARD.getCode());
-
 		camController.registerWithInput(inputManager);
 		camController.setEnabled(true);
-
-		if (gameController.isShowCrosshair()) {
-			crosshair = getCrosshair();
-			gameController.getGuiNode().attachChild(crosshair);
-		}
 	}
 
 	@Override
 	public void stateDetached(AppStateManager stateManager) {
-		if (crosshair != null) {
-			crosshair.removeFromParent();
-		}
 		inputManager.removeListener(this);
 		camController.setEnabled(false);
 	}
@@ -138,34 +118,4 @@ public class GameInputAppState extends AbstractAppState implements
 			gameController.handlePlayerInput(command, isPressed);
 		}
 	}
-
-	/**
-	 * A plus sign used as crosshairs to help the player with aiming.
-	 */
-	public BitmapText getCrosshair() {
-		// guiNode.detachAllChildren();
-		BitmapFont guiFont = gameController.getAssetManager().loadFont(
-				"Interface/Fonts/Default.fnt");
-		BitmapText ch = new BitmapText(guiFont, false);
-		ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
-		ch.setText("+"); // fake crosshairs :)
-		ch.setLocalTranslation(
-				// center
-				gameController.getContext().getSettings().getWidth() / 2
-						- guiFont.getCharSet().getRenderedSize() / 3 * 2,
-				gameController.getContext().getSettings().getHeight() / 2
-						+ ch.getLineHeight() / 2, 0);
-		return ch;
-	}
-
-	public void crosshair(boolean visible) {
-		if (crosshair != null) {
-			crosshair.removeFromParent();
-		}
-		if (visible) {
-			crosshair = getCrosshair();
-			gameController.getGuiNode().attachChild(crosshair);
-		}
-	}
-
 }

@@ -3,9 +3,17 @@
  */
 package de.encala.cydonia.game.appstates;
 
+import static de.encala.cydonia.share.player.InputCommand.CROSSHAIR;
+import static de.encala.cydonia.share.player.InputCommand.HUD;
+import static de.encala.cydonia.share.player.InputCommand.SCOREBOARD;
+
 import java.awt.image.BufferedImage;
 import java.text.SimpleDateFormat;
 
+import com.jme3.input.InputManager;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.niftygui.RenderImageJme;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture2D;
@@ -14,6 +22,7 @@ import com.jme3.texture.plugins.AWTLoader;
 import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.game.level.Flag;
 import de.encala.cydonia.game.player.Player;
+import de.encala.cydonia.share.player.InputCommand;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.elements.Element;
@@ -30,7 +39,7 @@ import de.lessvoid.nifty.tools.SizeValue;
  * @author encala
  * 
  */
-public class MenuController {
+public class MenuController implements ActionListener{
 
 	private static final SimpleDateFormat timeFormat = new SimpleDateFormat(
 			"mm:ss");
@@ -41,15 +50,18 @@ public class MenuController {
 	public static final String MENU_PATH = "de/encala/cydonia/gui/menu/";
 
 	private GameController gameController;
+	private InputManager inputManager;
 
 	private boolean showHUD = true;
-
+	private boolean showCrosshair = true;
+	
 	private Element timetext;
 	private Element flagredtext;
 	private Element flagbluetext;
 	private Element yougottheflagtext;
 	// private Element healthpointstext;
 	private Element inventoryimg;
+	private Element crosshairlayer;
 	private Element scoreboardlayer;
 	private Element messagelayer;
 	private Element messagetext;
@@ -59,6 +71,7 @@ public class MenuController {
 
 	public MenuController(GameController game) {
 		this.gameController = game;
+		this.inputManager = game.getInputManager();
 
 		gameController.getNifty().registerScreenController(gameController);
 		gameController.getNifty().fromXmlWithoutStartScreen(
@@ -77,6 +90,8 @@ public class MenuController {
 		// gameController.getNifty().getScreen("ingamescreen").findElementByName("healthpointstext");
 		this.inventoryimg = gameController.getNifty().getScreen("ingamescreen")
 				.findElementByName("inventoryimg");
+		this.crosshairlayer = gameController.getNifty()
+				.getScreen("ingamescreen").findElementByName("crosshairlayer");
 		this.scoreboardlayer = gameController.getNifty()
 				.getScreen("ingamescreen").findElementByName("scoreboardlayer");
 		this.messagelayer = gameController.getNifty().getScreen("ingamescreen")
@@ -89,6 +104,16 @@ public class MenuController {
 				.findElementByName("scorespanel");
 		this.eventpanel = gameController.getNifty().getScreen("ingamescreen")
 				.findElementByName("eventpanel");
+		
+		
+		this.inputManager.addMapping(CROSSHAIR.getCode(), new KeyTrigger(
+				KeyInput.KEY_O));
+		this.inputManager
+		.addMapping(HUD.getCode(), new KeyTrigger(KeyInput.KEY_F11));
+		this.inputManager.addMapping(SCOREBOARD.getCode(), new KeyTrigger(
+				KeyInput.KEY_TAB));
+		
+		this.inputManager.addListener(this, CROSSHAIR.getCode(), HUD.getCode(), SCOREBOARD.getCode());
 	}
 
 	public void actualizeScreen() {
@@ -119,20 +144,19 @@ public class MenuController {
 			switch (gameController.getGamestate()) {
 			case DOWN:
 				hideMessage();
-				hideHUD();
+				hudlayer.setVisible(false);
+				crosshairlayer.setVisible(false);
 				break;
 
 			case RUNNING:
 				hideMessage();
-				if (showHUD) {
-					showHUD();
-				} else {
-					hideHUD();
-				}
+				hudlayer.setVisible(showHUD);
+				crosshairlayer.setVisible(showCrosshair);
 				break;
 
 			case SPECTATE:
-				hideHUD();
+				hudlayer.setVisible(false);
+				crosshairlayer.setVisible(false);
 				long timeToRespawn = gameController.getGameOverTime()
 						+ (gameController.getGameConfig().getLong(
 								"respawntime") * 1000)
@@ -147,7 +171,8 @@ public class MenuController {
 				break;
 
 			case ROUNDOVER:
-				hideHUD();
+				hudlayer.setVisible(false);
+				crosshairlayer.setVisible(false);
 				String message = "Round is over. New round will start automatically in a few seconds...";
 				int winteam = gameController.getWinTeam();
 				if (winteam == 1) {
@@ -180,14 +205,6 @@ public class MenuController {
 
 	public void hideMessage() {
 		messagelayer.setVisible(false);
-	}
-
-	public void showHUD() {
-		hudlayer.setVisible(true);
-	}
-
-	public void hideHUD() {
-		hudlayer.setVisible(false);
 	}
 
 	public void updateHUD() {
@@ -298,14 +315,6 @@ public class MenuController {
 		}
 	}
 
-	public boolean isShowHUD() {
-		return showHUD;
-	}
-
-	public void setShowHUD(boolean showHUD) {
-		this.showHUD = showHUD;
-	}
-
 	private class ScoreLineBuilder extends PanelBuilder {
 
 		private ScoreLineBuilder(final String name, final String score,
@@ -344,6 +353,39 @@ public class MenuController {
 					});
 				}
 			});
+		}
+	}
+
+	@Override
+	public void onAction(String name, boolean isPressed, float tpf) {
+		InputCommand command = InputCommand.parseInputCommand(name);
+		if (command != null) {
+			switch (command) {
+			case SCOREBOARD:
+				if (isPressed) {
+					showScoreboard();
+				} else {
+					hideScoreboard();
+				}
+				break;
+
+			case HUD:
+				if (isPressed) {
+					showHUD = !showHUD;
+					actualizeScreen();
+				}
+				break;
+
+			case CROSSHAIR:
+				if (isPressed) {
+					showCrosshair = !showCrosshair;
+					actualizeScreen();
+				}
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 

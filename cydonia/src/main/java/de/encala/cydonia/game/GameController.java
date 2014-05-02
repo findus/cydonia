@@ -155,8 +155,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	protected BitmapFont guiFont;
 	protected StatsView statsView;
 
-	private boolean showCrosshair = true;
-
 	private Node beamNode;
 
 	private GameInputAppState gameInputAppState;
@@ -923,13 +921,13 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		}
 
 		switch (command) {
-		case SCOREBOARD:
-			if (value) {
-				menuController.showScoreboard();
-			} else {
-				menuController.hideScoreboard();
-			}
-			break;
+//		case SCOREBOARD:
+//			if (value) {
+//				menuController.showScoreboard();
+//			} else {
+//				menuController.hideScoreboard();
+//			}
+//			break;
 		case EXIT:
 			if (value) {
 				if (clientState == ClientState.GAME) {
@@ -951,19 +949,19 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			}
 			break;
 
-		case HUD:
-			if (value) {
-				menuController.setShowHUD(!menuController.isShowHUD());
-				menuController.actualizeScreen();
-			}
-			break;
-
-		case CROSSHAIR:
-			if (value) {
-				showCrosshair = !showCrosshair;
-				gameInputAppState.crosshair(showCrosshair);
-			}
-			break;
+//		case HUD:
+//			if (value) {
+//				menuController.setShowHUD(!menuController.isShowHUD());
+//				menuController.actualizeScreen();
+//			}
+//			break;
+//
+//		case CROSSHAIR:
+//			if (value) {
+//				showCrosshair = !showCrosshair;
+//				gameInputAppState.crosshair(showCrosshair);
+//			}
+//			break;
 
 		default:
 			if (getClientstate() == ClientState.GAME
@@ -1479,10 +1477,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	public void setClientstate(ClientState clientState) {
 		this.clientState = clientState;
-	}
-
-	public boolean isShowCrosshair() {
-		return showCrosshair;
 	}
 
 	public int getTeam1score() {

@@ -50,6 +50,14 @@
 	</screen>
 
 	<screen id="ingamescreen" controller="de.encala.cydonia.game.GameController">
+		<layer id="crosshairlayer" backgroundColor="#fff0" childLayout="center"
+			visible="false">
+			<panel height="5%" width="5%" align="center" valign="center"
+				 childLayout="center" childClip="false">
+				<text id="text" font="de/encala/cydonia/gui/fonts/Comic_Sans_MS_30.fnt" color="#ffff" text="+"
+					height="100%" align="center" valign="center" />
+			</panel>
+		</layer>
 		<layer id="hudlayer" backgroundColor="#fff0" childLayout="center"
 			visible="false">
 			<panel id="eventpanel" width="20%" height="20%" align="left" valign="top" padding="10px" backgroundColor="#fff0" childLayout="vertical" childClip="false"/>
