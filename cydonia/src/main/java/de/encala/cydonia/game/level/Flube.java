@@ -24,7 +24,7 @@ import de.encala.cydonia.game.GameController;
  * @author encala
  * 
  */
-public class Flube extends WorldObject {
+public class Flube extends MarkableObject {
 
 	private long id;
 

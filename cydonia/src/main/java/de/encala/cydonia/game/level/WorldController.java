@@ -6,6 +6,7 @@ package de.encala.cydonia.game.level;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
@@ -20,18 +21,26 @@ import com.jme3.light.LightList;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
+import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
 import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.game.player.Player;
+import de.encala.cydonia.game.player.PlayerView;
+import de.encala.cydonia.share.messages.PlayerInfo;
 import de.encala.cydonia.share.player.ForceCharacterControl;
 
 /**
@@ -43,6 +52,19 @@ import de.encala.cydonia.share.player.ForceCharacterControl;
  */
 public class WorldController {
 
+	public static Transform ROTATE90LEFT = new Transform(
+			new Quaternion().fromRotationMatrix(new Matrix3f(1, 0,
+					FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
+	
+	public static float PLAYER_SPEED = 5f;
+	
+	/**
+	 * The time in seconds it should take to compensate a deviation from the
+	 * accurate (=server defined) physical location of an object.
+	 */
+	public static final float SMOOTHING = 0.2f;
+	public static final float MAXPOSDEVIATION = 1f;
+	
 	private static final float FLAGAREARADIUS = 3f;
 
 	/**
@@ -62,10 +84,14 @@ public class WorldController {
 	protected Node moveablesNode = new Node("Movables");
 
 	private Map map = new Map("empty");
+	
+	private ConcurrentHashMap<Integer, PlayerView> players;
 
 	private AmbientLight al = new AmbientLight();
 
 	private List<PointLight> pointLights = new LinkedList<PointLight>();
+	
+	private Vector3f walkDirection = new Vector3f();
 
 	/**
 	 * Constructs setting up ambient light.
@@ -73,6 +99,8 @@ public class WorldController {
 	public WorldController(AssetManager assetManager, PhysicsSpace physicsSpace) {
 		this.assetManager = assetManager;
 		this.physicsSpace = physicsSpace;
+		
+		players = new ConcurrentHashMap<Integer, PlayerView>();
 
 		rootNode.setShadowMode(ShadowMode.Off);
 
@@ -205,6 +233,17 @@ public class WorldController {
 			attachFlube(m2);
 		}
 	}
+	
+	public void addNewPlayer(Player p, String gamemmode) {
+		PlayerView pv = new PlayerView(p);
+		if ("ctf".equalsIgnoreCase(gamemmode)) {
+			pv.getControl().setGravity(25);
+		} else if ("editor".equalsIgnoreCase(gamemmode)) {
+			pv.getControl().setGravity(0);
+		}
+		players.put(p.getId(), pv);
+		updatePlayerModel(p.getId());
+	}
 
 	public Flube addNewFlube(long id, Vector3f origin, int type) {
 		Flube flube = new Flube(id, origin, type, assetManager);
@@ -253,7 +292,7 @@ public class WorldController {
 		return null;
 	}
 
-	public boolean isBelowBottomOfPlayground(Player p) {
+	public boolean isBelowBottomOfPlayground(PlayerView p) {
 		if (p == null || this.map == null)
 			return false;
 		if (this.map.getBottomHeight() > p.getControl().getPhysicsLocation()
@@ -272,6 +311,18 @@ public class WorldController {
 		for (Flag flag : map.getFlags().values()) {
 			returnFlag(flag);
 		}
+	}
+	
+	public void takeFlag(int playerid, int flagid) {
+		PlayerView p = players.get(playerid);
+		Flag flag = map.getFlags().get(flagid);
+		flag.setInBase(false);
+		flag.getModel().removeFromParent();
+		flag.getModel().setLocalTranslation(0, 1, 0);
+		// flag.getModel().setLocalScale(Vector3f.UNIT_XYZ.divide(p.getModel().getLocalScale()));
+		p.getNode().attachChild(flag.getModel());
+		p.getDataModel().setFlag(flag);
+		flag.setPlayer(p.getDataModel());
 	}
 
 	public void returnFlag(Flag flag) {
@@ -316,30 +367,32 @@ public class WorldController {
 		worldNode.detachChild(obj);
 	}
 
-	public void attachPlayer(Player player) {
-		rootNode.attachChild(player.getNode());
-		ForceCharacterControl control = player.getControl();
+	public void attachPlayer(int playerid) {
+		PlayerView p = players.get(playerid);
+		rootNode.attachChild(p.getNode());
+		ForceCharacterControl control = p.getControl();
 		if (control != null) {
 			physicsSpace.addCollisionObject(control);
 			physicsSpace.addTickListener(control);
 		}
-		GhostControl ghostcontrol = player.getGhostControl();
+		GhostControl ghostcontrol = p.getGhostControl();
 		if (ghostcontrol != null) {
 			physicsSpace.addCollisionObject(ghostcontrol);
 		}
 	}
 
-	public void detachPlayer(Player player) {
-		GhostControl ghostcontrol = player.getGhostControl();
+	public void detachPlayer(int playerid) {
+		PlayerView p = players.get(playerid);
+		GhostControl ghostcontrol = p.getGhostControl();
 		if (ghostcontrol != null) {
 			physicsSpace.removeCollisionObject(ghostcontrol);
 		}
-		ForceCharacterControl control = player.getControl();
+		ForceCharacterControl control = p.getControl();
 		if (control != null) {
 			physicsSpace.removeCollisionObject(control);
 			physicsSpace.removeTickListener(control);
 		}
-		rootNode.detachChild(player.getNode());
+		rootNode.detachChild(p.getNode());
 	}
 
 	public void attachFlube(Flube flube) {
@@ -475,6 +528,121 @@ public class WorldController {
 
 			System.out.println(pl1.getPosition());
 		}
+	}
+	
+	public void loadPlayerInfo(PlayerInfo info) {
+		PlayerView p = players.get(info.getPlayerid());
+		p.getControl().setPhysicsLocation(info.getLocation());
+		p.getControl().setViewDirection(info.getOrientation());
+	}
+
+	public void updatePlayerModel(int playerid) {
+		PlayerView p = players.get(playerid);
+		Node model;
+		int team = p.getDataModel().getTeam();
+		if (team == 1) {
+			model = (Node) assetManager
+					.loadModel("de/encala/cydonia/models/blue/Sinbad.mesh.xml");
+		} else if (team == 2) {
+			model = (Node) assetManager
+					.loadModel("de/encala/cydonia/models/red/Sinbad.mesh.xml");
+		} else {
+			model = (Node) assetManager
+					.loadModel("de/encala/cydonia/models/green/Sinbad.mesh.xml");
+		}
+		model.setName("player" + p.getDataModel().getId());
+		model.setLocalScale(0.2f);
+		model.setShadowMode(ShadowMode.Cast);
+		model.setQueueBucket(Bucket.Transparent);
+
+		p.setModel(model);
+	}
+	
+	public void respawnPlayer(int playerid, boolean spawnpoint, boolean culling) {
+		PlayerView p = players.get(playerid);
+		Vector3f pos = Vector3f.UNIT_Y;
+		if(spawnpoint) {
+			SpawnPoint sp = getSpawnPointForTeam(p.getDataModel().getTeam());
+			pos = sp.getPosition();
+		}
+		p.getControl().zeroForce();
+		p.getControl().setPhysicsLocation(pos);
+		attachPlayer(playerid);
+		if (culling) {
+			p.getModel().setCullHint(CullHint.Always);
+		}
+	}
+	
+	/**
+	 * Moves the player according to user input state.
+	 * 
+	 * @param tpf
+	 *            time per frame
+	 */
+	public void movePlayers(float tpf, boolean stayInPlane) {
+
+		for (PlayerView p : players.values()) {
+
+			if (p.getDataModel().isAlive()) {
+				Vector3f viewDir = p.getDataModel().getViewDir().clone();
+				if (stayInPlane) {
+					viewDir.setY(0).normalizeLocal();
+				}
+				Vector3f viewLeft = new Vector3f();
+				ROTATE90LEFT.transformVector(viewDir.clone().setY(0)
+						.normalizeLocal(), viewLeft);
+
+				walkDirection.set(0, 0, 0);
+				if (p.getDataModel().getInputState().isLeft())
+					walkDirection.addLocal(viewLeft);
+				if (p.getDataModel().getInputState().isRight())
+					walkDirection.addLocal(viewLeft.negate());
+				if (p.getDataModel().getInputState().isForward())
+					walkDirection.addLocal(viewDir);
+				if (p.getDataModel().getInputState().isBack())
+					walkDirection.addLocal(viewDir.negate());
+
+				walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
+//				if ("editor".equalsIgnoreCase(getGameConfig().getString(
+//						"gamemode"))) {
+//					walkDirection.multLocal(1.5f);
+//				}
+
+				Vector3f deviation = p.getDataModel().getExactLoc().subtract(
+						p.getControl().getPhysicsLocation());
+				if (deviation.length() > MAXPOSDEVIATION) {
+
+					p.getControl().warp(p.getDataModel().getExactLoc());
+				} else {
+					Vector3f correction = p.getDataModel().getExactLoc()
+							.subtract(p.getControl().getPhysicsLocation())
+							.mult(SMOOTHING);
+					walkDirection.addLocal(correction);
+				}
+
+				walkDirection.multLocal(GameController.PHYSICS_ACCURACY);
+				p.getControl().setWalkDirection(walkDirection);
+			}
+		}
+	}
+	
+	public void warpPlayer(int playerid, Vector3f destination) {
+		PlayerView p = players.get(playerid);
+		p.getControl().warp(destination);
+	}
+	
+	public void setGravitiy(float gravitiy) {
+		for(PlayerView p : players.values()) {
+			p.getControl().setGravity(gravitiy);
+		}
+	}
+	
+	public Vector3f getEyePosition(int playerid) {
+		PlayerView p = players.get(playerid);
+		if(p != null) {
+			return p.getEyePosition();
+		}
+		return null;
 	}
 
 	public LightList getLights() {

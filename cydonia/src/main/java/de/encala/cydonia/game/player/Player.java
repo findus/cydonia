@@ -6,33 +6,21 @@ package de.encala.cydonia.game.player;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.jme3.animation.AnimChannel;
-import com.jme3.animation.AnimControl;
-import com.jme3.animation.AnimEventListener;
-import com.jme3.animation.LoopMode;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.control.GhostControl;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 
 import de.encala.cydonia.game.equipment.ClientEquipment;
 import de.encala.cydonia.game.level.Flag;
-import de.encala.cydonia.game.level.WorldObject;
-import de.encala.cydonia.share.player.ForceCharacterControl;
+import de.encala.cydonia.game.level.MarkableObject;
 import de.encala.cydonia.share.player.PlayerInputState;
 
 /**
  * @author encala
  * 
  */
-public class Player extends WorldObject implements AnimEventListener {
+public class Player extends MarkableObject {
 
-	public static float MAX_STEP_HEIGHT = 0.2f;
-
-	private static Vector3f RELATIVE_EYE_POSITION = new Vector3f(0, 0.70f, 0);
-
+	private PlayerDataListener listener;
+	
 	private int id;
 
 	private String name;
@@ -43,27 +31,9 @@ public class Player extends WorldObject implements AnimEventListener {
 
 	private long gameOverTime = 0;
 
-	PlayerInputState inputs;
+	private PlayerInputState inputs;
 
 	private Vector3f exactLoc = new Vector3f();
-
-	private ForceCharacterControl control;
-
-	private GhostControl ghostControl;
-
-	private Node model;
-
-	private Node node;
-
-	private AnimChannel basechannel;
-
-	private AnimChannel topchannel;
-
-	private AnimControl animcontrol;
-
-	private double healthpoints = 100;
-
-	private long lastShot = 0;
 
 	private int scores = 0;
 
@@ -76,6 +46,8 @@ public class Player extends WorldObject implements AnimEventListener {
 	private int currEquip;
 
 	private Flag flag;
+
+	private boolean highlighted;
 
 	/**
 	 * Constructs a new ServerPlayer and inits its physics and model.
@@ -90,150 +62,28 @@ public class Player extends WorldObject implements AnimEventListener {
 		this.id = id;
 
 		inputs = new PlayerInputState();
-
-		this.node = new Node("player" + id);
-
-		CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f,
-				0.8f);
-		control = new ForceCharacterControl(capsuleShape, MAX_STEP_HEIGHT);
-		control.setJumpSpeed(10);
-		control.setFallSpeed(25);
-		control.setGravity(25);
-		control.setMinimalForceAmount(2f);
-		control.setForceDamping(0.97f);
-
-		BoxCollisionShape boxShape = new BoxCollisionShape(new Vector3f(0.25f,
-				0.8f, 0.25f));
-		ghostControl = new GhostControl(boxShape);
-		ghostControl.setCollisionGroup(GhostControl.COLLISION_GROUP_02);
-		ghostControl.setCollideWithGroups(GhostControl.COLLISION_GROUP_02);
-
-		node.addControl(control);
-		node.addControl(ghostControl);
 	}
 
-	//
-	// void handleInput(InputCommand command, boolean value) {
-	// switch (command) {
-	// case MOVEFRONT:
-	// inputs.setForward(value);
-	// break;
-	// case MOVEBACK:
-	// inputs.setBack(value);
-	// break;
-	// case STRAFELEFT:
-	// inputs.setLeft(value);
-	// break;
-	// case STRAFERIGHT:
-	// inputs.setRight(value);
-	// break;
-	// case JUMP:
-	// if(value) {
-	// this.jump();
-	// }
-	// break;
-	// case USEPRIMARY:
-	// getCurrentEquipment().usePrimary(value);
-	// break;
-	// case USESECONDARY:
-	// getCurrentEquipment().useSecondary(value);
-	// break;
-	// case SWITCHEQUIP:
-	// this.switchEquipment(value);
-	// break;
-	// default:
-	// break;
-	// }
-	//
-	// updateAnimationState();
-	// }
+	
 
-	void updateAnimationState() {
-		// Update Animation
-		if (jumping) {
-
-		} else if (inputs.isForward() || inputs.isBack() || inputs.isLeft()
-				|| inputs.isRight()) {
-			basechannel.setAnim("RunBase", 0.5f);
-			basechannel.setLoopMode(LoopMode.Loop);
-			topchannel.setAnim("RunTop", 0.5f);
-			topchannel.setLoopMode(LoopMode.Loop);
-		} else {
-			basechannel.setAnim("IdleBase", 0.5f);
-			basechannel.setLoopMode(LoopMode.Loop);
-			topchannel.setAnim("IdleTop", 0.5f);
-			topchannel.setLoopMode(LoopMode.Loop);
-		}
-	}
-
-	@Override
-	public void onAnimCycleDone(AnimControl animControl, AnimChannel channel,
-			String animName) {
-		if (animName.equals("JumpStart")) {
-			channel.setAnim("JumpLoop", 0.5f);
-			channel.setLoopMode(LoopMode.Loop);
-		} else if (animName.equals("JumpLoop")) {
-			if (this.control.onGround()) {
-				channel.setAnim("JumpEnd", 0.5f);
-			}
-		} else if (animName.equals("JumpEnd")) {
-			jumping = false;
-			updateAnimationState();
-		}
-	}
-
-	@Override
-	public void onAnimChange(AnimControl control, AnimChannel channel,
-			String animName) {
-		// TODO Auto-generated method stub
-
-	}
-
-	void setModel(Node s) {
-		if (this.node.hasChild(this.model)) {
-			this.node.detachChild(this.model);
-		}
-		this.model = s;
-		this.node.attachChild(this.model);
-
-		animcontrol = model.getControl(AnimControl.class);
-		animcontrol.addListener(this);
-		basechannel = animcontrol.createChannel();
-		basechannel.setSpeed(0.1f);
-		topchannel = animcontrol.createChannel();
-		topchannel.setSpeed(0.1f);
-	}
-
-	void jump() {
-		control.jump();
-		this.jumping = true;
-		basechannel.setAnim("JumpStart", 0.5f);
-		basechannel.setLoopMode(LoopMode.Loop);
-	}
-
-	void switchEquipment(boolean up) {
-		this.setCurrEquip(this.currEquip + (up ? 1 : -1));
-	}
-
-	public int getCurrEquipIndex() {
+	public int getCurrEquip() {
 		return this.currEquip;
 	}
-
+	
 	public void setCurrEquip(int index) {
-		if (this.equips.size() > 0) {
-			this.getCurrentEquipment().setActive(false);
-			if (this.getCurrentEquipment().getGeometry() != null) {
-				this.node.detachChild(this.getCurrentEquipment().getGeometry());
-			}
-			this.getCurrentEquipment().reset();
-			int size = this.equips.size();
-			this.currEquip = ((index % size) + size) % size;
-			if (this.getCurrentEquipment().getGeometry() != null) {
-				this.node.attachChild(this.getCurrentEquipment().getGeometry());
-			}
-			this.getCurrentEquipment().setActive(true);
+		if (equips.size() > 0) {
+			getCurrentEquipment().setActive(false);
+			getCurrentEquipment().reset();
+			int size = equips.size();
+			currEquip = ((index % size) + size) % size;
+			getCurrentEquipment().setActive(true);
+		}
+		if(listener != null) {
+			listener.currEquipChanged();
 		}
 	}
+
+	
 
 	public ClientEquipment getCurrentEquipment() {
 		if (this.equips.size() > this.currEquip) {
@@ -243,18 +93,7 @@ public class Player extends WorldObject implements AnimEventListener {
 		}
 	}
 
-	/**
-	 * Returns the model for visualization of this player.
-	 * 
-	 * @return model of this player
-	 */
-	public Spatial getModel() {
-		return model;
-	}
-
-	public Node getNode() {
-		return node;
-	}
+	
 
 	/**
 	 * Returns the InputState oject.
@@ -265,29 +104,14 @@ public class Player extends WorldObject implements AnimEventListener {
 		return this.inputs;
 	}
 
-	/**
-	 * Sets the InputState object.
-	 * 
-	 * @param pis
-	 *            input state
-	 */
-	public void setInputState(PlayerInputState pis) {
-		this.inputs = pis;
-		updateAnimationState();
+	public void setInputState(PlayerInputState is) {
+		this.inputs = is;
+		if(listener != null) {
+			listener.inputChanged();
+		}
 	}
 
-	/**
-	 * Returns the physics control object.
-	 * 
-	 * @return physics control
-	 */
-	public ForceCharacterControl getControl() {
-		return control;
-	}
-
-	public Vector3f getEyePosition() {
-		return control.getPhysicsLocation().add(RELATIVE_EYE_POSITION);
-	}
+	
 
 	/**
 	 * Returns the id of this ServerPlayer. The value -1 indicates the real id was not
@@ -305,7 +129,7 @@ public class Player extends WorldObject implements AnimEventListener {
 	 * @param id
 	 *            the id
 	 */
-	public void setId(int id) {
+	void setId(int id) {
 		this.id = id;
 	}
 
@@ -347,22 +171,6 @@ public class Player extends WorldObject implements AnimEventListener {
 		this.exactLoc = smooth;
 	}
 
-	public double getHealthpoints() {
-		return healthpoints;
-	}
-
-	void setHealthpoints(double healthpoints) {
-		this.healthpoints = healthpoints;
-	}
-
-	public long getLastShot() {
-		return this.lastShot;
-	}
-
-	public void setLastShot(long time) {
-		this.lastShot = time;
-	}
-
 	public int getScores() {
 		return scores;
 	}
@@ -382,8 +190,13 @@ public class Player extends WorldObject implements AnimEventListener {
 	 * @param team
 	 *            the team to set
 	 */
-	protected void setTeam(int team) {
-		this.team = team;
+	public void setTeam(int team) {
+		if(this.team != team) {
+			this.team = team;
+			if(listener != null) {
+				listener.teamChanged();
+			}
+		}
 	}
 
 	/**
@@ -393,13 +206,11 @@ public class Player extends WorldObject implements AnimEventListener {
 		return viewDir.clone();
 	}
 
-	/**
-	 * @param viewDir
-	 *            the viewDir to set
-	 */
-	public void setViewDir(Vector3f viewDir) {
-		this.viewDir = viewDir.clone();
-		control.setViewDirection(viewDir.clone().setY(0).normalizeLocal());
+	public void setViewDir(Vector3f dir) {
+		this.viewDir = dir;
+		if(listener != null) {
+			listener.viewDirChanged();
+		}
 	}
 
 	/**
@@ -418,6 +229,9 @@ public class Player extends WorldObject implements AnimEventListener {
 			this.currEquip = equips.size() - 1;
 		}
 		this.equips = equips;
+		if(listener != null) {
+			listener.equipsChanged();
+		}
 	}
 
 	/**
@@ -435,18 +249,64 @@ public class Player extends WorldObject implements AnimEventListener {
 		this.flag = flag;
 	}
 
-	/**
-	 * @return the ghostControl
-	 */
-	public GhostControl getGhostControl() {
-		return ghostControl;
-	}
-
 	public long getGameOverTime() {
 		return gameOverTime;
 	}
 
-	public void setGameOverTime(long gameOverTime) {
+	void setGameOverTime(long gameOverTime) {
 		this.gameOverTime = gameOverTime;
+	}
+	
+	void setListener(PlayerDataListener l) {
+		this.listener = l;
+	}
+	
+	void setForward(boolean value) {
+		inputs.setForward(value);
+		if(listener != null) {
+			listener.inputChanged();
+		}
+	}
+	
+	void setBack(boolean value) {
+		inputs.setBack(value);
+		if(listener != null) {
+			listener.inputChanged();
+		}
+	}
+	
+	void setLeft(boolean value) {
+		inputs.setLeft(value);
+		if(listener != null) {
+			listener.inputChanged();
+		}
+	}
+	
+	void setRight(boolean value) {
+		inputs.setRight(value);
+		if(listener != null) {
+			listener.inputChanged();
+		}
+	}
+	
+	void setJump(boolean value) {
+		inputs.setJump(value);
+		if(listener != null) {
+			listener.inputChanged();
+		}
+	}
+
+
+
+	@Override
+	public void setHighlighted(boolean highlighted) {
+		this.highlighted = highlighted;
+		if(listener != null) {
+			listener.highlightedChanged();
+		}
+	}
+	
+	public boolean isHighlighted() {
+		return this.highlighted;
 	}
 }

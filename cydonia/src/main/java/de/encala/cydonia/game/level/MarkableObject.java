@@ -8,20 +8,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.jme3.scene.Spatial;
-
 import de.encala.cydonia.game.player.Player;
 
 /**
  * @author encala
  * 
  */
-public abstract class WorldObject {
+public abstract class MarkableObject {
 
 	private Set<Player> marks = Collections
 			.synchronizedSet(new HashSet<Player>());
-
-	public abstract Spatial getModel();
 
 	public void addMark(Player p) {
 		marks.add(p);
@@ -46,4 +42,6 @@ public abstract class WorldObject {
 	public void removeAllMarks() {
 		marks.clear();
 	}
+	
+	public abstract void setHighlighted(boolean highlighted);
 }

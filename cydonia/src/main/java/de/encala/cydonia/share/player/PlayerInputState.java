@@ -12,7 +12,7 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class PlayerInputState {
 
-	private boolean left, right, forward, back, attack;
+	private boolean left, right, forward, back, jump;
 
 	public boolean isLeft() {
 		return left;
@@ -45,13 +45,12 @@ public class PlayerInputState {
 	public void setBack(boolean back) {
 		this.back = back;
 	}
-
-	public boolean isAttack() {
-		return attack;
+	
+	public boolean isJump() {
+		return jump;
 	}
 
-	public void setAttack(boolean attack) {
-		this.attack = attack;
+	public void setJump(boolean value) {
+		this.jump = value;
 	}
-
 }

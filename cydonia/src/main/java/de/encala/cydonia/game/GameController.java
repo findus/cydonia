@@ -24,10 +24,6 @@ import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Matrix3f;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
@@ -46,20 +42,18 @@ import de.encala.cydonia.game.ExtendedSettingsDialog.SelectionListener;
 import de.encala.cydonia.game.appstates.GameInputAppState;
 import de.encala.cydonia.game.appstates.GeneralInputAppState;
 import de.encala.cydonia.game.appstates.MenuController;
-import de.encala.cydonia.game.equipment.ClientEquipment;
 import de.encala.cydonia.game.equipment.ClientEquipmentFactory;
 import de.encala.cydonia.game.equipment.ClientPicker;
 import de.encala.cydonia.game.level.Flag;
 import de.encala.cydonia.game.level.FlagFactory;
 import de.encala.cydonia.game.level.Flube;
+import de.encala.cydonia.game.level.MarkableObject;
 import de.encala.cydonia.game.level.SpawnPoint;
 import de.encala.cydonia.game.level.WorldController;
-import de.encala.cydonia.game.level.WorldObject;
 import de.encala.cydonia.game.player.Player;
 import de.encala.cydonia.game.player.PlayerController;
 import de.encala.cydonia.share.GameConfig;
 import de.encala.cydonia.share.events.AddEvent;
-import de.encala.cydonia.share.events.BeamEvent;
 import de.encala.cydonia.share.events.ChooseTeamEvent;
 import de.encala.cydonia.share.events.ConfigEvent;
 import de.encala.cydonia.share.events.ConnectionDeniedEvent;
@@ -72,19 +66,16 @@ import de.encala.cydonia.share.events.FlagEvent;
 import de.encala.cydonia.share.events.InputEvent;
 import de.encala.cydonia.share.events.KillEvent;
 import de.encala.cydonia.share.events.MarkEvent;
-import de.encala.cydonia.share.events.PhaseEvent;
 import de.encala.cydonia.share.events.PickupEvent;
 import de.encala.cydonia.share.events.PlaceEvent;
 import de.encala.cydonia.share.events.PlayerJoinEvent;
 import de.encala.cydonia.share.events.PlayerQuitEvent;
-import de.encala.cydonia.share.events.PushEvent;
 import de.encala.cydonia.share.events.RemoveEvent;
 import de.encala.cydonia.share.events.RespawnEvent;
 import de.encala.cydonia.share.events.RestartRoundEvent;
 import de.encala.cydonia.share.events.RoundEndedEvent;
 import de.encala.cydonia.share.events.SwapEvent;
 import de.encala.cydonia.share.events.WorldStateEvent;
-import de.encala.cydonia.share.messages.EquipmentInfo;
 import de.encala.cydonia.share.messages.FlagInfo;
 import de.encala.cydonia.share.messages.InitialStateMessage;
 import de.encala.cydonia.share.messages.InputMessage;
@@ -119,19 +110,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	
 	public static final boolean DEBUG = false;
 
-	public static float PLAYER_SPEED = 5f;
 	public static float PHYSICS_ACCURACY = (1f / 192);
-
-	public static Transform ROTATE90LEFT = new Transform(
-			new Quaternion().fromRotationMatrix(new Matrix3f(1, 0,
-					FastMath.HALF_PI, 0, 1, 0, -FastMath.HALF_PI, 0, 1)));
-
-	/**
-	 * The time in seconds it should take to compensate a deviation from the
-	 * accurate (=server defined) physical location of an object.
-	 */
-	private static final float SMOOTHING = 0.2f;
-	private static final float MAXPOSDEVIATION = 1f;
 
 	public static void main(String[] args) {
 		String ip = "";
@@ -163,7 +142,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	private ClientEquipmentFactory equipmentFactory;
 
-	private Vector3f walkDirection = new Vector3f();
 	private boolean left = false, right = false, up = false, down = false;
 
 	private String serverAddress = "";
@@ -498,35 +476,14 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			Player p = getPlayerController().getPlayer(playerid);
 			if (p == null) {
 				p = getPlayerController().createNew(info.getPlayerid());
+				worldController.addNewPlayer(p, getGameConfig().getString("gamemode"));
 			}
-			p.setName(info.getName());
-			getPlayerController().setTeam(p, info.getTeam());
-			p.setAlive(info.isAlive());
-			getPlayerController().setHealthpoints(p, info.getHealthpoints());
-			p.setScores(info.getScores());
-
-			ClientEquipment cur = p.getCurrentEquipment();
-			if (cur != null && cur.getGeometry() != null) {
-				p.getNode().detachChild(cur.getGeometry());
-			}
-			p.getEquips().clear();
-			for (EquipmentInfo ei : info.getEquipInfos()) {
-				ClientEquipment equip = getEquipmentFactory()
-						.create(ei.getTypeName());
-				if (equip != null) {
-					equip.setPlayer(p);
-					equip.loadInfo(ei);
-					p.getEquips().add(equip);
-				}
-			}
-			p.setCurrEquip(info.getCurrEquip());
-
-			p.getControl().setPhysicsLocation(info.getLocation());
-			p.getControl().setViewDirection(info.getOrientation());
+			playerController.loadInfo(info);
+			worldController.loadPlayerInfo(info);
+			worldController.updatePlayerModel(info.getPlayerid());
 
 			if (p.isAlive()) {
-				getWorldController().attachPlayer(
-						getPlayerController().getPlayer(playerid));
+				getWorldController().attachPlayer(playerid);
 			}
 		}
 		for (MoveableInfo info : state.getFlubes()) {
@@ -705,8 +662,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 				if (p != null) {
 					p.setExactLoc(physic.getTranslation());
 					p.setViewDir(physic.getOrientation());
-					getPlayerController().setHealthpoints(p,
-							physic.getHealthpoints());
 				}
 			}
 		}
@@ -746,7 +701,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			place(p, f, loc);
 		} else if (e instanceof MarkEvent) {
 			MarkEvent mark = (MarkEvent) e;
-			WorldObject o = null;
+			MarkableObject o = null;
 			if (mark.getTargetPlayerId() >= 0) {
 				o = getPlayerController().getPlayer(mark.getTargetPlayerId());
 			} else if (mark.getTargetFlubeId() > 0) {
@@ -767,13 +722,13 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			}
 		} else if (e instanceof SwapEvent) {
 			SwapEvent swap = (SwapEvent) e;
-			WorldObject a = null;
+			MarkableObject a = null;
 			if (swap.getPlayerA() >= 0) {
 				a = getPlayerController().getPlayer(swap.getPlayerA());
 			} else if (swap.getFlubeA() > 0) {
 				a = getWorldController().getFlube(swap.getFlubeA());
 			}
-			WorldObject b = null;
+			MarkableObject b = null;
 			if (swap.getPlayerB() >= 0) {
 				b = getPlayerController().getPlayer(swap.getPlayerB());
 			} else if (swap.getFlubeB() > 0) {
@@ -801,19 +756,16 @@ PhysicsCollisionListener, EventListener, ScreenController {
 			// only use inputs from other players, not our own inputs, that are
 			// sent back to us from the server
 			if ((player != null && player.getId() != input.getPlayerid())
-					|| !InputCommand.usedirect.contains(input.getClass())) {
-				Player p = getPlayerController().getPlayer(input.getPlayerid());
-				if (p != null) {
-					getPlayerController().handleInput(p, input.getCommand(),
-							input.isValue());
-				}
+					|| !InputCommand.usedirect.contains(input.getCommand())) {
+				getPlayerController().handleInput(input.getPlayerid(), input.getCommand(),
+						input.isValue());
 			}
 		} else if (e instanceof RestartRoundEvent) {
 			for (Player p : getPlayerController().getAllPlayers()) {
 				if (p.isAlive()) {
 					killPlayer(p);
 				}
-				getPlayerController().reset(p);
+				getPlayerController().reset(p.getId());
 			}
 			getWorldController().resetWorld();
 			team1score = 0;
@@ -848,24 +800,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 				Flag f = getWorldController().getFlag(flagev.getFlagid());
 				returnFlag(f);
 			}
-		} else if (e instanceof PhaseEvent) {
-			PhaseEvent phase = (PhaseEvent) e;
-			Player attacker = getPlayerController().getPlayer(
-					phase.getAttackerId());
-			Player victim = getPlayerController()
-					.getPlayer(phase.getVictimId());
-			phase(attacker, victim, phase.getDamage());
-		} else if (e instanceof PushEvent) {
-			PushEvent push = (PushEvent) e;
-			Player attacker = getPlayerController().getPlayer(
-					push.getAttackerId());
-			Player victim = getPlayerController().getPlayer(push.getVictimId());
-			push(attacker, victim, push.getForce());
-		} else if (e instanceof BeamEvent) {
-			BeamEvent beam = (BeamEvent) e;
-			Player p = getPlayerController().getPlayer(beam.getSourceid());
-			Player victim = getPlayerController().getPlayer(beam.getTargetid());
-			beam(p, victim);
 		} else if (e instanceof RemoveEvent) {
 			RemoveEvent remove = (RemoveEvent) e;
 			if ("flube".equalsIgnoreCase(remove.getObjectType())) {
@@ -925,61 +859,20 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	 *            time per frame
 	 */
 	private void movePlayers(float tpf) {
-
-		for (Player p : getPlayerController().getAllPlayers()) {
-			if (player != null && p.getId() == player.getId()) {
-				p.setViewDir(cam.getDirection());
-				listener.setLocation(cam.getLocation());
-				listener.setRotation(cam.getRotation());
-			}
-
-			if (p.isAlive()) {
-				Vector3f viewDir = p.getViewDir().clone();
-				if ("ctf".equalsIgnoreCase(getGameConfig().getString(
-						"gamemode"))) {
-					viewDir.setY(0).normalizeLocal();
-				}
-				Vector3f viewLeft = new Vector3f();
-				ROTATE90LEFT.transformVector(viewDir.clone().setY(0)
-						.normalizeLocal(), viewLeft);
-
-				walkDirection.set(0, 0, 0);
-				if (p.getInputState().isLeft())
-					walkDirection.addLocal(viewLeft);
-				if (p.getInputState().isRight())
-					walkDirection.addLocal(viewLeft.negate());
-				if (p.getInputState().isForward())
-					walkDirection.addLocal(viewDir);
-				if (p.getInputState().isBack())
-					walkDirection.addLocal(viewDir.negate());
-
-				walkDirection.normalizeLocal().multLocal(PLAYER_SPEED);
-				if ("editor".equalsIgnoreCase(getGameConfig().getString(
-						"gamemode"))) {
-					walkDirection.multLocal(1.5f);
-				}
-
-				Vector3f deviation = p.getExactLoc().subtract(
-						p.getControl().getPhysicsLocation());
-				if (deviation.length() > MAXPOSDEVIATION) {
-
-					p.getControl().warp(p.getExactLoc());
-				} else {
-					Vector3f correction = p.getExactLoc()
-							.subtract(p.getControl().getPhysicsLocation())
-							.mult(SMOOTHING);
-					walkDirection.addLocal(correction);
-				}
-
-				walkDirection.multLocal(PHYSICS_ACCURACY);
-				p.getControl().setWalkDirection(walkDirection);
-			}
-
-			if (p.getId() == connector.getConnectionId()) {
-				cam.setLocation(p.getEyePosition());
-			}
+		if(player != null) {
+			player.setViewDir(cam.getDirection());
 		}
 
+		worldController.movePlayers(tpf, "ctf".equalsIgnoreCase(getGameConfig().getString("gamemode")));
+
+		if(player != null) {
+			Vector3f eyeposition = worldController.getEyePosition(player.getId());
+			if(eyeposition != null) {
+				cam.setLocation(eyeposition);
+			}
+		}
+		listener.setLocation(cam.getLocation());
+		listener.setRotation(cam.getRotation());
 	}
 
 	@Override
@@ -993,47 +886,31 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		if (p.getFlag() != null) {
 			returnFlag(p.getFlag());
 		}
-		p.setGameOverTime(System.currentTimeMillis());
-		worldController.detachPlayer(p);
-		p.setAlive(false);
+		worldController.detachPlayer(p.getId());
+		playerController.kill(p.getId());
 
-		getPlayerController().playDieAnim(p);
+//		getPlayerController().playDieAnim(p);
 		if (p.getId() == player.getId()) {
 			gameOver();
 		}
 	}
 
 	protected boolean respawn(final Player p) {
-		if (p == null)
-			return false;
-	
+		boolean spawnpoint = false;
+		boolean ego = false;
 		if ("ctf".equalsIgnoreCase(getGameConfig().getString("gamemode"))) {
-			SpawnPoint sp = worldController.getSpawnPointForTeam(p.getTeam());
-			if (sp != null) {
-				playerController.setHealthpoints(p, 100);
-				playerController.resetEquips(p);
-				p.setAlive(true);
-				p.getControl().zeroForce();
-				p.getControl().setPhysicsLocation(sp.getPosition());
-				worldController.attachPlayer(p);
-				if (player != null && p.getId() == player.getId()) {
-					p.getModel().setCullHint(CullHint.Always);
-					resumeGame();
-				}
-				return true;
-			}
+			spawnpoint = true;
 		} else if ("editor".equalsIgnoreCase(getGameConfig().getString(
 				"gamemode"))) {
-			playerController.setHealthpoints(p, 100);
-			p.setAlive(true);
-			p.getControl().zeroForce();
-			p.getControl().setPhysicsLocation(Vector3f.UNIT_Y);
-			worldController.attachPlayer(p);
-			if (player != null && p.getId() == player.getId()) {
-				p.getModel().setCullHint(CullHint.Always);
-				resumeGame();
-			}
-			return true;
+			spawnpoint = false;
+		}
+		if (player != null && p.getId() == player.getId()) {
+			ego = true;
+		}
+		playerController.respawn(p.getId());
+		worldController.respawnPlayer(p.getId(), spawnpoint, ego);
+		if(ego) {
+			resumeGame();
 		}
 	
 		return false;
@@ -1041,9 +918,10 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	protected void joinPlayer(int playerid, String playername) {
 		Player p = playerController.createNew(playerid);
+		worldController.addNewPlayer(p, getGameConfig().getString("gamemode"));
 		p.setName(playername);
 	
-		getPlayerController().setDefaultEquipment(p);
+		getPlayerController().setDefaultEquipment(playerid);
 		
 		if (playerid == connector.getConnectionId()) {
 			player = getPlayerController().getPlayer(playerid);
@@ -1060,7 +938,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		if (p.getFlag() != null) {
 			returnFlag(p.getFlag());
 		}
-		worldController.detachPlayer(p);
+		worldController.detachPlayer(p.getId());
 		playerController.removePlayer(p.getId());
 
 		menuController.displayEvent(p.getName() + " left the game");
@@ -1069,7 +947,8 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	protected void chooseTeam(Player p, int team) {
 		if (p == null)
 			return;
-		playerController.setTeam(p, team);
+		p.setTeam(team);
+		worldController.updatePlayerModel(p.getId());
 	}
 
 	protected void beam(Player p, Player victim) {
@@ -1129,20 +1008,20 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		}
 	}
 
-	protected void swap(WorldObject a, WorldObject b) {
+	protected void swap(MarkableObject a, MarkableObject b) {
 		a.removeAllMarks();
 		b.removeAllMarks();
 	
 		Vector3f posA = null;
 		if (a instanceof Player) {
-			posA = ((Player) a).getControl().getPhysicsLocation();
+			posA = ((Player) a).getExactLoc();
 		} else if (a instanceof Flube) {
 			posA = ((Flube) a).getControl().getPhysicsLocation();
 		}
 	
 		Vector3f posB = null;
 		if (b instanceof Player) {
-			posB = ((Player) b).getControl().getPhysicsLocation();
+			posB = ((Player) b).getExactLoc();
 		} else if (b instanceof Flube) {
 			posB = ((Flube) b).getControl().getPhysicsLocation();
 		}
@@ -1152,7 +1031,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 				if (((Player) a).getFlag() != null) {
 					returnFlag(((Player) a).getFlag());
 				}
-				((Player) a).getControl().warp(posB);
+				worldController.warpPlayer(((Player) a).getId(), posB);
 			} else if (a instanceof Flube) {
 				getWorldController().detachFlube((Flube) a);
 				((Flube) a).getControl().setPhysicsLocation(
@@ -1164,7 +1043,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 				if (((Player) b).getFlag() != null) {
 					returnFlag(((Player) b).getFlag());
 				}
-				((Player) b).getControl().warp(posA);
+				worldController.warpPlayer(((Player) b).getId(), posA);
 			} else if (b instanceof Flube) {
 				getWorldController().detachFlube((Flube) b);
 				((Flube) b).getControl().setPhysicsLocation(
@@ -1177,26 +1056,24 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		unhighlight(b);
 	}
 
-	protected void highlight(WorldObject o) {
+	protected void highlight(MarkableObject o) {
 		// Spatial model = o.getModel();
 		// AmbientLight highLight = new AmbientLight();
 		// highLight.setColor(ColorRGBA.White.mult(0.5f));
 		// highLight.setName("HighLight");
 		// model.addLight(highLight);
-		if (o instanceof Flube) {
-			((Flube) o).setHighlighted(true);
-		}
+		
+		o.setHighlighted(true);
 	}
 
-	protected void unhighlight(WorldObject o) {
+	protected void unhighlight(MarkableObject o) {
 		// for(Light l : o.getModel().getLocalLightList()) {
 		// if(l.getName().equals("HighLight")) {
 		// o.getModel().removeLight(l);
 		// }
 		// }
-		if (o instanceof Flube) {
-			((Flube) o).setHighlighted(false);
-		}
+		
+		o.setHighlighted(false);
 	}
 
 	public long getRemainingTime() {
@@ -1374,22 +1251,22 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		getGameConfig().putString("gamemode", mode);
 		if ("editor".equalsIgnoreCase(mode)) {
 			for (Player p : getPlayerController().getAllPlayers()) {
-				getPlayerController().setDefaultEquipment(p);
-				p.getControl().setGravity(0);
+				getPlayerController().setDefaultEquipment(p.getId());
 			}
 			for (SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Inherit);
 			}
 			getWorldController().setAmbientBrightness(0.5f);
+			getWorldController().setGravitiy(0);
 		} else if ("ctf".equalsIgnoreCase(mode)) {
 			for (Player p : getPlayerController().getAllPlayers()) {
-				getPlayerController().setDefaultEquipment(p);
-				p.getControl().setGravity(25);
+				getPlayerController().setDefaultEquipment(p.getId());
 			}
 			for (SpawnPoint sp : getWorldController().getAllSpawnPoints()) {
 				sp.getNode().setCullHint(CullHint.Always);
 			}
 			getWorldController().setAmbientBrightness(0.25f);
+			getWorldController().setGravitiy(25);
 		}
 	}
 
@@ -1482,29 +1359,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	}
 
 	protected void takeFlag(Player p, Flag flag) {
-		flag.setInBase(false);
-		Node parent = flag.getModel().getParent();
-		if (parent != null) {
-			parent.detachChild(flag.getModel());
-		}
-		flag.getModel().setLocalTranslation(0, 1, 0);
-		// flag.getModel().setLocalScale(Vector3f.UNIT_XYZ.divide(p.getModel().getLocalScale()));
-		p.getNode().attachChild(flag.getModel());
-		p.setFlag(flag);
-		flag.setPlayer(p);
-		System.out.println("takenflag");
-	}
-
-	protected void phase(Player attacker, Player victim, float damage) {
-		getPlayerController().setHealthpoints(victim,
-				victim.getHealthpoints() - damage);
-		if (victim.getHealthpoints() <= 0) {
-			beam(attacker, victim);
-		}
-	}
-
-	protected void push(Player attacker, Player victim, Vector3f force) {
-		victim.getControl().applyCentralForce(force);
+		worldController.takeFlag(p.getId(), flag.getId());
 	}
 
 	private void handleEvents() {

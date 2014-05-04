@@ -3,9 +3,8 @@
  */
 package de.encala.cydonia.game.player;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.asset.AssetManager;
@@ -13,24 +12,16 @@ import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh.Type;
 import com.jme3.effect.shapes.EmitterBoxShape;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.renderer.queue.RenderQueue.ShadowMode;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import com.jme3.texture.Image;
-import com.jme3.texture.Texture;
-import com.jme3.texture.Texture2D;
-import com.jme3.texture.plugins.AWTLoader;
 
 import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.game.equipment.ClientEditor;
 import de.encala.cydonia.game.equipment.ClientEquipment;
 import de.encala.cydonia.game.equipment.ClientPicker;
 import de.encala.cydonia.game.equipment.ClientSwapper;
+import de.encala.cydonia.share.messages.EquipmentInfo;
+import de.encala.cydonia.share.messages.PlayerInfo;
 import de.encala.cydonia.share.player.InputCommand;
 
 /**
@@ -38,8 +29,6 @@ import de.encala.cydonia.share.player.InputCommand;
  * 
  */
 public class PlayerController {
-
-	private AssetManager assetManager;
 
 	private GameController gameController;
 
@@ -49,7 +38,6 @@ public class PlayerController {
 
 	public PlayerController(AssetManager assetManager,
 			GameController mainController) {
-		this.assetManager = assetManager;
 		this.gameController = mainController;
 
 		players = new ConcurrentHashMap<Integer, Player>();
@@ -91,14 +79,6 @@ public class PlayerController {
 
 	public Player createNew(int id) {
 		Player p = new Player(id);
-		if ("ctf".equalsIgnoreCase(gameController.getGameConfig().getString(
-				"gamemode"))) {
-			p.getControl().setGravity(25);
-		} else if ("editor".equalsIgnoreCase(gameController.getGameConfig()
-				.getString("gamemode"))) {
-			p.getControl().setGravity(0);
-		}
-
 		players.put(p.getId(), p);
 
 		return p;
@@ -120,81 +100,52 @@ public class PlayerController {
 		players.clear();
 	}
 
-	public void updateModel(Player p) {
-		if (p == null)
-			return;
+	
 
-		Node model;
-		if (p.getTeam() == 1) {
-			model = (Node) assetManager
-					.loadModel("de/encala/cydonia/models/blue/Sinbad.mesh.xml");
-		} else if (p.getTeam() == 2) {
-			model = (Node) assetManager
-					.loadModel("de/encala/cydonia/models/red/Sinbad.mesh.xml");
-		} else {
-			model = (Node) assetManager
-					.loadModel("de/encala/cydonia/models/green/Sinbad.mesh.xml");
-		}
-		model.setName("player" + p.getId());
-		model.setLocalScale(0.2f);
-		model.setShadowMode(ShadowMode.Cast);
-		model.setQueueBucket(Bucket.Transparent);
+//	public void setTransparency(Player p, float transparency) {
+//		Node n = (Node) p.getModel();
+//		if (n == null)
+//			return;
+//
+//		transparency = Math.max(0f, Math.min(1f, transparency));
+//
+//		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+//		int cw = Math.round(255 * transparency);
+//		Color c = new Color(cw, cw, cw);
+//		img.setRGB(0, 0, c.getRGB());
+//
+//		AWTLoader loader = new AWTLoader();
+//		Image imageJME = loader.load(img, true);
+//		Texture t = new Texture2D(imageJME);
+//
+//		ColorRGBA glowcolor = new ColorRGBA(0, 0, 0, cw);
+//
+//		for (Spatial s : n.getChildren()) {
+//			if (s instanceof Geometry) {
+//				Material m = ((Geometry) s).getMaterial();
+//				m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+//				m.setTexture("AlphaMap", t);
+//				m.setColor("GlowColor", glowcolor);
+//			}
+//		}
+//	}
 
-		p.setModel(model);
-	}
-
-	public void setTransparency(Player p, float transparency) {
-		Node n = (Node) p.getModel();
-		if (n == null)
-			return;
-
-		transparency = Math.max(0f, Math.min(1f, transparency));
-
-		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-		int cw = Math.round(255 * transparency);
-		Color c = new Color(cw, cw, cw);
-		img.setRGB(0, 0, c.getRGB());
-
-		AWTLoader loader = new AWTLoader();
-		Image imageJME = loader.load(img, true);
-		Texture t = new Texture2D(imageJME);
-
-		ColorRGBA glowcolor = new ColorRGBA(0, 0, 0, cw);
-
-		for (Spatial s : n.getChildren()) {
-			if (s instanceof Geometry) {
-				Material m = ((Geometry) s).getMaterial();
-				m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-				m.setTexture("AlphaMap", t);
-				m.setColor("GlowColor", glowcolor);
-			}
-		}
-	}
-
-	public void setHealthpoints(Player p, double health) {
-		if (p == null)
-			return;
-		p.setHealthpoints(health);
-		setTransparency(p, (float) p.getHealthpoints() * 0.008f + 0.2f);
-	}
-
-	public void reset(Player p) {
+	public void reset(int playerid) {
+		Player p = players.get(playerid);
 		p.setScores(0);
 
-		resetEquips(p);
+		resetEquips(playerid);
 	}
 
-	public void resetEquips(Player p) {
+	public void resetEquips(int playerid) {
+		Player p = players.get(playerid);
 		for (ClientEquipment equip : p.getEquips()) {
 			equip.reset();
 		}
 	}
 
-	public void setDefaultEquipment(Player p) {
-		ClientEquipment cur = p.getCurrentEquipment();
-		if (cur != null && cur.getGeometry() != null) {
-			p.getNode().detachChild(cur.getGeometry());
-		}
+	public void setDefaultEquipment(int playerid) {
+		Player p = players.get(playerid);
 		p.setCurrEquip(0);
 		p.getEquips().clear();
 
@@ -307,38 +258,25 @@ public class PlayerController {
 		}
 	}
 
-	public void setTeam(Player p, int team) {
-		if (p == null)
-			return;
-
-		p.setTeam(team);
-		updateModel(p);
-	}
-
-	public int getPlayerCount() {
-		return players.size();
-	}
-
-	public void handleInput(Player p, InputCommand command, boolean value) {
+	public void handleInput(int playerid, InputCommand command, boolean value) {
+		Player p = players.get(playerid);
 		switch (command) {
 		case MOVEFRONT:
-			p.inputs.setForward(value);
+			p.setForward(value);
 			break;
 		case MOVEBACK:
-			p.inputs.setBack(value);
+			p.setBack(value);
 			break;
 		case STRAFELEFT:
-			p.inputs.setLeft(value);
+			p.setLeft(value);
 			break;
 		case STRAFERIGHT:
-			p.inputs.setRight(value);
+			p.setRight(value);
 			break;
 		case JUMP:
-			if (value) {
-				if ("ctf".equalsIgnoreCase(gameController.getGameConfig()
-						.getString("gamemode"))) {
-					p.jump();
-				}
+			if("ctf".equalsIgnoreCase(gameController.getGameConfig()
+					.getString("gamemode"))) {
+				p.setJump(value);
 			}
 			break;
 		case USEPRIMARY:
@@ -348,17 +286,49 @@ public class PlayerController {
 			p.getCurrentEquipment().useSecondary(value);
 			break;
 		case SWITCHEQUIP:
-			p.switchEquipment(value);
+			p.setCurrEquip(p.getCurrEquip() + (value? 1 : -1));
 			break;
 		default:
 			break;
 		}
-
-		p.updateAnimationState();
+	}
+	
+	public void respawn(int playerid) {
+		Player p = players.get(playerid);
+		resetEquips(playerid);
+		p.setAlive(true);
 	}
 
-	public void playDieAnim(Player p) {
-		dieEmit.setLocalTranslation(p.getControl().getPhysicsLocation());
-		dieEmit.emitAllParticles();
+	public void kill(int playerid) {
+		Player p = players.get(playerid);
+		p.setAlive(false);
+		p.setGameOverTime(System.currentTimeMillis());
 	}
+	
+	public void loadInfo(PlayerInfo info) {
+		Player p = players.get(info.getPlayerid());
+		
+		p.setName(info.getName());
+		p.setTeam(info.getTeam());
+		p.setAlive(info.isAlive());
+		p.setScores(info.getScores());
+
+		LinkedList<ClientEquipment> equips = new LinkedList<ClientEquipment>();
+		for (EquipmentInfo ei : info.getEquipInfos()) {
+			ClientEquipment equip = gameController.getEquipmentFactory()
+					.create(ei.getTypeName());
+			if (equip != null) {
+				equip.setPlayer(p);
+				equip.loadInfo(ei);
+				equips.add(equip);
+			}
+		}
+		p.setEquips(equips);
+		p.setCurrEquip(info.getCurrEquip());
+	}
+
+//	public void playDieAnim(Player p) {
+//		dieEmit.setLocalTranslation(p..getControl().getPhysicsLocation());
+//		dieEmit.emitAllParticles();
+//	}
 }

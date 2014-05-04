@@ -4,7 +4,6 @@
 package de.encala.cydonia.game.appstates;
 
 import static de.encala.cydonia.share.player.InputCommand.ATTACK;
-import static de.encala.cydonia.share.player.InputCommand.HUD;
 import static de.encala.cydonia.share.player.InputCommand.JUMP;
 import static de.encala.cydonia.share.player.InputCommand.MOVEBACK;
 import static de.encala.cydonia.share.player.InputCommand.MOVEFRONT;
@@ -27,7 +26,6 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 
-import de.encala.cydonia.game.ClientState;
 import de.encala.cydonia.game.GameController;
 import de.encala.cydonia.game.GameState;
 import de.encala.cydonia.share.messages.InputMessage;
@@ -66,8 +64,6 @@ public class GameInputAppState extends AbstractAppState implements
 
 	@Override
 	public void stateAttached(AppStateManager stateManager) {
-		inputManager
-				.addMapping(HUD.getCode(), new KeyTrigger(KeyInput.KEY_F11));
 		inputManager.addMapping(STRAFELEFT.getCode(), new KeyTrigger(
 				KeyInput.KEY_A));
 		inputManager.addMapping(STRAFERIGHT.getCode(), new KeyTrigger(
@@ -135,7 +131,7 @@ public class GameInputAppState extends AbstractAppState implements
 			
 			if (gameController.getGamestate() == GameState.RUNNING && (!network ||
 					InputCommand.usedirect.contains(command))) {
-				gameController.getPlayerController().handleInput(gameController.getPlayer(), command, isPressed);
+				gameController.getPlayerController().handleInput(gameController.getPlayer().getId(), command, isPressed);
 			}
 		}
 	}
