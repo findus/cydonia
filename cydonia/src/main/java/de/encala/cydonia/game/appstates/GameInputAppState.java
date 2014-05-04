@@ -47,6 +47,8 @@ public class GameInputAppState extends AbstractAppState implements
 	private InputManager inputManager;
 	private FirstPersonCamera camController;
 	
+	private boolean network;
+	
 	private Thread viewDirSender;
 
 	/**
@@ -55,7 +57,8 @@ public class GameInputAppState extends AbstractAppState implements
 	 * @param app
 	 *            the game controller
 	 */
-	public GameInputAppState(GameController app) {
+	public GameInputAppState(GameController app, boolean network) {
+		this.network = network;
 		this.gameController = app;
 		this.inputManager = app.getInputManager();
 		camController = new FirstPersonCamera(app.getCamera(), Vector3f.UNIT_Y);
@@ -125,13 +128,13 @@ public class GameInputAppState extends AbstractAppState implements
 				isPressed = false;
 			}
 			
-			if (InputCommand.forwarded.contains(command)) {
+			if (network && InputCommand.forwarded.contains(command)) {
 				InputMessage msg = new InputMessage(gameController.getPlayer().getId(), command, isPressed);
 				gameController.getConnector().sendMessage(msg);
 			}
 			
-			if (gameController.getGamestate() == GameState.RUNNING
-					&& InputCommand.usedirect.contains(command)) {
+			if (gameController.getGamestate() == GameState.RUNNING && (!network ||
+					InputCommand.usedirect.contains(command))) {
 				gameController.getPlayerController().handleInput(gameController.getPlayer(), command, isPressed);
 			}
 		}

@@ -167,6 +167,7 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	private boolean left = false, right = false, up = false, down = false;
 
 	private String serverAddress = "";
+	private boolean network;
 
 	private Nifty nifty;
 	private TextField playerNameInput;
@@ -178,8 +179,6 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	private AudioNode placeSound;
 
 	private ServerConnector connector;
-
-
 
 	private LocationUpdatedMessage latestLocationUpdate;
 
@@ -208,7 +207,13 @@ PhysicsCollisionListener, EventListener, ScreenController {
 	}
 	
 	public void start(String server) {
-		this.serverAddress = server;
+		if(server == null || server.isEmpty()) {
+			this.serverAddress = null;
+			this.network = false;
+		} else {
+			this.serverAddress = server;
+			this.network = true;
+		}
 		this.start();
 	}
 
@@ -369,8 +374,8 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		menuController.actualizeScreen();
 
 		connector = new ServerConnector(this, getEventMachine());
-
-		gameInputAppState = new GameInputAppState(this);
+		
+		gameInputAppState = new GameInputAppState(this, this.network);
 
 		GeneralInputAppState generalInputAppState = new GeneralInputAppState(
 				this);
@@ -455,7 +460,9 @@ PhysicsCollisionListener, EventListener, ScreenController {
 		placeSound.setRefDistance(5f);
 		getWorldController().attachObject(placeSound);
 
-		connector.connectToServer(serverAddress, 6173);
+		if(this.network) {
+			connector.connectToServer(serverAddress, 6173);
+		}
 	}
 
 	/**
@@ -1464,6 +1471,10 @@ PhysicsCollisionListener, EventListener, ScreenController {
 
 	public ServerConnector getConnector() {
 		return connector;
+	}
+	
+	public boolean isNetwork() {
+		return this.network;
 	}
 
 	protected void returnFlag(Flag flag) {
