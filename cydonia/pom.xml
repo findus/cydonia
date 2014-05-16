@@ -1,39 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>de.encala</groupId>
 	<artifactId>cydonia</artifactId>
-	<version>0.6.1</version>
-	<packaging>jar</packaging>
+	<version>0.7.0</version>
+	<packaging>pom</packaging>
 
 	<name>cydonia</name>
-	<url>http://maven.apache.org</url>
+	<url>cydonia43.encala.de</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jmonkey.version>3.0.0-SNAPSHOT</jmonkey.version>
-		<mainclass>de.encala.cydonia.CydoniaLauncher</mainclass>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>2.0.2</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
-		</dependency>
-		<dependency>
-			<groupId>de.encala</groupId>
-			<artifactId>jme3-all</artifactId>
-			<version>3.0.0-NIGHTLY_2013-03-17</version>
-			<type>pom</type>
+			<version>3.8.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<modules>
+		<module>../cydonia-client</module>
+		<module>../cydonia-server</module>
+		<module>../cydonia-share</module>
+	</modules>
 
 	<build>
 		<plugins>
@@ -46,25 +40,7 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>${mainclass}</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
 		</plugins>
-		<resources>
-			<resource>
-				<directory>src\main\ressources</directory>
-			</resource>
-		</resources>
 	</build>
+
 </project>
