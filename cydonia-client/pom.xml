@@ -4,43 +4,26 @@
 	<parent>
 		<groupId>de.encala</groupId>
 		<artifactId>cydonia</artifactId>
-		<version>0.7.0</version>
+		<version>0.7.1-SNAPSHOT</version>
 		<relativePath>../cydonia</relativePath>
 	</parent>
 
 	<artifactId>cydonia-client</artifactId>
 	<packaging>jar</packaging>
 
-	<name>cydonia</name>
+	<name>cydonia-client</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jmonkey.version>3.0.0-SNAPSHOT</jmonkey.version>
 		<mainclass>de.encala.cydonia.game.ServerBrowser</mainclass>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>2.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-		</dependency>
-		<dependency>
-			<groupId>de.encala</groupId>
-			<artifactId>jme3-all</artifactId>
-			<version>3.0.0-NIGHTLY_2013-03-17</version>
-			<type>pom</type>
-		</dependency>
-		<dependency>
-			<groupId>de.encala</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>cydonia-share</artifactId>
-			<version>0.7.0</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

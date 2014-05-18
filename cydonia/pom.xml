@@ -5,7 +5,7 @@
 
 	<groupId>de.encala</groupId>
 	<artifactId>cydonia</artifactId>
-	<version>0.7.0</version>
+	<version>0.7.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>cydonia</name>
@@ -21,6 +21,17 @@
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>2.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>de.encala</groupId>
+			<artifactId>jme3-all</artifactId>
+			<version>3.0.0-NIGHTLY_2013-03-17</version>
+			<type>pom</type>
 		</dependency>
 	</dependencies>
 	<modules>

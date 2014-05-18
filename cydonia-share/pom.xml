@@ -7,7 +7,7 @@
 		<groupId>de.encala</groupId>
 		<artifactId>cydonia</artifactId>
 		<relativePath>../cydonia</relativePath>
-		<version>0.7.0</version>
+		<version>0.7.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>cydonia-share</artifactId>
 	<name>cydonia-share</name>
@@ -15,23 +15,21 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>2.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>de.encala</groupId>
-			<artifactId>jme3-all</artifactId>
-			<version>3.0.0-NIGHTLY_2013-03-17</version>
-			<type>pom</type>
-		</dependency>
-	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
